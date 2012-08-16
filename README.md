@@ -4,86 +4,121 @@ rest-rmr
 A modular RESTful RMR framework, designed at the Queensland University of
 Technology Library.
 
-Resource-Model-Representation
------------------------------
+Project goal:
+------------
+Build a framework that provides a simple mechanism to add modules to a RESTful API.
+The framework should do the following:
+* Make module creation and maintenance as simple as possible
+* Promote RESTful design
+* Provide a useful API without constraining design
+* Provide a uniform interface to external systems
 
-RMR (Resource-Method-Representation) is an alternative design concept to
-the usual MVC (Model-View-Controller), proposed by Paul James on his
-[blog][peej].  The basic premise is that in our projects we define the
-Resources, the Methods by which they are accessed, and the
-Representations in which they are made available to the client.
-
-  [peej]: http://www.peej.co.uk/articles/rmr-architecture.html
-
-This framework attempts to provide a simple mechanism to build RESTful
-applications inspired by the RMR paradigm.
-
-Resources
+Structure
 ---------
+The general structure supported by the framework is:
+ 
+### Modules and Interfaces ###
+The framework is designed to be modular, and to provide a uniform interface to external systems.  As such two concepts are introduced: **modules** and **interfaces**.
 
-Resources are identified by their URI.  That's what URI _stands for_.
-As such, the way you teach the framework about your resources is by
-registering the URIs used to access them.
+A **module** is a collection of expertise related to a single data model, project, or service.  This definition is intentionally vague in order to allow the greatest flexibility in defining the scope of future projects and services.
 
-In order to streamline the process, and to slightly subvert the RMR
-paradigm, we've used a _handler_ pattern rather than "pure" resources;
-so what is registered is actually a combination of the URI, the HTTP
-method used to access it, and the method or function that handles the
-request.
+An **interface** is a standardised mechanism for accessing a resource.  The framework will provide definitions and support for three (or four) interfaces:
 
-We've also designed the framework to support modules (i.e. projects) and
-interfaces.  This allows us at the QUT Library to use a single instance
-of the framework to support multiple projects, and lets us configure
-access to separate sections of each project globally (e.g. by adding a
-simple Apache directive we can require authentication for all /auth/\*
-locations.)
+* Publicly accessible, human-readable (`pub`)
+* Publicly accessible, machine-readable (`api`)
+* Authenticated, human-readable (`auth`)
+* Authenticated, machine-readable?
 
-The following example shows the typical pattern we'd use:
+By convention, URIs will be of the form:
 
-    $registrar = new URIRegistrar('my-module');
-    $registrar->set_interface(Application::IF_PUBLIC);
-    $registrar->register_handler('GET',  '/?',          'MyModule->index');
-    $registrar->register_handler('GET',  '/user/:name', 'MyModule->show_user');
-    $registrar->register_handler('POST', '/user/:name', 'MyModule->post_user');
+    /interface/module/resource-path...
 
-This example sets up two URI patterns:
+However this is not mandatory.  A specific API will be provided to facilitate this pattern.
 
-    /pub/my-module/
-    /pub/my-module/user/foo
+This allows simple administration of concerns such as defining global Apache rules for authentication (by using a simple Location directive).
 
-1. If a user views `/pub/my-module/` the framework will instantiate a new
-   `MyModule` object, and invoke its `index()` method, passing in a Request
-   object that represents the current HTTP Request.
+Modules
+-------
+Authored components (modules) fall into one of two categories: **Resources** and **Representations**.  Note that a given service or project may require the creation of both resources and representations.
 
-2. If a user views `/pub/my-module/user/fred` the framework will instantiate
-   a new `MyModule` object, and invoke its `show_user()` method.
+### Resources ###
+Resources are sources of specific information, accessed by a URI.
 
-The question mark \(?\) on the index URI pattern makes the final slash
-optional, so a request to `/pub/my-module` will also be handled.
+Resources interact with the framework through _handler methods_ and _URI patterns_.  At program initialisation, the framework scans a strategically-named directory, including all PHP source files it finds.  The intention is that those files will register mappings of _URI patterns_ to _functions/methods_, using a specific framework API.
 
-The `:name` part in the other two URI patterns represents a named parameter.
-For example, the `post_user()` method can see which user it being modified
-by accessing the "name" param, thus:
+When a **request** enters the system, the framework compares the request URI to the registered patterns until it finds a match, at which point it invokes the mapped function/method to handle the request.  The result of the handler should be a **data model** object, which is passed back to the framework to be represented.
 
-    $request->param('name')
+### Representations ###
+Representations are documents that convey resources' information.
 
-The framework expects the handler methods to return resources in the form
-of data model objects.  There is no restriction on the form these may take,
-except that they shouldn't be Response objects.
+Representations interact with the framework through a simple directory structure.  At program initialisation, the framework scans a strategically-named directory, including all PHP source files it finds.  The intention is that those files will register **representer objects** using a specific framework API.
 
-When a handler returns its data model object to the framework, it attempts
-to _represent_ that data model in a way that satisfies the request.
+When a **request** is handled and a **data model** is passed to the framework, the representation directory framework uses a simple content-negotiation algorithm to find the set of representers compatible with the request, then it iterates over them until it finds one that is _capable of representing the given data model_.  The representer then creates a representation of the data model and assigns it to a **response** object, which the framework sends back to the waiting client.
 
-Representation
---------------
+API and Interfaces
+------------------
 
-The representation subsystem is an ordered list of Representer objects.
-When a request arrives and a handler generates a data model object, the
-framework first checks all the listed Representers to see which are most
-capable of representing data in a form that satisfies the request.  Then
-it checks through those, in order of capability, to see which is willing to
-represent the data model object.
+### URI Patterns and Handlers ###
+To deal with registering URI patterns and handlers, the framework provides two mechanisms:
 
-The first representer is the one that is used.  If none are found, a variation
-of the Transparent Content Negotiation protocol [RFC 2295] is invoked.
+* A low-level function: `URIMap::register( $http_method, $uri_pattern, $handler )`
+* * Any incoming HTTP request using  the given `$http_method`, whose request URI matches the `$uri_pattern`, is handled using the callable `$handler`.
+* * If you register a handler for the HTTP GET method, an identical handler is automatically registered for the HEAD method.
+* A higher-level class: `URIRegistrar`
+* * Provides a simple mechanism to register a set of resource-paths under a single interface and module.
+* * Wraps the call to `URIMap::register`, with extra data sanitisation.
+
+Irrespective of _how_ they are registered, URI patterns are tested in the order they are registered.
+
+#### URI Patterns ####
+URI patterns may include named parameters:
+
+* `'/hello/:name'` matches `'/hello/foo'` and `'/hello/bar'`
+* Parameter “name” is 'foo' or 'bar'
+
+A trailing slash can be made optional by appending a question-mark:
+* `'/hello/?'` matches `'/hello'` and `'/hello/'`
+
+#### Handler ####
+The handler is invoked with parameter:
+
+* The Request object, which may be queried for example to inspect any HTTP request parameters.
+
+### Representations ###
+
+Representation objects must extend the `Representer` abstract class, implementing the methods:
+
+`can_do_model($m)`
+* returns a Boolean, true if it can represent the given model, false if not
+
+`preference_for_type($t)`
+* returns a three-decimal-digit-precision floating-point number from 0.000 to 1.000 expressing this representation's preference for representing a given type
+
+`list_types()`
+* returns an associative array of `type=>preference` for all types this representer wishes to advertise supporting.  Note that this list does not have to include every type that would return a non-zero value in `#preference_for_type`
+
+`represent($m, $t, $response)`
+* represents the given model as the given type, and pokes it into the given response object
+
+Note that wherever a type is given by the framework, it is a complex data structure of the form:
+
+    array(
+        'option' => 'foo/bar',
+        'raw' => 'foo/bar;q=0.8;baz=quux',
+    )
+
+where the “option” is the name of the type, and “raw” is the value supplied by the client, including quality values and other parameters.
+
+Magic
+-----
+Off the bat, the framework will provide the following features:
+* An implementation of a variation of _Transparent Content Negotiation in HTTP_ \[RFC 2295\], a content negotiation protocol.
+* Compression, if the client specifies Accept-Encoding: gzip, deflate, or bzip2.
+* Proper HTTP HEAD request support.
+* Mostly correct HTTP OPTIONS request support.
+
+I would like to provide support for:
+* Some data access layer (DAO, ActiveRecord, ORM, ...)
+* Response caching and ETag support
+
 

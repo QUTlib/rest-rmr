@@ -16,6 +16,26 @@ The framework should do the following:
 Structure
 ---------
 The general structure supported by the framework is:
+
+                                                                     Resources
+               Controller               Resource URI                   +---------+
+               (router)                 Mapper                       +-'-------+ | (uri_pattern)
+               +---------+    3 URI     +---------+                +-'-------+ | | (http-to-model method map)
+    1 request  |         | -----------> |         |  2a regsiter   |         | |-+
+    ---------> |         | <----------- |         | <------------- |         |-+
+               +---------+  4 resource  +---------+                +---------+
+                |  ^  ^ \     type                                      ^1             +---------+
+                |  |   \ `----,                                         |              |         |
+    5 resource/ |  |    `----, \7 model                                 |      ? ----> |         |
+      query     |  |6 rep.    \ \          +---------+                  v1             +---------+
+                v  |           \ \       +-'-------+ |             +---------+          DB Layer
+               +---------+      \ \    +-'-------+ | |             |         |
+               |         |      8\ `-> |         | |-+             |         |
+               |         |  output`--- |         |-+               +---------+
+               +---------+             +---------+                  Model
+               Representation          Representations
+               Factory                 (can_handle)
+
  
 ### Modules and Interfaces ###
 The framework is designed to be modular, and to provide a uniform interface to external systems.  As such two concepts are introduced: **modules** and **interfaces**.

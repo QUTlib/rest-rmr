@@ -97,25 +97,42 @@ class Application {
 	 */
 	public static function handle_request() {
 		$request = new Request();
-		if ($request->method() == 'OPTIONS') {
+		$http_method = strtoupper($request->method());
+		if ($http_method == 'OPTIONS') {
+			// If we get an OPTIONS request, try to handle it according to
+			// the HTTP/1.1 spec. (i.e. report the Allowed HTTP methods)
 			$uri = $request->uri();
 			if ($uri == '*') {
+				// general server capabilities; usually Apache intercepts this,
+				// but if we do receive it, report all the HTTP methods we know
 				$methods = URIMap::methods();
 			} else {
+				// report which HTTP methods would theoretically work for the
+				// requested URI
 				$methods = URIMap::allowed_methods($uri);
 			}
 			if ($methods) {
+				// create a 200 OK response, and poke in an Allow header for the
+				// HTTP methods we think are cool
 				$response = new Response($request->http_version());
 				$response->header('Allow', implode(', ', $methods));
 			} else {
+				// no such resource; no methods would work. Send a 404 Not Found.
 				$response = Response::generate(404);
 			}
+		} elseif ($http_method == 'TRACE') {
+			// this one is flat out refused, even if it gets past Apache.
+			// sending a 403 Forbidden, instead of a 405 Method Not Allowed.
+			$response = Response::generate(403);
 		} else {
+			// probably one of the more standard HTTP methods (GET, POST, PUT, DELETE)
+			// pass it off to the handlers, and see what comes of it.
 			$model = self::get_model_for($request);
 			if ($model instanceof Response) {
 				// short circuit; usually means get_model_for failed
 				$response = $model;
 			} else {
+				// we have a model, now we need to represent it
 				$response = self::get_response_for($model, $request);
 			}
 		}

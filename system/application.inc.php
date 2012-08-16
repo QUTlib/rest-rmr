@@ -31,8 +31,8 @@ class Application {
 		set_error_handler(array('Application','error_response'), E_ALL & (~E_STRICT));
 
 		$paths = array(
-			APPDIR.'/resource-types',
-			APPDIR.'/representation-types',
+			APPDIR.'/resource-handlers',
+			APPDIR.'/representations',
 		);
 		foreach ($paths as $path) {
 			if (is_dir($path)) {

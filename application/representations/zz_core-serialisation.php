@@ -1,4 +1,11 @@
 <?php
+/*
+ * Note: because the classes defined in the core-serialisation-classes
+ *       file exhibit catch-all behaviour (i.e. they attempt to handle
+ *       as many requests as possible) they must be registered AFTER
+ *       any more specific representations.  Thus this file should
+ *       start with the letters 'zz_'
+ */
 
 require_once('core-serialisation-classes.php');
 

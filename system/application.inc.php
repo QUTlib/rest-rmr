@@ -14,7 +14,7 @@ require_once('response.inc.php');
 
 class Application {
 	const VERSION = '0.8';
-	const TITLE = 'M<i>a<b>M</b></i><b>a</b>';
+	const TITLE = 'REST-RMR';
 
 	/* standard interfaces */
 	const IF_PUBLIC  = 'pub';

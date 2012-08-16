@@ -1,5 +1,23 @@
 <?php
+/*
+ * NOTE: because the classes defined in this file exhibit catch-all
+ *       behaviour (i.e. will attempt to handle as many requests as
+ *       possible), they should be registered AFTER any more specific
+ *       representers.
+ *
+ *       See: representations/zz_core-serialisation.php
+ */
 
+/**
+ * A generic representer which will represent any Object or Array
+ * as a JSON document.
+ *
+ * Supported internet media types (MIMEs):
+ *   application/json q=1.0 [advertised]
+ *   text/json        q=0.9
+ *   text/x-json      q=0.9
+ *   * / *            q=0.001
+ */
 class JSONRepresenter extends Representer {
 
 	public function list_types() {
@@ -39,6 +57,20 @@ class JSONRepresenter extends Representer {
 	}
 }
 
+/**
+ * A generic representer which will represent any PHP type other
+ * than "resource" as a YAML document.
+ *
+ * Note: this is an experimental class, and is not guaranteed to
+ *       work properly in all cases.
+ *
+ * Supported internet media types (MIMEs):
+ *   text/yaml          q=1.0 [advertised]
+ *   application/x-yaml q=1.0 [advertised]
+ *   text/x-yaml        q=0.9
+ *   application/yaml   q=0.9
+ *   * / *              q=0.001
+ */
 class YAMLRepresenter extends Representer {
 
 	public function list_types() {

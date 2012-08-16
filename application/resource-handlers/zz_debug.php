@@ -129,14 +129,14 @@ function debug_error($request) {
 		case 0: throw new Exception("an exception occurred");
 		#case 1: throw new ForbiddenException();
 		case 1:
-			$errs = array();
+			$http_error_classes = array();
 			foreach (get_declared_classes() as $c) {
 				$r = new ReflectionClass($c);
 				if (!$r->isAbstract() && $r->isSubclassOf('HttpException'))
-					$errs[] = $c;
+					$http_error_classes[] = $c;
 			}
-			$errc = $errs[ mt_rand(0, count($errc)-1) ];
-			throw new $errc();
+			$http_error = $http_error_classes[ mt_rand(0, count($http_error_classes)-1) ];
+			throw new $http_error();
 		case 2: trigger_error('test error', E_USER_ERROR);
 		case 3: $x = 2 / 0;
 	}

@@ -630,14 +630,22 @@ public function dump() {
 	 * Exception.
 	 */
 	public static function generate_ex($e) {
-		if ($e instanceof HttpException) {
-			$s = $e->status();
-		} else {
-			$s = 500;
-		}
+		// custom message, if any
 		if ($m = $e->getMessage())
 			$m = '<p class="mesg">'.nl2br(htmlspecialchars($m)).'</p>';
-		$m .= self::_source($e->getFile(), $e->getLine());
+		// status code, extra source, etc.
+		if ($e instanceof HttpException) {
+			$s = $e->status();
+			// don't show the source of where this was thrown,
+			// it's a regular HTTP flow thing (and should be self-
+			// explanatory)
+		} else {
+			$s = 500;
+			// in debug mode, show the source line that died
+			if (defined('DEBUG') && DEBUG)
+				$m .= self::_source($e->getFile(), $e->getLine());
+		}
+		// voila
 		return self::generate($s, $m, TRUE);
 	}
 

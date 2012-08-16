@@ -218,8 +218,8 @@ class Application {
 			#case E_USER_DEPRECATED:   $tmp[] = 'E_USER_DEPRECATED'; break;
 			}
 		}
-		if ($tmp) $title = implode(' | ', $tmp);
-		else $title = "#$errno";
+		if ($tmp) $title = 'PHP Error: ' . implode(' | ', $tmp);
+		else $title = "PHP Error: #$errno";
 		Response::error($title, $errstr, $errfile, $errline);
 	}
 

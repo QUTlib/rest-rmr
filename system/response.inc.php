@@ -550,7 +550,7 @@ public function dump() {
 		case 307: return "Temporary Redirect";
 		// Client Error
 		case 400: return "Bad Request";
-		case 401: return "Unauthorized";
+		case 401: return "Unauthorised";
 		case 402: return "Payment Required";
 		case 403: return "Forbidden";
 		case 404: return "Not Found";
@@ -590,26 +590,76 @@ public function dump() {
 		}
 	}
 
+	public static function statusMessage($code, $allow_unknown=false) {
+		switch ($code) {
+		// Informational - contain no body by definition
+		case 100: return "";
+		case 101: return "";
+		// Success - these are all silent
+		case 200: return ""; # to be populated later
+		case 201: return "";
+		case 202: return "";
+		case 203: return "";
+		case 204: return "";
+		case 205: return "";
+		case 206: return "";
+		// Redirection
+		case 300: return ""; # should be populated with an appropriate list of alternatives
+		case 301: return ""; # should be populated with an appropriate link to the new location
+		case 302: return ""; # should be populated with an appropriate link to the new location
+		case 303: return ""; # should be populated with an appropriate link to the new location
+		case 304: return ""; # The 304 response MUST NOT contain a message-body.
+		case 305: return ""; # probably should have a description of the proxy location
+		case 307: return ""; # should be populated with an appropriate link to the new location
+		// Client Error
+		case 400: return "The request could not be understood by the server.";
+		case 401: return "The request requires authentication.";
+		case 402: return ""; # reserved for future use
+		case 403: return "The server understood the request but is refusing to fulfill it. Authorisation will not help.";
+		case 404: return "The request resource could not be found at this location.";
+		case 405: return "The method specified in the request is not allowed for this resource.";
+		case 406: return "The requested resource cannot be represented acceptably according to your request parameters.";
+		case 407: return "The request requires proxy authentication.";
+		case 408: return "The client did not produce a request within the time that the server was prepared to wait.";
+		case 409: return "The request could not be completed due to a conflict with the current state of the resource.";
+		case 410: return "The requested resource is no longer available at this location and no forwarding address is known.";
+		case 411: return "The server refuses to accept the request without a defined Content-Length.";
+		case 412: return "A precondition in the request evaluated to false when it was tested on the server.";
+		case 413: return "The provided request entity is too large.";
+		case 414: return "The request URI is too long.";
+		case 415: return "The entity given in the request is not in a format supported by the requested resource.";
+		case 416: return "None of the range specifiers given in the request overlap the current extent of the selected resource.";
+		case 417: return "The expectation given in the request could not be met by this server.";
+		// Server Error
+		case 500: return "The server encountered an unexpected condition which prevented it from fulfilling the request.";
+		case 501: return "The server does not support the functionality requred to fulfill the request.";
+		case 502: return "The server received an invalid response from an upstream server.";
+		case 503: return "The server is currently unable to handle the request. Please try again later.";
+		case 504: return "The server did not receive a timely response from an upstream server.";
+		case 505: return "The server does not support the HTTP protocol version that was used in the request message.";
+		default:
+			if ($allow_unknown) {
+				switch (intval($code / 100)) {
+				case 1: return "";
+				case 2: return ""; # The request was successfully received, understood, and accepted.
+				case 3: return "Further action needs to be taken by the user agent in order to fulfill the request.";
+				case 4: return "The client seems to have erred."; # should include a better description, including permanence of the error
+				case 5: return "The server has erred and is incapable of performing the request."; # ''
+				default: return ""; # ???
+				}
+			} else {
+				throw new Exception("invalid status code ${code}");
+			}
+		}
+	}
+
+
 	/**	
 	 * Creates a new Response object with some pre-filled-out details.
 	 */
 	public static function generate($status=404, $message='', $html_message=FALSE) {
-		$r = new Response(NULL, $status);
-		$h = '';
-		$m = '';
-		switch ($status) {
-		case 404:
-			$h = 'Not Found';
-			$m = '<p>The resource you requested was not found at this location.</p>';
-			break;
-		case 501:
-			$h = 'Not Implemented';
-			$m = '<p>The request method you supplied is not implemented by this server.</p>';
-			break;
-		default:
-			$h = self::statusName($status, TRUE);
-			$m = '';
-		}
+		$response = new Response(NULL, $status);
+		$title = self::statusName($status, TRUE);
 
 		if ($message) {
 			if (! $html_message) {
@@ -617,12 +667,12 @@ public function dump() {
 				$message = '<p class="mesg">'.nl2br(htmlspecialchars($message)).'</p>';
 			}
 		} else {
-			$message = '';
+			$message = '<p class="mesg">' . htmlspecialchars( self::statusMessage($status, TRUE) ).'</p>';
 		}
 
-		return $r
+		return $response
 			->content_type('text/html; charset=iso-8859-1')
-			->body( self::generate_html($h, $m.$message) );
+			->body( self::generate_html($title, $message) );
 	}
 
 	/**
@@ -697,7 +747,7 @@ public function dump() {
 <style type="text/css">
 html,body {margin:0;padding:0;}
 body {padding:0.5em 1em;background:#fff;color#000;}
-.mesg {border:2px inset #777;border-radius:2px;background-color:#fe9;padding:5px;}
+.mesg {border:1px solid #ccc;border-radius:2px;background-color:#fff8cc;padding:5px;}
 .code {background:#d8d8d8;border:2px inset #777;}
 .line {background:#fa5;}
 .numb {font-weight:bold;}

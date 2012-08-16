@@ -51,6 +51,11 @@ class InternalServerErrorException extends ServerError {
 	public function status_message() { return 'Internal Server Error'; }
 }
 
+class NotImplementedException extends ServerError {
+	public function status() { return 501; }
+	public function status_message() { return 'Not Implemented'; }
+}
+
 class ServiceUnavailableException extends ServerError {
 	public function status() { return 503; }
 	public function status_message() { return 'Service Unavailable'; }

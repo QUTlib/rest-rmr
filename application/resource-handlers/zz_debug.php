@@ -143,8 +143,7 @@ function debug_error($request) {
 			$key = mt_rand(0,3);
 	}
 	switch ($key) {
-		case 0: throw new Exception("an exception occurred");
-		#case 1: throw new ForbiddenException();
+		case 0: throw new Exception("a debug exception occurred");
 		case 1:
 			$http_error_classes = array();
 			foreach (get_declared_classes() as $c) {
@@ -154,7 +153,7 @@ function debug_error($request) {
 			}
 			$http_error = $http_error_classes[ mt_rand(0, count($http_error_classes)-1) ];
 			throw new $http_error();
-		case 2: trigger_error('test error', E_USER_ERROR);
+		case 2: trigger_error('debug error', E_USER_ERROR);
 		case 3: $x = 2 / 0;
 	}
 }

@@ -82,11 +82,11 @@ API and Interfaces
 To deal with registering URI patterns and handlers, the framework provides two mechanisms:
 
 * A low-level function: `URIMap::register( $http_method, $uri_pattern, $handler )`
-* * Any incoming HTTP request using  the given `$http_method`, whose request URI matches the `$uri_pattern`, is handled using the callable `$handler`.
-* * If you register a handler for the HTTP GET method, an identical handler is automatically registered for the HEAD method.
+    * Any incoming HTTP request using  the given `$http_method`, whose request URI matches the `$uri_pattern`, is handled using the callable `$handler`.
+    * If you register a handler for the HTTP GET method, an identical handler is automatically registered for the HEAD method.
 * A higher-level class: `URIRegistrar`
-* * Provides a simple mechanism to register a set of resource-paths under a single interface and module.
-* * Wraps the call to `URIMap::register`, with extra data sanitisation.
+    * Provides a simple mechanism to register a set of resource-paths under a single interface and module.
+    * Wraps the call to `URIMap::register`, with extra data sanitisation.
 
 Irrespective of _how_ they are registered, URI patterns are tested in the order they are registered.
 

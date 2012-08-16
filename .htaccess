@@ -1,0 +1,24 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # rewrite any /a/b/c.phps to /source.php?file=a/b/c.php
+    # DEBUG ONLY!
+    RewriteCond %{REQUEST_FILENAME} !-s
+    RewriteRule ^(.*\.php)s$ source.php?file=$1 [L]
+
+    # Forcibly deny access to the /system/ folder
+    RewriteRule ^(system/*)$ index.php?path=/$1 [L,QSA]
+
+    # Forcibly deny access to the /application/ folder
+    RewriteRule ^(application/*)$ index.php?path=/$1 [L,QSA]
+
+    # rewrite any /a/b/c to index.php?path=/a/b/c
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ index.php?path=/$1 [L,QSA]
+</IfModule>
+
+# Hide PHP Library files from indices
+IndexIgnore *.inc.php
+

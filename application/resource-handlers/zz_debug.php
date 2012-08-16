@@ -105,8 +105,7 @@ HTML
  * Generates a random exception/error.
  */
 function debug_error($request) {
-	if ($i = $request->parameter('code')) {
-		switch ($code) {
+	switch ( $request->parameter('code') ) {
 		case 'exception':
 		case '0':
 			$key = 0;
@@ -123,24 +122,23 @@ function debug_error($request) {
 		case '3':
 			$key = 3;
 			break;
-		}
-	} else {
-		$key = mt_rand(0,3);
+		default:
+			$key = mt_rand(0,3);
 	}
 	switch ($key) {
-	case 0: throw new Exception("an exception occurred");
-	#case 1: throw new ForbiddenException();
-	case 1:
-		$errs = array();
-		foreach (get_declared_classes() as $c) {
-			$r = new ReflectionClass($c);
-			if (!$r->isAbstract() && $r->isSubclassOf('HttpException'))
-				$errs[] = $c;
-		}
-		$errc = $errs[ mt_rand(0, count($errc)-1 ];
-		throw new $errc();
-	case 2: trigger_error('test error', E_USER_ERROR);
-	case 3: $x = 2 / 0;
+		case 0: throw new Exception("an exception occurred");
+		#case 1: throw new ForbiddenException();
+		case 1:
+			$errs = array();
+			foreach (get_declared_classes() as $c) {
+				$r = new ReflectionClass($c);
+				if (!$r->isAbstract() && $r->isSubclassOf('HttpException'))
+					$errs[] = $c;
+			}
+			$errc = $errs[ mt_rand(0, count($errc)-1) ];
+			throw new $errc();
+		case 2: trigger_error('test error', E_USER_ERROR);
+		case 3: $x = 2 / 0;
 	}
 }
 

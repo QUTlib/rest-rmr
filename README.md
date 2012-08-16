@@ -28,11 +28,11 @@ The general structure supported by the framework is:
                 |  |   \ `----.                                         |              |         |
     5 resource/ |  |    `----. \7 model                                 |      ? ----> |         |
       query     |  |6 rep.    \ \          +---------+                  v1             +---------+
-                v  |           \ \       +-'-------+ |             +---------+          DB Layer
-               +---------+      \ \    +-'-------+ | |             |         |
-               |         |      8\ `-> |         | |-+             |         |
-               |         |  output`--- |         |-+               +---------+
-               +---------+             +---------+                  Model
+                v  |         8 \ \       +-'-------+ |             +---------+          DB Layer
+               +---------+ output `--> +-'-------+ | |             |         |
+               |         |       `---- |         | |-+             |         |
+               |         | 2b register |         |-+               +---------+
+               +---------+ <---------- +---------+                  Model
                Representation          Representations
                Factory                 (can_handle)
 

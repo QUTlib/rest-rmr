@@ -16,27 +16,30 @@
  * under the License.
  */
 
+Application::register_class('RawXMLDoc', SYSDIR.'/models/raw-xml-model.php');
 
 /**
- * A basic HTML representer that displays RawHTMLDoc models as text/html
+ * A basic XML representer that displays RawXMLDoc models as application/xml
  */
-class RawHTMLDocRepresenter extends Representer {
+class RawXMLDocRepresenter extends Representer {
 
 	public function list_types() {
 		return array(
-			'text/html' => 1.0,
+			'application/xml' => 1.0,
 		);
 	}
 
 	public function can_do_model($m) {
-		$m_classname = 'RawHTMLDoc';
+		$m_classname = 'RawXMLDoc';
 		return ($m instanceof $m_classname);
 	}
 
 	public function preference_for_type($t) {
 		switch ($t['option']) {
-		case 'text/html':
+		case 'application/xml':
 			return 1.0;
+		case 'text/xml':
+			return 0.9;
 		case '*/*':
 			return 0.001;
 		default:
@@ -46,18 +49,11 @@ class RawHTMLDocRepresenter extends Representer {
 
 	public function represent($m, $t, $response) {
 		if ($t['option'] == '*/*') {
-			$response->content_type('text/html');
+			$response->content_type('text/xml');
 		} else {
 			$response->content_type($t['option']);
 		}
 		$response->body( $m->doc );
 	}
 }
-
-// ----- IMPORTANT ------------------------------------------------------
-//
-Application::register_representer( new RawHTMLDocRepresenter() );
-Application::register_class('RawHTMLDoc', SYSDIR.'/models/raw-html-model.php');
-//
-// ----- IMPORTANT ------------------------------------------------------
 

@@ -377,6 +377,15 @@ public function dump() {
 	}
 
 	/**
+	 * Appends $string to the response body.
+	 * @chainable
+	 */
+	public function append_line($string) {
+		$this->body .= $string . "\n";
+		return $this;
+	}
+
+	/**
 	 * Gets/sets the current response body.
 	 */
 	public function body($value=NULL) {

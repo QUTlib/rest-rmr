@@ -37,5 +37,5 @@
 </IfModule>
 
 # Hide PHP Library files from indices
-IndexIgnore#.inc.php
+IndexIgnore *.inc.php
 

@@ -29,7 +29,8 @@ class RawHTMLDocRepresenter extends Representer {
 	}
 
 	public function can_do_model($m) {
-		return is_a($m, 'RawHTMLDoc');
+		$m_classname = 'RawHTMLDoc';
+		return ($m instanceof $m_classname);
 	}
 
 	public function preference_for_type($t) {
@@ -56,7 +57,7 @@ class RawHTMLDocRepresenter extends Representer {
 // ----- IMPORTANT ------------------------------------------------------
 //
 Application::register_representer( new RawHTMLDocRepresenter() );
-Application::register_class('RawHTMLDoc', 'raw-html-model.php');
+Application::register_class('RawHTMLDoc', SYSDIR.'/models/raw-html-model.php');
 //
 // ----- IMPORTANT ------------------------------------------------------
 

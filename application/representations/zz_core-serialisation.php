@@ -24,7 +24,7 @@
  *       start with the letters 'zz_'
  */
 
-require_once('core-serialisation-classes.php');
+require_once(SYSDIR.'/representations/core-serialisation-classes.php');
 
 // ----- IMPORTANT ------------------------------------------------------
 // Note: JSONRepresenter is first; since most web browsers accept */*

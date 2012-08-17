@@ -29,7 +29,8 @@ class RawXMLDocRepresenter extends Representer {
 	}
 
 	public function can_do_model($m) {
-		return is_a($m, 'RawXMLDoc');
+		$m_classname = 'RawXMLDoc';
+		return ($m instanceof $m_classname);
 	}
 
 	public function preference_for_type($t) {
@@ -58,7 +59,7 @@ class RawXMLDocRepresenter extends Representer {
 // ----- IMPORTANT ------------------------------------------------------
 //
 Application::register_representer( new RawXMLDocRepresenter() );
-Application::register_class('RawXMLDoc', 'raw-xml-model.php');
+Application::register_class('RawXMLDoc', SYSDIR.'/models/raw-xml-model.php');
 //
 // ----- IMPORTANT ------------------------------------------------------
 

@@ -316,10 +316,25 @@ class XMLRepresenter extends Representer {
 		case 'NULL':
 			return "$p<null/>\n";
 		case 'array':
+			$allints = TRUE;
+			$i = 0;
+			foreach ($o as $k=>$v) {
+				if ($k !== $i) {
+					$allints = FALSE;
+					break;
+				}
+				$i ++;
+			}
+			if ($allints) {
+				$key = "index";
+			} else {
+				$type = "map";
+				$key  = "key";
+			}
 			$string = "$p<$type>\n";
 			foreach ($o as $k=>$v) {
 				$k = $this->_quote($k);
-				$string .= "$p  <item index=\"$k\">\n";
+				$string .= "$p  <item $key=\"$k\">\n";
 				$string .= $this->_xml_encode($v, "$p    ");
 				$string .= "$p  </item>\n";
 			}

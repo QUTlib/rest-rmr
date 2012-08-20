@@ -124,6 +124,9 @@ class Application {
 			// this one is flat out refused, even if it gets past Apache.
 			// sending a 403 Forbidden, instead of a 405 Method Not Allowed.
 			$response = Response::generate(403);
+		} elseif ($http_method == 'BREW') {
+			// RFC 2324
+			$response = Response::generate(418);
 		} else {
 			// probably one of the more standard HTTP methods (GET, POST, PUT, DELETE)
 			// pass it off to the handlers, and see what comes of it.

@@ -593,6 +593,7 @@ public function dump() {
 		case 415: return "Unsupported Media Type";
 		case 416: return "Requested range not satisfiable";
 		case 417: return "Expectation Failed";
+		case 418: return "I'm a teapot";
 		// Server Error
 		case 500: return "Internal Server Error";
 		case 501: return "Not Implemented";
@@ -656,6 +657,7 @@ public function dump() {
 		case 415: return "The entity given in the request is not in a format supported by the requested resource.";
 		case 416: return "None of the range specifiers given in the request overlap the current extent of the selected resource.";
 		case 417: return "The expectation given in the request could not be met by this server.";
+		case 418: return "Attempting to brew coffee with a teapot.";
 		// Server Error
 		case 500: return "The server encountered an unexpected condition which prevented it from fulfilling the request.";
 		case 501: return "The server does not support the functionality requred to fulfill the request.";

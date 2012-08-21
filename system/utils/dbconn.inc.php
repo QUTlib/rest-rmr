@@ -1,6 +1,8 @@
 <?php
 
 class DBConn {
+	protected $link = NULL;
+
 	/**
 	 * Creates the DBConn object, and establishes a connection to the DB server.
 	 * @throws Exception if a database connection cannot be established
@@ -17,7 +19,7 @@ class DBConn {
 	{
 		if ($this->link) {
 			$this->link->close();
-			$this->link = null;
+			$this->link = NULL;
 		}
 	}
 
@@ -96,11 +98,37 @@ class DBConn {
 
 	/**
 	 * Escapes a string so it is safe to include in an SQL query.
+	 * Also works for dates, times, datetimes, blobs, etc.
 	 */
 	public function escape($str)
 	{
 		$this->__assert();
 		return $this->link->real_escape_string($str);
+	}
+
+	/**
+	 * Armours an integer so it is safe to include in an SQL query.
+	 */
+	public function int($i)
+	{
+		return intval($i);
+	}
+
+	/**
+	 * Asserts that the given value is an integer.
+	 */
+	public function check_int($i)
+	{
+		if (!(is_int($i) || preg_match('/^\d+$/',$i))) throw new Exception("not an integer '$i'");
+		return TRUE;
+	}
+
+	/**
+	 * Converts a boolean to a bit-representation for use in an SQL query.
+	 */
+	public function bool($b)
+	{
+		return ("b'" . ($b ? 1 : 0) . "'");
 	}
 }
 

@@ -384,7 +384,7 @@ class XMLRepresenter extends Representer {
  *
  * Supported internet media types (MIMEs):
  *   application/xhtml+xml q=1.0 [advertised]
- *   application/xml       q=0.5
+ *   application/xml       q=1.0 [advertised]
  *   text/html             q=0.5
  *   * / *                 q=0.001
  */
@@ -393,6 +393,7 @@ class XHMLRepresenter extends Representer {
 	public function list_types() {
 		return array(
 			'application/xhtml+xml' => 1.0,
+			'application/xml'       => 1.0,
 		);
 	}
 
@@ -403,8 +404,8 @@ class XHMLRepresenter extends Representer {
 	public function preference_for_type($t) {
 		switch ($t['option']) {
 		case 'application/xhtml+xml':
-			return 1.0;
 		case 'application/xml':
+			return 1.0;
 		case 'text/html':
 			return 0.5;
 		case '*/*':

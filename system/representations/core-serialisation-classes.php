@@ -271,12 +271,16 @@ class XMLRepresenter extends Representer {
 		} else {
 			$response->content_type($t['option']);
 		}
-		$response
-			->body( '' )
-			->append_line( '<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>' )
-			->append_line( '<document xmlns="http://www.library.qut.edu.au/generic-xml/">' )
-			->append( $this->_xml_encode($m) )
-			->append_line( '</document>' );
+		if (is_object($m) && ($m instanceof SimpleXMLElement)) {
+			$response->body( $m->asXML() );
+		} else {
+			$response
+				->body( '' )
+				->append_line( '<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>' )
+				->append_line( '<document xmlns="http://www.library.qut.edu.au/generic-xml/">' )
+				->append( $this->_xml_encode($m) )
+				->append_line( '</document>' );
+		}
 	}
 
 	protected function _quote($s) {
@@ -341,6 +345,18 @@ class XMLRepresenter extends Representer {
 			$string .= "$p</$type>\n";
 			return $string;
 		case 'object':
+			if ($m instanceof SimpleXMLElement) {
+				$xml = $o->asXML();
+				// strip the first xml declaration thingy
+				if (preg_match('~<\?xml([^?]|\?[^>])+\?>[\r\n]*~i', $xml, $m)) {
+					$header = $m[0];
+					$xml = substr($xml, $header);
+				}
+				// fix padding
+				$xml = str_replace("\n", "\n$p");
+				return $xml;
+			}
+			// otherwise, not a SimpleXMLElement; use regular iteration
 			$c = $this->_quote(get_class($o));
 			$h = $this->_quote(spl_object_hash($o));
 			$string = "$p<$type classname=\"$c\" hash=\"$h\">\n";

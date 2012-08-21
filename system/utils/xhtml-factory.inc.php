@@ -31,5 +31,24 @@ class XHTMLFactory {
 XML
 );
 	}
+
+	/**
+	 * Creates a HEAD element, attached to an XHTML document.
+	 */
+	public static function head($xhtml, $title=NULL) {
+		$head = $xhtml->addChild('head');
+		if ($title) {
+			$head->addChild('title', $title);
+		}
+		return $head;
+	}
+
+	/**
+	 * Creates a BODY element, attached to an XHTML document.
+	 */
+	public static function body($xhtml) {
+		$body = $xhtml->addChild('body');
+		return $body;
+	}
 }
 

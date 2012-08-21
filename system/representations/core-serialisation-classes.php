@@ -376,3 +376,52 @@ class XMLRepresenter extends Representer {
 
 }
 
+/**
+ * A generic representer which will represent some objects as XHTML.
+ *
+ * Note: this is an experimental class, and is not guaranteed to
+ *       work properly in all cases.
+ *
+ * Supported internet media types (MIMEs):
+ *   application/xhtml+xml q=1.0 [advertised]
+ *   text/html             q=0.5
+ *   application/xml       q=0.25
+ *   * / *                 q=0.001
+ */
+class XHMLRepresenter extends Representer {
+
+	public function list_types() {
+		return array(
+			'application/xhtml+xml' => 1.0,
+		);
+	}
+
+	public function can_do_model($m) {
+		return (is_object($m) && ($m instanceof SimpleXMLElement) && strtolower($m->getName()) == 'html');
+	}
+
+	public function preference_for_type($t) {
+		switch ($t['option']) {
+		case 'application/xhtml+xml':
+			return 1.0;
+		case 'text/html':
+			return 0.5;
+		case 'application/xml':
+			return 0.25;
+		case '*/*':
+			return 0.001;
+		default:
+			return 0.0;
+		}
+	}
+
+	public function represent($m, $t, $response) {
+		if ($t['option'] == '*/*') {
+			$response->content_type('application/xhtml+xml');
+		} else {
+			$response->content_type($t['option']);
+		}
+		$response->body( $m->asXML() );
+	}
+}
+

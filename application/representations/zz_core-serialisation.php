@@ -27,11 +27,12 @@
 require_once(SYSDIR.'/representations/core-serialisation-classes.php');
 
 // ----- IMPORTANT ------------------------------------------------------
-// Note: the order is XML > JSON > YAML. Since most web browsers accept
-//       application/xml followed by */*, one of these guys will end up
-//       handling most requests if nothing better comes along, and the
-//       JSON guy returns his data in text/* so browsers are less likely
-//       to barf at it.
+// Note: the order is XHTML > XML > JSON > YAML. Since most web browsers
+//       accept application/xhtml+xml and application/xml followed
+//       by */*, one of these guys will end up handling most requests if
+//       nothing better comes along, and the JSON guy returns his data
+//       in text/* so browsers are less likely to barf at it than YAML.
+Application::register_representer( new XHMLRepresenter() );
 Application::register_representer( new XMLRepresenter() );
 Application::register_representer( new JSONRepresenter() );
 Application::register_representer( new YAMLRepresenter() );

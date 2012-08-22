@@ -16,6 +16,7 @@
  * under the License.
  */
 
+require_once('utils/xmldom.inc.php');
 
 class XHTMLFactory {
 	private function __construct() {}
@@ -24,22 +25,32 @@ class XHTMLFactory {
 	 * Creates a SimpleXMLElement which is an empty XHTML document.
 	 */
 	public static function create() {
-		return new SimpleXMLElement(<<<XML
-<?xml version="1.0"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML Basic 1.1//EN" "http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en"/>
-XML
-);
+		$doc = new DOMDocument('1.0', 'ISO-8859-1');
+
+		$doctype = new DOMDocumentType();
+		$doctype->name = 'html';
+		$doctype->publicId = '-//W3C//DTD XHTML Basic 1.1//EN';
+		$doctype->systemId = 'http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd';
+		$doc->appendChild($doctype);
+
+		$html = $doc->createElement('html');
+		$html->setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+		$html->setAttribute('xml:lang', 'en');
+		$doc->appendChild($html);
+
+		return $doc;
 	}
 
 	/**
 	 * Creates a HEAD element, attached to an XHTML document.
 	 */
 	public static function head($xhtml, $title=NULL) {
-		$head = $xhtml->addChild('head');
+		$head = $xhtml->createElement('head');
 		if ($title) {
-			$head->addChild('title', $title);
+			$_title = $xhtml->createElement('title', $title);
+			$head->appendChild($_title);
 		}
+		$xhtml->getElementsByTagName('html')->first()->appendChild($head);
 		return $head;
 	}
 
@@ -47,8 +58,43 @@ XML
 	 * Creates a BODY element, attached to an XHTML document.
 	 */
 	public static function body($xhtml) {
-		$body = $xhtml->addChild('body');
+		$body = $xhtml->createElement('body');
+		$xhtml->getElementsByTagName('html')->first()->appendChild($body);
 		return $body;
 	}
+
+	/**
+	 * Creates an A element, with all the appropriate whatsernames.
+	 */
+	public static function link($parent, $href, $text=NULL, $attrs=array()) {
+		if (! $attrs && is_array($text)) {
+			$attrs = $text;
+			$text = '';
+		}
+
+		$attrs['href'] = $href;
+		$a = self::add($parent, 'a', $text, $attrs);
+		return $a;
+	}
+
+	/**
+	 * Creates any HTML TAG, with all the appropriate whatsernames.
+	 */
+	public static function add($parent, $tag, $value=NULL, $attrs=array()) {
+		if (! $attrs && is_array($value)) {
+			$attrs = $value;
+			$value = '';
+		}
+
+		$doc = $parent->ownerDocument;
+		$e = $doc->createElement($tag, $value);
+		foreach ($attrs as $k=>$v) {
+			$e->setAttribute($k, $v);
+		}
+
+		$parent->appendChild($e);
+		return $e;
+	}
+
 }
 

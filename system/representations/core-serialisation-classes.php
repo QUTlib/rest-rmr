@@ -273,6 +273,8 @@ class XMLRepresenter extends Representer {
 		}
 		if (is_object($m) && ($m instanceof SimpleXMLElement)) {
 			$response->body( $m->asXML() );
+		} elseif (is_object($m) && ($m instanceof DOMDocument)) {
+			$response->body( $m->saveXML() );
 		} else {
 			$response
 				->body( '' )
@@ -281,6 +283,8 @@ class XMLRepresenter extends Representer {
 				->append( $this->_xml_encode($m) )
 				->append_line( '</document>' );
 		}
+		if (defined('DEBUG') && DEBUG)
+			$response->append_line('<!-- Represented by '.get_class($this).'-->');
 	}
 
 	protected function _quote($s) {
@@ -345,7 +349,7 @@ class XMLRepresenter extends Representer {
 			$string .= "$p</$type>\n";
 			return $string;
 		case 'object':
-			if ($m instanceof SimpleXMLElement) {
+			if ($o instanceof SimpleXMLElement) {
 				$xml = $o->asXML();
 				// strip the first xml declaration thingy
 				if (preg_match('~<\?xml([^?]|\?[^>])+\?>[\r\n]*~i', $xml, $m)) {

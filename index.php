@@ -16,6 +16,7 @@
  * under the License.
  */
 
+$GLOBALS['__STARTUP__'] = microtime(TRUE);
 
 require_once('config.inc.php');
 

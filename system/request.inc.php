@@ -387,8 +387,12 @@ public function dump() {
 	 * Returns the number of seconds that this request has been processing,
 	 * as a float.
 	 */
-	public function elapsed() {
-		return microtime(TRUE) - $this->startup;
+	public function elapsed($total=TRUE) {
+		if ($total && isset($GLOBALS['__STARTUP__'])) {
+			return microtime(TRUE) - $GLOBALS['__STARTUP__'];
+		} else {
+			return microtime(TRUE) - $this->startup;
+		}
 	}
 
 	/**

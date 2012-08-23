@@ -332,7 +332,7 @@ class XHTMLRepresenter extends BasicRepresenter {
 
 	public function can_do_model($m) {
 		return (is_object($m) && ($m instanceof SimpleXMLElement) && strtolower($m->getName()) == 'html')
-		    or (is_object($m) && ($m instanceof DOMDocument) && $m->getElementsByTagName()->length > 0);
+		    or (is_object($m) && ($m instanceof DOMDocument) && $m->getElementsByTagName('html')->length > 0);
 	}
 
 	public function represent($m, $t, $response) {

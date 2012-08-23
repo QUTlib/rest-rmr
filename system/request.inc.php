@@ -37,7 +37,11 @@ class Request {
 	private $post = NULL;
 	private $params = NULL;
 
+	private $startup = NULL;
+
 	public function __construct() {
+		$this->startup = microtime(TRUE);
+
 		if (isset($_GET['path']) && ($path = $_GET['path'])) {
 			$this->uri = $path;
 			unset($_GET['path']);
@@ -377,6 +381,59 @@ public function dump() {
 	public function header($name) {
 		if (isset($this->headers[$name])) return $this->headers[$name];
 		return NULL;
+	}
+
+	/**
+	 * Returns the number of seconds that this request has been processing,
+	 * as a float.
+	 */
+	public function elapsed() {
+		return microtime(TRUE) - $this->startup;
+	}
+
+	/**
+	 * Gets the parts of the URI.
+	 *
+	 *    /interface/module/page...
+	 *
+	 * Missing parts are NULL.
+	 */
+	public function interface_module_page() {
+		if (is_null($this->__uri_parts)) {
+			$url = ltrim($this->uri, '/');
+			$parts = explode('/', $url, 3);
+			while (count($parts) < 3) $parts[] = NULL;
+			$this->__uri_parts = $parts;
+		}
+		return $this->__uri_parts;
+	}
+	private $__uri_parts = NULL;
+
+	/**
+	 * Gets the page part of the URI.
+	 * Returns NULL if there isn't one.
+	 */
+	public function get_interface() {
+		$parts = $this->interface_module_page();
+		return $parts[0];
+	}
+
+	/**
+	 * Gets the page part of the URI.
+	 * Returns NULL if there isn't one.
+	 */
+	public function get_module() {
+		$parts = $this->interface_module_page();
+		return $parts[1];
+	}
+
+	/**
+	 * Gets the page part of the URI.
+	 * Returns NULL if there isn't one.
+	 */
+	public function get_page() {
+		$parts = $this->interface_module_page();
+		return $parts[2];
 	}
 }
 

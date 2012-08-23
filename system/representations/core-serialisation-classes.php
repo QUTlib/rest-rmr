@@ -30,7 +30,7 @@
  * as a JSON document.
  *
  * Supported internet media types (MIMEs):
- *   application/json q=1.0 [advertised]
+ *   application/json q=1.0 [advertised,default]
  *   text/json        q=0.9
  *   text/x-json      q=0.9
  *   * / *            q=0.001
@@ -82,7 +82,7 @@ class JSONRepresenter extends Representer {
  *       work properly in all cases.
  *
  * Supported internet media types (MIMEs):
- *   text/yaml          q=1.0 [advertised]
+ *   text/yaml          q=1.0 [advertised,default]
  *   application/x-yaml q=1.0 [advertised]
  *   text/x-yaml        q=0.9
  *   application/yaml   q=0.9
@@ -223,7 +223,7 @@ class YAMLRepresenter extends Representer {
  *       work properly in all cases.
  *
  * Supported internet media types (MIMEs):
- *   application/xml    q=1.0 [advertised]
+ *   application/xml    q=1.0 [advertised,default]
  *   text/xml           q=0.9
  *   * / *              q=0.001
  */
@@ -387,7 +387,7 @@ class XMLRepresenter extends Representer {
  *       work properly in all cases.
  *
  * Supported internet media types (MIMEs):
- *   application/xhtml+xml q=1.0 [advertised]
+ *   application/xhtml+xml q=1.0 [advertised,default]
  *   application/xml       q=1.0 [advertised]
  *   text/html             q=0.5
  *   * / *                 q=0.001

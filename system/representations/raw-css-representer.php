@@ -16,27 +16,27 @@
  * under the License.
  */
 
-Application::register_class('RawXMLDoc', SYSDIR.'/models/raw-xml-model.php');
+Application::register_class('RawCSSDoc', SYSDIR.'/models/raw-css-model.php');
 
 /**
- * A basic XML representer that displays RawXMLDoc models as application/xml
+ * A basic CSS representer that displays RawCSSDoc models as text/css
  *
  * Supported internet media types (MIMEs):
- *   application/xml  q=1.0 [advertised,default]
- *   text/xml         q=0.9
- *   * / *            q=0.001
+ *   text/css                q=1.0 [advertised,default]
+ *   application/x-pointplus q=1.0 [converted to text/css]
+ *   * / *                   q=0.001
  */
-class RawXMLDocRepresenter extends BasicRepresenter {
+class RawCSSDocRepresenter extends BasicRepresenter {
 
 	public function __construct() {
 		parent::__construct(
 			array(
-				new InternetMediaType('application', 'xml', 1.0, TRUE),
-				new InternetMediaType('text',        'xml', 0.9),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'text/html'),
+				new InternetMediaType('text', 'css', 1.0, TRUE),
+				new InternetMediaType('application', 'x-pointplus', 1.0, FALSE, 'text/css'), # yeah, yeah, shut up
+				new InternetMediaType('*', '*', 0.001, FALSE, 'text/css'),
 			),
 			array(
-				'object:RawXMLDoc',
+				'object:RawCSSDoc',
 			)
 		);
 	}

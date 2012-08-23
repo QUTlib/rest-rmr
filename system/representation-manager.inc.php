@@ -68,6 +68,14 @@ HTML;
 </html>
 HTML;
 }
+public static function dumpClass($klass) {
+	foreach (self::$list as $rep) {
+		if ($rep instanceof $klass) {
+			var_dump($rep);
+			echo "\n";
+		}
+	}
+}
 ### /DEBUG
 
 	public static function add($rep) {

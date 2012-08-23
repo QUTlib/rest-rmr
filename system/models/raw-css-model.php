@@ -16,32 +16,13 @@
  * under the License.
  */
 
-Application::register_class('RawHTMLDoc', SYSDIR.'/models/raw-html-model.php');
+
+require_once(SYSDIR.'/models/raw-doc-model.php');
 
 /**
- * A basic HTML representer that displays RawHTMLDoc models as text/html
- *
- * Supported internet media types (MIMEs):
- *   text/html        q=1.0 [advertised,default]
- *   * / *            q=0.001
+ * A simple model which likes to be rendered as 'text/css'
+ * by RawCSSDocRepresenter
  */
-class RawHTMLDocRepresenter extends BasicRepresenter {
-
-	public function __construct() {
-		parent::__construct(
-			array(
-				new InternetMediaType('text', 'html', 1.0, TRUE),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'text/html'),
-			),
-			array(
-				'object:RawHTMLDoc',
-			)
-		);
-	}
-
-	public function represent($m, $t, $response) {
-		$this->response_type($response, $t);
-		$response->body( $m->doc );
-	}
+class RawCSSDoc extends RawDocument {
 }
 

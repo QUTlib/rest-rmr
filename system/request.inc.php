@@ -163,9 +163,9 @@ public function dump() {
 			// client weightings.  Only record the best type/weight.
 			$best_type = FALSE;
 			$best_weight = 0;
-			foreach (func_get_args() as $arg) {
-				if (isset($subtype_weights[$arg])) {
-					$weight = $subtype_weights[$arg];
+			foreach (func_get_args() as $range) {
+				if (isset($subtype_weights[$range])) {
+					$weight = $subtype_weights[$range];
 				} else {
 					$parts = explode('/', $range);
 					$type = reset($parts);
@@ -176,7 +176,7 @@ public function dump() {
 					}
 				}
 				if ($weight > $best_weight) {
-					$best_type = $arg;
+					$best_type = $range;
 					$best_weight = $weight;
 				}
 			}

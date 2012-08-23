@@ -89,6 +89,21 @@ function debug_representers($request) {
 }
 
 /**
+ * Prints debug info about a single representer, by classname.
+ */
+function debug_representer($request) {
+	$response = new Response($request->http_version());
+	$response->start_recording();
+
+	$klass = $request->param('klass');
+	$response->content_type('text/plain; charset=iso-8859-1');
+	RepresentationManager::dumpClass($klass);
+
+	$response->stop_recording();
+	return $response;
+}
+
+/**
  * A simple listing of the various debug handlers.
  * Outputs as 'text/html'.
  */
@@ -165,6 +180,7 @@ if (defined('DEBUG') && DEBUG) {
 	URIMap::register('GET', '/debug/response/?', 'debug_response');
 	URIMap::register('GET', '/debug/handlers/?', 'debug_handlers');
 	URIMap::register('GET', '/debug/representers/?', 'debug_representers');
+	URIMap::register('GET', '/debug/representers/:klass/?', 'debug_representer');
 	URIMap::register('GET', '/debug/error-test/?', 'debug_error');
 }
 

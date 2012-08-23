@@ -33,7 +33,7 @@ class RawXMLDocRepresenter extends BasicRepresenter {
 			array(
 				new InternetMediaType('application', 'xml', 1.0, TRUE),
 				new InternetMediaType('text',        'xml', 0.9),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'text/html'),
+				new InternetMediaType('*', '*', 0.001, FALSE, 'application/xml'),
 			),
 			array(
 				'object:RawXMLDoc',

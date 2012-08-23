@@ -35,41 +35,22 @@
  *   text/x-json      q=0.9
  *   * / *            q=0.001
  */
-class JSONRepresenter extends Representer {
+class JSONRepresenter extends BasicRepresenter {
 
-	public function list_types() {
-		return array(
-			'application/json' => 1.0,
+	public function __construct() {
+		parent::__construct(
+			array(
+				new InternetMediaType('application', 'json',   1.0, TRUE),
+				new InternetMediaType('text',        'json',   0.9),
+				new InternetMediaType('text',        'x-json', 0.9),
+				new InternetMediaType('*', '*', 0.001, FALSE, 'application/json'),
+			),
+			array('object', 'array')
 		);
 	}
 
-	public function can_do_model($m) {
-		return is_object($m) || is_array($m);
-	}
-
-	public function preference_for_type($t) {
-		switch ($t['option']) {
-		case 'application/json':
-			// ideal
-			return 1.0;
-		case 'text/json':
-		case 'text/x-json':
-			// dodgy type, but we can do it
-			return 0.9;
-		case '*/*':
-			return 0.001;
-		default:
-			// sorry no bananas
-			return 0.0;
-		}
-	}
-
 	public function represent($m, $t, $response) {
-		if ($t['option'] == '*/*') {
-			$response->content_type('application/json');
-		} else {
-			$response->content_type($t['option']);
-		}
+		$this->response_type($response, $t);
 		$response->body( json_encode($m) );
 	}
 }
@@ -88,53 +69,23 @@ class JSONRepresenter extends Representer {
  *   application/yaml   q=0.9
  *   * / *              q=0.001
  */
-class YAMLRepresenter extends Representer {
+class YAMLRepresenter extends BasicRepresenter {
 
-	public function list_types() {
-		return array(
-			'text/yaml' => 1.0,
-			'application/x-yaml' => 1.0,
+	public function __construct() {
+		parent::__construct(
+			array(
+				new InternetMediaType('text',        'yaml',   1.0, TRUE),
+				new InternetMediaType('application', 'x-yaml', 1.0, TRUE),
+				new InternetMediaType('text',        'x-yaml', 0.9),
+				new InternetMediaType('application', 'yaml',   0.9),
+				new InternetMediaType('*', '*', 0.001, FALSE, 'text/yaml'),
+			),
+			array('integer','double','boolean','NULL','string','array','object')
 		);
 	}
 
-	public function can_do_model($m) {
-		switch (gettype($m)) {
-		case 'integer':
-		case 'double':
-		case 'boolean':
-		case 'NULL':
-		case 'string':
-		case 'array':
-		case 'object':
-			return true;
-		default:
-			return false;
-		}
-	}
-
-	public function preference_for_type($t) {
-		switch ($t['option']) {
-		case 'text/yaml':
-		case 'application/x-yaml':
-			// I can do it!
-			return 1.0;
-		case 'text/x-yaml':
-		case 'application/yaml':
-			// dodgy names, pretty sure they're still mine though
-			return 0.9;
-		case '*/*':
-			return 0.001;
-		default:
-			return 0.0;
-		}
-	}
-
 	public function represent($m, $t, $response) {
-		if ($t['option'] == '*/*') {
-			$response->content_type('text/yaml');
-		} else {
-			$response->content_type($t['option']);
-		}
+		$this->response_type($response, $t);
 		$response
 			->body("%YAML 1.2\n---\n")
 			->append( $this->_yaml_encode($m, '', '', false, false) );
@@ -227,50 +178,22 @@ class YAMLRepresenter extends Representer {
  *   text/xml           q=0.9
  *   * / *              q=0.001
  */
-class XMLRepresenter extends Representer {
+class XMLRepresenter extends BasicRepresenter {
 
-	public function list_types() {
-		return array(
-			'application/xml' => 1.0,
+	public function __construct() {
+		parent::__construct(
+			array(
+				new InternetMediaType('application', 'xml', 1.0, TRUE),
+				new InternetMediaType('text',        'xml', 0.9),
+				new InternetMediaType('*', '*', 0.001, FALSE, 'application/xml'),
+			),
+			array('integer','double','boolean','NULL','string','array','object')
 		);
 	}
 
-	public function can_do_model($m) {
-		switch (gettype($m)) {
-		case 'integer':
-		case 'double':
-		case 'boolean':
-		case 'NULL':
-		case 'string':
-		case 'array':
-		case 'object':
-			return true;
-		default:
-			return false;
-		}
-	}
-
-	public function preference_for_type($t) {
-		switch ($t['option']) {
-		case 'application/xml':
-			// I can do it!
-			return 1.0;
-		case 'text/xml':
-			// dodgy name, pretty sure it's still mine though
-			return 0.9;
-		case '*/*':
-			return 0.001;
-		default:
-			return 0.0;
-		}
-	}
-
 	public function represent($m, $t, $response) {
-		if ($t['option'] == '*/*') {
-			$response->content_type('application/xml');
-		} else {
-			$response->content_type($t['option']);
-		}
+		$this->response_type($response, $t);
+
 		if (is_object($m) && ($m instanceof SimpleXMLElement)) {
 			$response->body( $m->asXML() );
 		} elseif (is_object($m) && ($m instanceof DOMDocument)) {
@@ -283,6 +206,7 @@ class XMLRepresenter extends Representer {
 				->append( $this->_xml_encode($m) )
 				->append_line( '</document>' );
 		}
+
 		if (defined('DEBUG') && DEBUG)
 			$response->append_line('<!-- Represented by '.get_class($this).'-->');
 	}
@@ -392,40 +316,31 @@ class XMLRepresenter extends Representer {
  *   text/html             q=0.5
  *   * / *                 q=0.001
  */
-class XHMLRepresenter extends Representer {
+class XHTMLRepresenter extends BasicRepresenter {
 
-	public function list_types() {
-		return array(
-			'application/xhtml+xml' => 1.0,
-			'application/xml'       => 1.0,
+	public function __construct() {
+		parent::__construct(
+			array(
+				new InternetMediaType('application', 'xhtml+xml', 1.0, TRUE),
+				new InternetMediaType('text',        'xml',       1.0, TRUE),
+				new InternetMediaType('text',        'html',      0.5),
+				new InternetMediaType('*', '*', 0.001, FALSE, 'application/xhtml+xml'),
+			),
+			array() // note: I'm overriding can_do_model myself
 		);
 	}
 
 	public function can_do_model($m) {
-		return (is_object($m) && ($m instanceof SimpleXMLElement) && strtolower($m->getName()) == 'html');
-	}
-
-	public function preference_for_type($t) {
-		switch ($t['option']) {
-		case 'application/xhtml+xml':
-		case 'application/xml':
-			return 1.0;
-		case 'text/html':
-			return 0.5;
-		case '*/*':
-			return 0.001;
-		default:
-			return 0.0;
-		}
+		return (is_object($m) && ($m instanceof SimpleXMLElement) && strtolower($m->getName()) == 'html')
+		    or (is_object($m) && ($m instanceof DOMDocument) && $m->getElementsByTagName()->length > 0);
 	}
 
 	public function represent($m, $t, $response) {
-		if ($t['option'] == '*/*') {
-			$response->content_type('application/xhtml+xml');
-		} else {
-			$response->content_type($t['option']);
-		}
-		$response->body( $m->asXML() );
+		$this->response_type($response, $t);
+		if ($m instanceof SimpleXMLElement)
+			$response->body( $m->asXML() );
+		else
+			$response->body( $m->saveXML() );
 	}
 }
 

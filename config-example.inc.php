@@ -19,5 +19,5 @@
 define('SYSDIR', 'system');
 define('APPDIR', 'application');
 
-define('DEBUG', 1);
+#define('DEBUG', 1);
 

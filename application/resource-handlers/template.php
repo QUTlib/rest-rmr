@@ -16,10 +16,8 @@
  * under the License.
  */
 
-define('SYSDIR', 'system');
-define('APPDIR', 'application');
+Application::register_class('TemplateHandler', SYSDIR.'/template/handler.php');
 
-define('SITENAME', 'My Site');
-
-#define('DEBUG', 1);
+URIMap::register('GET', '/assets/:foo',      'TemplateHandler->get_asset');
+URIMap::register('GET', '/assets/:foo/:bar', 'TemplateHandler->get_asset');
 

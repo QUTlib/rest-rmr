@@ -33,7 +33,7 @@ class DOMAttr extends DOMNode {
 		$this->nodeValue = $this->value = $value;
 	}
 
-	public function _xml() {
+	public function _xml($xmlstyle=TRUE) {
 		return sprintf('%s="%s"', htmlspecialchars($this->name), htmlspecialchars($this->value));
 	}
 

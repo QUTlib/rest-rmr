@@ -25,14 +25,19 @@ class DOMDocument extends DOMNode {
 
 	### MAGIC
 
-	public function _xml() {
-		$version = 'version="' . ($this->xmlVersion ? $this->xmlVersion : '1.0') . '"';
-		$encoding = ($this->xmlEncoding ? 'encoding="'.$this->xmlEncoding.'"' : '');
-		$standalone = 'standalone="' . ($this->xmlStandalone ? 'yes' : 'no') . '"';
+	public function _xml($xmlstyle=TRUE) {
+		$string = '';
 
-		$string = "<?xml $version $encoding $standalone ?".">\n";
+#		if ($xmlstyle) {
+			$version = 'version="' . ($this->xmlVersion ? $this->xmlVersion : '1.0') . '"';
+			$encoding = ($this->xmlEncoding ? 'encoding="'.$this->xmlEncoding.'"' : '');
+			$standalone = 'standalone="' . ($this->xmlStandalone ? 'yes' : 'no') . '"';
+
+			$string .= "<?xml $version $encoding $standalone ?".">\n";
+#		}
+
 		foreach ($this->childNodes as $node) {
-			$string .= $node->_xml();
+			$string .= $node->_xml($xmlstyle);
 		}
 		return $string;
 	}

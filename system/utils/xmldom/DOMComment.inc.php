@@ -28,7 +28,7 @@ class DOMComment extends DOMCharacterData {
 	public $nodeType = XML_COMMENT_NODE;
 	public $nodeName = '!--';
 
-	public function _xml() {
+	public function _xml($xmlstyle=TRUE) {
 		return '<!-- ' . $this->data . ' -->';
 	}
 

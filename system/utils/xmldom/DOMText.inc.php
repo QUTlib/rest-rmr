@@ -33,7 +33,7 @@ class DOMText extends DOMCharacterData {
 		$this->wholeText = $this->data;
 	}
 
-	public function _xml() {
+	public function _xml($xmlstyle=TRUE) {
 		return $this->wholeText;
 	}
 

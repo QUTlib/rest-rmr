@@ -27,10 +27,10 @@ class DOMDocumentFragment extends DOMNode {
 
 	public $nodeType = XML_DOCUMENT_FRAG_NODE;
 
-	public function _xml() {
+	public function _xml($xmlstyle=TRUE) {
 		$string = '';
 		foreach ($this->childNodes as $node) {
-			$string .= $node->_xml();
+			$string .= $node->_xml($xmlstyle);
 		}
 		return $string;
 	}

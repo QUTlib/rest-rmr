@@ -37,16 +37,16 @@ class DOMElement extends DOMNode {
 		}
 	}
 
-	public function _xml() {
+	public function _xml($xmlstyle=TRUE) {
 		$xml = '<' . $this->tagName;
 
 		$attrlist = array();
 		foreach ($this->attributes->list as $attr) {
-if (is_object($attr)){
+#if (is_object($attr)){
 			$attrlist[] = $attr->_xml();
-}else{
-$attrlist[]='-- '.var_dump($attr,1).' --';
-}
+#}else{
+#$attrlist[]='-- '.var_dump($attr,1).' --';
+#}
 		}
 		if ($attrlist) {
 			$xml .= ' ' . implode(' ', $attrlist);
@@ -58,8 +58,10 @@ $attrlist[]='-- '.var_dump($attr,1).' --';
 				$xml .= $node->_xml();
 			}
 			$xml .= '</'.$this->tagName.'>';
-		} else {
+		} elseif ($xmlstyle) {
 			$xml .= ' />';
+		} else {
+			$xml .= '>';
 		}
 
 		return $xml;

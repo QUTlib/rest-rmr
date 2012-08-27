@@ -34,7 +34,7 @@ class DOMDocumentType extends DOMNode {
 		$this->notations = new DOMNamedNodeMap();
 	}
 
-	public function _xml() {
+	public function _xml($xmlstyle=TRUE) {
 		$xml = '<!DOCTYPE '.$this->name;
 		if ($this->publicId) {
 			$xml .= ' PUBLIC "' . $this->publicId . '"';

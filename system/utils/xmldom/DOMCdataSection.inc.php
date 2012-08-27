@@ -28,7 +28,7 @@ class DOMCdataSection extends DOMText {
 	public $nodeType = XML_CDATA_SECTION_NODE;
 	public $nodeName = '![CDATA[';
 
-	public function _xml() {
+	public function _xml($xmlstyle=TRUE) {
 		return '<![CDATA[' . $this->wholeText . ']]>';
 	}
 

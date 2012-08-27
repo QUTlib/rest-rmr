@@ -105,5 +105,15 @@ class XHTMLFactory {
 		return $e;
 	}
 
+	/**
+	 * Creates a text node.
+	 */
+	public static function add_text($parent, $text) {
+		$doc = $parent->ownerDocument;
+		$t = $doc->createTextNode($text);
+		$parent->appendChild($t);
+		return $t;
+	}
+
 }
 

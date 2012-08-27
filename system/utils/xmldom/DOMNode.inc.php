@@ -36,7 +36,7 @@ class DOMNode {
 		return $newnode;
 	}
 
-	public function _xml() { return ''; }
+	public function _xml($xmlstyle=TRUE) { return ''; }
 	public function __toString() { return $this->_xml(); }
 
 	### API

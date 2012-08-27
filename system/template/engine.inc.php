@@ -193,6 +193,33 @@ class TemplateEngine {
 		return $this;
 	}
 
+	protected function _get_local($items,$prop) {
+		if (isset($items[$prop]))
+			return $items[$prop];
+		return NULL;
+	}
+
+	protected function _set_local(&$items,$prop,$value) {
+		$items[$prop] = $value;
+		return $this;
+	}
+
+	protected function _set_local_title(&$items,$prop,$value) {
+		$items[$prop] = $value;
+
+		$pfx = $this->_get_local($items, 'TITLE_PREFIX');
+		$sep = $this->_get_local($items, 'TITLE_SEPARATOR');
+		foreach (array('DOCTITLE', 'PAGETITLE') as $key) {
+			if ($sfx = $this->_get_local($items, "_$key")) {
+				$this->_set_local($items, $key, $pfx.$sep.$sfx);
+			} else {
+				$this->_set_local($items, $key, $pfx);
+			}
+		}
+
+		return $this;
+	}
+
 	/**
 	 * Run template substitutions on a string, and return the
 	 * final product.
@@ -200,12 +227,31 @@ class TemplateEngine {
 	 * @see #execFile
 	 */
 	public function exec($string) {
+		// first extract page-local variables
+		$items = $this->items;
+		$pattern = '/^\s*%set ([^=]+)=(.*)(\r\n|\r|\n)+/';
+		while ($string && preg_match($pattern, $string, $m)) {
+			$var = $m[1];
+			$val = $m[2];
+			switch ($var) {
+			#case 'DOCTITLE':
+			#case 'PAGETITLE':
+			case 'TITLE_PREFIX':
+			case 'TITLE_SEPARATOR':
+				$this->_set_local_title($items,$var,$val);
+				break;
+			default:
+				$this->_set_local($items,$var,$val);
+			}
+			$string = substr($string, strlen($m[0]));
+		}
+		// then substitute away!
 		$result = '';
-		$pattern = $this->regex();
+		$pattern = $this->regex($items);
 		while ($string && preg_match($pattern, $string, $m)) {
 			$result .= $m[1];
-			if ($item = $m[2]) {
-				$result .= $this->data( $item );
+			if ($key = $m[2]) {
+				$result .= $items[$key];
 			} elseif ($file = $m[3]) {
 				$result .= $this->execFile($file);
 			} elseif ($method = $m[4]) {
@@ -224,11 +270,11 @@ class TemplateEngine {
 	 * Construct the regular expression used to search for
 	 *  %%PROPERTY%% and %<file>% type tags.
 	 */
-	protected function regex() {
+	protected function regex($items) {
 
 		# %%PROPERTY%%
 		$property_keys = array();
-		foreach ($this->items as $key=>$val) {
+		foreach ($items as $key=>$val) {
 			$property_keys[] = preg_quote($key);
 		}
 		$property_regexp = '%('.implode('|',$property_keys).')%';
@@ -240,17 +286,6 @@ class TemplateEngine {
 		$method_regexp = '\?([^?]+)\?';
 
 		return "/^(.*)%(?:$property_regexp|$file_regexp|$method_regexp|%([^%]+)%)%/Us";
-	}
-
-	/**
-	 * Get the value of a data item.  Blank if undefined.
-	 */
-	protected function data($key) {
-		if (isset($this->items[$key])) {
-			return $this->items[$key];
-		} else {
-			return '';
-		}
 	}
 
 	/**

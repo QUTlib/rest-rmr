@@ -16,7 +16,6 @@
  * under the License.
  */
 
-require_once(SYSDIR.'/template/engine.inc.php');
 
 class TemplateHandler {
 

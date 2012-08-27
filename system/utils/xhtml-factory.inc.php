@@ -42,6 +42,15 @@ class XHTMLFactory {
 	}
 
 	/**
+	 * Creates a new document fragment.
+	 */
+	public static function create_frag() {
+		$doc = new DOMDocument();
+		$frag = $doc->createDocumentFragment();
+		return $frag;
+	}
+
+	/**
 	 * Creates a HEAD element, attached to an XHTML document.
 	 */
 	public static function head($xhtml, $title=NULL) {

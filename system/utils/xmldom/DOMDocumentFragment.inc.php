@@ -28,9 +28,8 @@ class DOMDocumentFragment extends DOMNode {
 	public $nodeType = XML_DOCUMENT_FRAG_NODE;
 
 	public function _xml() {
-		#$string = '<?xml version="'.($this->version?$this->version:'1.0').'"?'."\n>";
 		$string = '';
-		foreach ($this->childNodes->list as $node) {
+		foreach ($this->childNodes as $node) {
 			$string .= $node->_xml();
 		}
 		return $string;

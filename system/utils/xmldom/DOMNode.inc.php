@@ -37,6 +37,7 @@ class DOMNode {
 	}
 
 	public function _xml() { return ''; }
+	public function __toString() { return $this->_xml(); }
 
 	### API
 

@@ -26,7 +26,11 @@ class DOMDocument extends DOMNode {
 	### MAGIC
 
 	public function _xml() {
-		$string = '<?xml version="'.($this->version?$this->version:'1.0').'"?'.">\n";
+		$version = 'version="' . ($this->xmlVersion ? $this->xmlVersion : '1.0') . '"';
+		$encoding = ($this->xmlEncoding ? 'encoding="'.$this->xmlEncoding.'"' : '');
+		$standalone = 'standalone="' . ($this->xmlStandalone ? 'yes' : 'no') . '"';
+
+		$string = "<?xml $version $encoding $standalone ?".">\n";
 		foreach ($this->childNodes as $node) {
 			$string .= $node->_xml();
 		}

@@ -31,6 +31,8 @@ require_once('basic-representer.inc.php');
 require_once('request.inc.php');
 require_once('response.inc.php');
 
+Autoloader::register('TemplateEngine', SYSDIR.'/template/engine.inc.php');
+
 class Application {
 	const VERSION = '0.8';
 	const TITLE = 'REST-RMR';

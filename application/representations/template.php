@@ -16,8 +16,6 @@
  * under the License.
  */
 
-Application::register_class('TemplateEngine', SYSDIR.'/template/engine.inc.php');
-
 class TemplateRepresenter extends BasicRepresenter {
 
 	public function __construct() {

@@ -299,7 +299,7 @@ class TemplateEngine {
 
 		foreach ($files as $fullname) {
 			if (file_exists($fullname)) {
-				return fileget_contents($fullname);
+				return file_get_contents($fullname);
 			}
 		}
 

@@ -180,7 +180,7 @@ class TemplateEngine {
 	/** Set one of the templatable items. */
 	public function set($prop,$value,$recalculate_title=FALSE) {
 		$this->items[$prop] = $value;
-		if ($recaculate_title) {
+		if ($recalculate_title) {
 			$pfx = $this->get('TITLE_PREFIX');
 			$sep = $this->get('TITLE_SEPARATOR');
 			foreach (array('DOCTITLE', 'PAGETITLE') as $key) {

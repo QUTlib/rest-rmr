@@ -254,9 +254,9 @@ class TemplateEngine {
 				$result .= $this->execFile($file, $items);
 			} elseif ($method = $m[4]) {
 				$result .= $this->invoke($method, $items);
-			} else {
-				// FIXME
-				$result .= '<i>'.$m[5].'</i>';
+#			} else {
+#				// FIXME
+#				$result .= '<i>'.$m[5].'</i>';
 			}
 			$string = substr($string, strlen($m[0]));
 		}
@@ -283,7 +283,8 @@ class TemplateEngine {
 		# %?METHOD:param:param?%
 		$method_regexp = '\?([^?]+)\?';
 
-		return "/^(.*)%(?:$property_regexp|$file_regexp|$method_regexp|%([^%]+)%)%/Us";
+#		return "/^(.*)%(?:$property_regexp|$file_regexp|$method_regexp|%([^%]+)%)%/Us";
+		return "/^(.*)%(?:$property_regexp|$file_regexp|$method_regexp)%/Us";
 	}
 
 	/**

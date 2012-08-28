@@ -54,7 +54,7 @@ class TemplateEngine {
 		if (func_num_args() < 1) {
 			return $this->get('BASEURL');
 		} else {
-			return $this->set_title('BASEURL', $value);
+			return $this->set('BASEURL', $value);
 		}
 	}
 
@@ -65,7 +65,7 @@ class TemplateEngine {
 		if (func_num_args() < 1) {
 			return $this->get('TITLE_PREFIX');
 		} else {
-			return $this->set_title('TITLE_PREFIX', $value);
+			return $this->set('TITLE_PREFIX', $value, TRUE);
 		}
 	}
 
@@ -76,7 +76,7 @@ class TemplateEngine {
 		if (func_num_args() < 1) {
 			return $this->get('TITLE_SEPARATOR');
 		} else {
-			return $this->set_title('TITLE_SEPARATOR', $value);
+			return $this->set('TITLE_SEPARATOR', $value, TRUE);
 		}
 	}
 
@@ -87,7 +87,7 @@ class TemplateEngine {
 		if (func_num_args() < 1) {
 			return $this->get('_DOCTITLE');
 		} else {
-			return $this->set_title('_DOCTITLE', $value);
+			return $this->set('_DOCTITLE', $value, TRUE);
 		}
 	}
 
@@ -98,7 +98,7 @@ class TemplateEngine {
 		if (func_num_args() < 1) {
 			return $this->get('_PAGETITLE');
 		} else {
-			return $this->set_title('_PAGETITLE', $value);
+			return $this->set('_PAGETITLE', $value, TRUE);
 		}
 	}
 
@@ -107,7 +107,7 @@ class TemplateEngine {
 	 */
 	public function set_title($value) {
 		$this->set('_DOCTITLE', $value);
-		return $this->set_title('_PAGETITLE', $value);
+		return $this->set('_PAGETITLE', $value, TRUE);
 	}
 
 	/**
@@ -178,25 +178,19 @@ class TemplateEngine {
 	}
 
 	/** Set one of the templatable items. */
-	public function set($prop,$value) {
+	public function set($prop,$value,$recalculate_title=FALSE) {
 		$this->items[$prop] = $value;
-		return $this;
-	}
-
-	/** Set one of the templatale items, and recaculate the DOCTITLE and PAGETITLE. */
-	public function set_title($prop,$value) {
-		$this->items[$prop] = $value;
-
-		$pfx = $this->get('TITLE_PREFIX');
-		$sep = $this->get('TITLE_SEPARATOR');
-		foreach (array('DOCTITLE', 'PAGETITLE') as $key) {
-			if ($sfx = $this->get("_$key")) {
-				$this->set($key, $pfx.$sep.$sfx);
-			} else {
-				$this->set($key, $pfx);
+		if ($recaculate_title) {
+			$pfx = $this->get('TITLE_PREFIX');
+			$sep = $this->get('TITLE_SEPARATOR');
+			foreach (array('DOCTITLE', 'PAGETITLE') as $key) {
+				if ($sfx = $this->get("_$key")) {
+					$this->set($key, $pfx.$sep.$sfx);
+				} else {
+					$this->set($key, $pfx);
+				}
 			}
 		}
-
 		return $this;
 	}
 
@@ -208,25 +202,19 @@ class TemplateEngine {
 	}
 
 	/** Set one of the templatable items in a local list. */
-	public function set_local(&$items,$prop,$value) {
+	public function set_local(&$items,$prop,$value,$recalculate_title=FALSE) {
 		$items[$prop] = $value;
-		return $this;
-	}
-
-	/** Set one of the templatable items in a local list, and recalculate the DOCTITLE and PAGETITLE. */
-	public function set_local_title(&$items,$prop,$value) {
-		$items[$prop] = $value;
-
-		$pfx = $this->get_local($items, 'TITLE_PREFIX');
-		$sep = $this->get_local($items, 'TITLE_SEPARATOR');
-		foreach (array('DOCTITLE', 'PAGETITLE') as $key) {
-			if ($sfx = $this->get_local($items, "_$key")) {
-				$this->set_local($items, $key, $pfx.$sep.$sfx);
-			} else {
-				$this->set_local($items, $key, $pfx);
+		if ($recalculate_title) {
+			$pfx = $this->get_local($items, 'TITLE_PREFIX');
+			$sep = $this->get_local($items, 'TITLE_SEPARATOR');
+			foreach (array('DOCTITLE', 'PAGETITLE') as $key) {
+				if ($sfx = $this->get_local($items, "_$key")) {
+					$this->set_local($items, $key, $pfx.$sep.$sfx);
+				} else {
+					$this->set_local($items, $key, $pfx);
+				}
 			}
 		}
-
 		return $this;
 	}
 
@@ -248,7 +236,7 @@ class TemplateEngine {
 			#case 'PAGETITLE':
 			case 'TITLE_PREFIX':
 			case 'TITLE_SEPARATOR':
-				$this->set_local_title($items,$var,$val);
+				$this->set_local($items,$var,$val, TRUE);
 				break;
 			default:
 				$this->set_local($items,$var,$val);

@@ -52,9 +52,9 @@ class TemplateEngine {
 	 */
 	public function baseurl($value=NULL) {
 		if (func_num_args() < 1) {
-			return $this->_get('BASEURL');
+			return $this->get('BASEURL');
 		} else {
-			return $this->_set_title('BASEURL', $value);
+			return $this->set_title('BASEURL', $value);
 		}
 	}
 
@@ -63,9 +63,9 @@ class TemplateEngine {
 	 */
 	public function title_prefix($value=NULL) {
 		if (func_num_args() < 1) {
-			return $this->_get('TITLE_PREFIX');
+			return $this->get('TITLE_PREFIX');
 		} else {
-			return $this->_set_title('TITLE_PREFIX', $value);
+			return $this->set_title('TITLE_PREFIX', $value);
 		}
 	}
 
@@ -74,9 +74,9 @@ class TemplateEngine {
 	 */
 	public function title_separator($value=NULL) {
 		if (func_num_args() < 1) {
-			return $this->_get('TITLE_SEPARATOR');
+			return $this->get('TITLE_SEPARATOR');
 		} else {
-			return $this->_set_title('TITLE_SEPARATOR', $value);
+			return $this->set_title('TITLE_SEPARATOR', $value);
 		}
 	}
 
@@ -85,9 +85,9 @@ class TemplateEngine {
 	 */
 	public function doctitle($value=NULL) {
 		if (func_num_args() < 1) {
-			return $this->_get('_DOCTITLE');
+			return $this->get('_DOCTITLE');
 		} else {
-			return $this->_set_title('_DOCTITLE', $value);
+			return $this->set_title('_DOCTITLE', $value);
 		}
 	}
 
@@ -96,9 +96,9 @@ class TemplateEngine {
 	 */
 	public function pagetitle($value=NULL) {
 		if (func_num_args() < 1) {
-			return $this->_get('_PAGETITLE');
+			return $this->get('_PAGETITLE');
 		} else {
-			return $this->_set_title('_PAGETITLE', $value);
+			return $this->set_title('_PAGETITLE', $value);
 		}
 	}
 
@@ -106,8 +106,8 @@ class TemplateEngine {
 	 * Sets both PAGETITLE and DOCTITLE at the same time.
 	 */
 	public function set_title($value) {
-		$this->_set('_DOCTITLE', $value);
-		return $this->_set_title('_PAGETITLE', $value);
+		$this->set('_DOCTITLE', $value);
+		return $this->set_title('_PAGETITLE', $value);
 	}
 
 	/**
@@ -115,9 +115,9 @@ class TemplateEngine {
 	 */
 	public function full_doctitle($value=NULL) {
 		if (func_num_args() < 1) {
-			return $this->_get('DOCTITLE');
+			return $this->get('DOCTITLE');
 		} else {
-			return $this->_set('DOCTITLE', $value);
+			return $this->set('DOCTITLE', $value);
 		}
 	}
 
@@ -126,9 +126,9 @@ class TemplateEngine {
 	 */
 	public function full_pagetitle($value=NULL) {
 		if (func_num_args() < 1) {
-			return $this->_get('PAGETITLE');
+			return $this->get('PAGETITLE');
 		} else {
-			return $this->_set('DOCTITLE', $value);
+			return $this->set('DOCTITLE', $value);
 		}
 	}
 
@@ -137,9 +137,9 @@ class TemplateEngine {
 	 */
 	public function content($value=NULL) {
 		if (func_num_args() < 1) {
-			return $this->_get('CONTENT');
+			return $this->get('CONTENT');
 		} else {
-			return $this->_set('CONTENT', $value);
+			return $this->set('CONTENT', $value);
 		}
 	}
 
@@ -156,9 +156,9 @@ class TemplateEngine {
 	 */
 	public function css($value=NULL) {
 		if (func_num_args() < 1) {
-			return $this->_get('CSS');
+			return $this->get('CSS');
 		} else {
-			return $this->_set('CSS', $value);
+			return $this->set('CSS', $value);
 		}
 	}
 
@@ -170,54 +170,60 @@ class TemplateEngine {
 		return $this;
 	}
 
-	protected function _get($prop) {
+	/** Get one of the templatable items. NULL if undefined. */
+	public function get($prop) {
 		if (isset($this->items[$prop]))
 			return $this->items[$prop];
 		return NULL;
 	}
 
-	protected function _set($prop,$value) {
+	/** Set one of the templatable items. */
+	public function set($prop,$value) {
 		$this->items[$prop] = $value;
 		return $this;
 	}
 
-	protected function _set_title($prop,$value) {
+	/** Set one of the templatale items, and recaculate the DOCTITLE and PAGETITLE. */
+	public function set_title($prop,$value) {
 		$this->items[$prop] = $value;
 
-		$pfx = $this->_get('TITLE_PREFIX');
-		$sep = $this->_get('TITLE_SEPARATOR');
+		$pfx = $this->get('TITLE_PREFIX');
+		$sep = $this->get('TITLE_SEPARATOR');
 		foreach (array('DOCTITLE', 'PAGETITLE') as $key) {
-			if ($sfx = $this->_get("_$key")) {
-				$this->_set($key, $pfx.$sep.$sfx);
+			if ($sfx = $this->get("_$key")) {
+				$this->set($key, $pfx.$sep.$sfx);
 			} else {
-				$this->_set($key, $pfx);
+				$this->set($key, $pfx);
 			}
 		}
 
 		return $this;
 	}
 
-	protected function _get_local($items,$prop) {
+	/** Get one of the templatable items from a local list. NULL if undefined. */
+	public function get_local($items,$prop) {
 		if (isset($items[$prop]))
 			return $items[$prop];
 		return NULL;
 	}
 
-	protected function _set_local(&$items,$prop,$value) {
+	/** Set one of the templatable items in a local list. */
+	public function set_local(&$items,$prop,$value) {
 		$items[$prop] = $value;
 		return $this;
 	}
 
-	protected function _set_local_title(&$items,$prop,$value) {
+	/** Set one of the templatable items in a local list, and recalculate the DOCTITLE and PAGETITLE. */
+	public function set_local_title(&$items,$prop,$value) {
 		$items[$prop] = $value;
 
-		$pfx = $this->_get_local($items, 'TITLE_PREFIX');
-		$sep = $this->_get_local($items, 'TITLE_SEPARATOR');
+		$pfx = $this->get_local($items, 'TITLE_PREFIX');
+		$sep = $this->get_local($items, 'TITLE_SEPARATOR');
 		foreach (array('DOCTITLE', 'PAGETITLE') as $key) {
-			if ($sfx = $this->_get_local($items, "_$key")) {
-				$this->_set_local($items, $key, $pfx.$sep.$sfx);
+			if ($sfx = $this->get_local($items, "_$key")) {
+				$this->set_local($items, $key, $pfx.$sep.$sfx);
 			} else {
-				$this->_set_local($items, $key, $pfx);
+				$this->set_local($items, $key, $pfx);
 			}
 		}
 
@@ -242,10 +248,10 @@ class TemplateEngine {
 			#case 'PAGETITLE':
 			case 'TITLE_PREFIX':
 			case 'TITLE_SEPARATOR':
-				$this->_set_local_title($items,$var,$val);
+				$this->set_local_title($items,$var,$val);
 				break;
 			default:
-				$this->_set_local($items,$var,$val);
+				$this->set_local($items,$var,$val);
 			}
 			$string = substr($string, strlen($m[0]));
 		}
@@ -305,7 +311,7 @@ class TemplateEngine {
 
 		foreach ($files as $fullname) {
 			if (file_exists($fullname)) {
-				return file_get_contents($fullname);
+				return fileget_contents($fullname);
 			}
 		}
 
@@ -417,7 +423,7 @@ class TemplateEngine {
 		if (is_null($this->request)) return '';
 
 		$page = $this->request->get_page();
-		$base = $this->_get_local($items, 'BASEURL');
+		$base = $this->get_local($items, 'BASEURL');
 
 		$page = str_replace('//', '/', $page);
 

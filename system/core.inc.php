@@ -56,3 +56,11 @@ function remove_include_path($path) {
 	return set_include_path(implode(PATH_SEPARATOR, $paths));
 }
 
+/**
+ * How long has elapsed since the original index.php file was loaded,
+ * in seconds.
+ */
+function elapsed() {
+	return microtime(TRUE) - $GLOBALS['__STARTUP__'];
+}
+

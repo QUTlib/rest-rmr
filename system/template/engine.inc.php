@@ -345,7 +345,7 @@ class TemplateEngine {
 	}
 
 	protected function BENCHMARK() {
-		return sprintf('%0.3f', $this->request->elapsed());
+		return sprintf('%0.3f', elapsed());
 	}
 
 	protected function SELECTED($page) {

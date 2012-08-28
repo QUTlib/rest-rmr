@@ -378,7 +378,7 @@ class TemplateEngine {
 	}
 
 	protected function LASTMODIFIED($items) {
-		return date('M n, Y');
+		return date('M j, Y');
 	}
 
 	protected function BENCHMARK($items) {

@@ -35,10 +35,14 @@ class TemplateEngine {
 	private $request = NULL;
 	private $default_filename = NULL;
 
+	private static $fallback_filename = NULL;
+
 	/**
 	 * Creates a new template engine, associated with a request.
 	 */
-	public function __construct($request, $default_filename=NULL) {
+	public function __construct($request=NULL, $default_filename=NULL) {
+		if (is_null(TemplateEngine::$fallback_filename))
+			TemplateEngine::$fallback_filename = APPDIR.'/default-template.thtml';
 		$this->request = $request;
 		$this->default_filename = $default_filename;
 	}
@@ -291,14 +295,12 @@ class TemplateEngine {
 	/**
 	 * Get the contents of a template file.
 	 */
-	public function load($filename) {
-		$here = dirname(__FILE__);
-
+	public function load($filename,$fatal=FALSE) {
 		$files = array(
 			$filename,
-			$here.'/'.$filename,
+			APPDIR.'/'.$filename,
 			$filename.'.thtml',
-			$here.'/'.$filename.'.thtml',
+			APPDIR.'/'.$filename.'.thtml',
 		);
 
 		foreach ($files as $fullname) {
@@ -307,8 +309,35 @@ class TemplateEngine {
 			}
 		}
 
-		error_log('failed to load "'.$filename.'" : no such file');
-		return '';
+		if ($fatal) {
+			throw new Exception('failed to load "'.$filename.'" : no such file');
+		} else {
+			error_log('failed to load "'.$filename.'" : no such file');
+			return '';
+		}
+	}
+
+	/**
+	 * Tries as hard as it can to get a filename, given either a String or NULL.
+	 *
+	 * $f -> $this->default_filename -> TemplateEngine::$fallback_filename -> err
+	 *
+	 */
+	protected function resolve_filename($f) {
+		// if they gave us something real-looking, use it
+		if (!is_null($f)) {
+			return $f;
+		}
+		// if we were given a filename in the constructor, use that
+		if (!is_null($this->default_filename)) {
+			return $this->default_filename;
+		}
+		// if the default-template file exists, use that
+		if (file_exists(TemplateEngine::$fallback_filename) && is_readable(TemplateEngine::$fallback_filename)) {
+			return TemplateEngine::$fallback_filename;
+		}
+		// I give up
+		throw new Exception("no filename given");
 	}
 
 	/**
@@ -319,10 +348,22 @@ class TemplateEngine {
 	 * @see #load
 	 */
 	public function execFile($filename=NULL) {
-		if (is_null($filename)) $filename = $this->default_filename;
-		if (is_null($filename)) throw new Exception("no filename given");
+		$filename = $this->resolve_filename($filename);
 		$doc = $this->load($filename);
 		return $this->exec($doc);
+	}
+
+	/**
+	 * Returns TRUE iff a call to execFile wouldn't die because of bad file stuff.
+	 */
+	public function canExec($filename=NULL) {
+		try {
+			$filename = $this->resolve_filename($filename);
+			$this->load($filename, TRUE);
+			return TRUE;
+		} catch (Exception $e) {
+			return FALSE;
+		}
 	}
 
 	/**
@@ -349,6 +390,8 @@ class TemplateEngine {
 	}
 
 	protected function SELECTED($page) {
+		if (is_null($this->request)) return '';
+
 		$page = ltrim($page, '/');
 
 		$regex = '/^';
@@ -369,6 +412,8 @@ class TemplateEngine {
 	}
 
 	protected function BREADCRUMBS() {
+		if (is_null($this->request)) return '';
+
 		$page = $this->request->get_page();
 		$base = $this->items['BASEURL'];
 
@@ -382,7 +427,9 @@ class TemplateEngine {
 
 		$page = rtrim($page, '/');
 
-		$s = '<ul id="breadcrumb-list">';
+		$s = '';
+		$s .= '<div id="breadcrumb" class="breadcrumb"><span class="bold">location:</span> ';
+		$s .= '<ul id="breadcrumb-list">';
 		$s .= '<li><a href="'.$base.'/">home</a></li>';
 
 		if ($page) {
@@ -396,6 +443,7 @@ class TemplateEngine {
 		}
 
 		$s .= '</ul>';
+		$s .= '</div><div class="clear"></div>';
 		return $s;
 	}
 

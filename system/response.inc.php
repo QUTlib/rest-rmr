@@ -765,16 +765,7 @@ public function dump() {
 	 * Template method: wraps the given $title and $body in a HTML string.
 	 */
 	public static function generate_html($title, $body) {
-		$now = date('c');
-		$verstr = '<span class="mama">' . Application::TITLE . '</span> v' . Application::VERSION;
-		return <<<HTML
-<!doctype html>
-<html lang="en">
-<head>
-<title>$title</title>
-<style type="text/css">
-html,body {margin:0;padding:0;}
-body {padding:0.5em 1em;background:#fff;color#000;}
+		$css = <<<CSS
 .mesg {border:1px solid #ccc;border-radius:2px;background-color:#fff8cc;padding:5px;}
 .code {background:#d8d8d8;border:2px inset #777;}
 .line {background:#fa5;}
@@ -782,6 +773,26 @@ body {padding:0.5em 1em;background:#fff;color#000;}
 .mama {font-family:sans-serif;}
 .time {font-family:sans-serif;font-size:90%}
 .foot {color:#888;}
+CSS;
+		$template = new TemplateEngine();
+		if ($template->canExec()) {
+			$template->set_title($title);
+			$template->append_css($css);
+			$template->content($body);
+			return $template->execFile();
+		} else {
+			// if the template fails, do it by hand minimally
+			$now = date('c');
+			$verstr = '<span class="mama">' . Application::TITLE . '</span> v' . Application::VERSION;
+			return <<<HTML
+<!doctype html>
+<html lang="en">
+<head>
+<title>$title</title>
+<style type="text/css">
+html,body {margin:0;padding:0;}
+body {padding:0.5em 1em;background:#fff;color#000;}
+$css
 </style>
 </head>
 <body>
@@ -791,6 +802,7 @@ $body
 </body>
 </html>
 HTML;
+		}
 	}
 }
 

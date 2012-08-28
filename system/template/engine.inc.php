@@ -377,8 +377,19 @@ class TemplateEngine {
 		return call_user_func_array( array($this, $cmd), $args );
 	}
 
+	// FIXME ??
 	protected function LASTMODIFIED($items) {
 		return date('M j, Y');
+	}
+
+	// prints the current date
+	// if long is given and not 'short', uses a long format
+	protected function NOW($items, $long=FALSE) {
+		if ($long && strtolower($long) != 'short') {
+			return date('c');
+		} else {
+			return date('M j, Y');
+		}
 	}
 
 	protected function BENCHMARK($items) {

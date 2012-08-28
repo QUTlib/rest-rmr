@@ -20,7 +20,9 @@
 class Response {
 	private $version = '1.1';
 	private $status = 200;
-	private $header = array();
+	#private $header = array();
+	// until I sort out proper caching, treat everything as dynamic and fresh
+	private $header = array('Cache-Control'=>'no-cache', 'Expires'=>'Tue, 23 Dec 1980 22:15:00 GMT', 'Pragma'=>'no-cache');
 	private $body   = '';
 
 	private $recording = false;

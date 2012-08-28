@@ -39,7 +39,7 @@ Autoloader::register('DBConn',         SYSDIR.'/utils/dbconn.inc.php');
 require_once(SYSDIR.'/utils/xmldom.inc.php');
 
 class Application {
-	const VERSION = '0.8';
+	const VERSION = '0.8-20120828';
 	const TITLE = 'REST-RMR';
 
 	/* standard interfaces */

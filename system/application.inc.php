@@ -32,6 +32,11 @@ require_once('request.inc.php');
 require_once('response.inc.php');
 
 Autoloader::register('TemplateEngine', SYSDIR.'/template/engine.inc.php');
+Autoloader::register('XHTMLFactory',   SYSDIR.'/utils/xhtml-factory.inc.php');
+Autoloader::register('DBConn',         SYSDIR.'/utils/dbconn.inc.php');
+
+# eek
+require_once(SYSDIR.'/utils/xmldom.inc.php');
 
 class Application {
 	const VERSION = '0.8';

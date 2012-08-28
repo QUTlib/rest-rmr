@@ -16,8 +16,6 @@
  * under the License.
  */
 
-require_once('utils/xmldom.inc.php');
-
 class XHTMLFactory {
 	private function __construct() {}
 

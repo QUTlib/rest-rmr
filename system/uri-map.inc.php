@@ -68,7 +68,7 @@ HTML;
 			$h=$x['handler'];
 			if (is_array($h)){
 				if(count($h)>2){
-					echo '<td><code>(new '.htmlspecialchars($h[0]).')-&gt;'.htmlspecialchars($h[1])."()</code></td>\n";
+					echo '<td><code>(new '.htmlspecialchars($h[0]).'())-&gt;'.htmlspecialchars($h[1])."()</code></td>\n";
 				}elseif(is_string($h[0])){
 					echo '<td><code>'.htmlspecialchars($h[0]).'::'.htmlspecialchars($h[1])."()</code></td>\n";
 				}else{

@@ -230,9 +230,9 @@ class TemplateEngine {
 	 *
 	 * @see #execFile
 	 */
-	public function exec($string) {
+	public function exec($string, $items=NULL) {
 		// first extract page-local variables
-		$items = $this->items;
+		if (is_null($items)) $items = $this->items;
 		$pattern = '/^\s*%set ([^=]+)=(.*)(\r\n|\r|\n)+/';
 		while ($string && preg_match($pattern, $string, $m)) {
 			$var = $m[1];
@@ -257,9 +257,9 @@ class TemplateEngine {
 			if ($key = $m[2]) {
 				$result .= $items[$key];
 			} elseif ($file = $m[3]) {
-				$result .= $this->execFile($file);
+				$result .= $this->execFile($file, $items);
 			} elseif ($method = $m[4]) {
-				$result .= $this->invoke($method);
+				$result .= $this->invoke($method, $items);
 			} else {
 				// FIXME
 				$result .= '<i>'.$m[5].'</i>';
@@ -347,10 +347,10 @@ class TemplateEngine {
 	 * @see #exec
 	 * @see #load
 	 */
-	public function execFile($filename=NULL) {
+	public function execFile($filename=NULL, $items=NULL) {
 		$filename = $this->resolve_filename($filename);
 		$doc = $this->load($filename);
-		return $this->exec($doc);
+		return $this->exec($doc, $items);
 	}
 
 	/**
@@ -375,21 +375,23 @@ class TemplateEngine {
 	 *
 	 * FIXME !!?
 	 */
-	public function invoke($command) {
+	public function invoke($command, $items=NULL) {
+		if (is_null($items)) $items = $this->items;
 		$args = explode(':', $command);
 		$cmd = array_shift($args);
+		array_unshift($args, $items);
 		return call_user_func_array( array($this, $cmd), $args );
 	}
 
-	protected function LASTMODIFIED() {
+	protected function LASTMODIFIED($items) {
 		return date('M n, Y');
 	}
 
-	protected function BENCHMARK() {
+	protected function BENCHMARK($items) {
 		return sprintf('%0.3f', elapsed());
 	}
 
-	protected function SELECTED($page) {
+	protected function SELECTED($items, $page) {
 		if (is_null($this->request)) return '';
 
 		$page = ltrim($page, '/');
@@ -411,11 +413,11 @@ class TemplateEngine {
 		}
 	}
 
-	protected function BREADCRUMBS() {
+	protected function BREADCRUMBS($items) {
 		if (is_null($this->request)) return '';
 
 		$page = $this->request->get_page();
-		$base = $this->items['BASEURL'];
+		$base = $this->_get_local($items, 'BASEURL');
 
 		$page = str_replace('//', '/', $page);
 

@@ -722,8 +722,10 @@ public function dump() {
 		} else {
 			$s = 500;
 			// in debug mode, show the source line that died
-			if (defined('DEBUG') && DEBUG)
+			if (defined('DEBUG') && DEBUG) {
 				$m .= self::_source($e->getFile(), $e->getLine());
+				$m .= self::_stack($e->getTrace());
+			}
 		}
 		// voila
 		return self::generate($s, $m, TRUE);
@@ -760,10 +762,35 @@ public function dump() {
 					$css = ($i == $errline) ? 'line' : '';
 					if (isset($file[$i-1])) $lines[] = sprintf('<div class="%s"><span class="numb">%3d: </span>',$css,$i) . htmlspecialchars($file[$i-1]) . '</div>';
 				}
-				$code .= '<p class="orgn">In: <code>' . basename($errfile) . '</code>, line ' . $errline . '</p>';
+				$code .= '<p class="orgn">In: <code>' . $errfile . '</code>, line ' . $errline . '</p>';
 				$code .= '<pre class="code">' . implode("",$lines) . '</pre>';
 			}
 		} catch (Exception $e) {
+		}
+		return $code;
+	}
+
+	/**
+	 * Generates a HTML backtrace from a stack trace array.
+	 */
+	protected static function _stack($trace) {
+		$code = '';
+		foreach ($trace as $caller) {
+			$code .= '<p>... called by <code>';
+			if (isset($caller['class']))
+				$code .= $caller['class'] . $caller['type'];
+			$code .= $caller['function'] . '(';
+
+			$args = array();
+			foreach ($caller['args'] as $arg) {
+				$args[] = gettype($arg);
+			}
+			$code .= implode(', ', $args);
+
+			$code .= ')</code>:</p>';
+			if (isset($caller['file']) && isset($caller['line'])) {
+				$code .= self::_source($caller['file'], $caller['line']);
+			}
 		}
 		return $code;
 	}

@@ -32,7 +32,6 @@ class TemplateEngine {
 		'PAGETITLE' => SITENAME,
 	);
 
-	private $request = NULL;
 	private $default_filename = NULL;
 
 	private static $fallback_filename = NULL;
@@ -40,10 +39,9 @@ class TemplateEngine {
 	/**
 	 * Creates a new template engine, associated with a request.
 	 */
-	public function __construct($request=NULL, $default_filename=NULL) {
+	public function __construct($default_filename=NULL) {
 		if (is_null(TemplateEngine::$fallback_filename))
 			TemplateEngine::$fallback_filename = APPDIR.'/default-template.thtml';
-		$this->request = $request;
 		$this->default_filename = $default_filename;
 	}
 
@@ -398,8 +396,6 @@ class TemplateEngine {
 	}
 
 	protected function SELECTED($items, $page) {
-		if (is_null($this->request)) return '';
-
 		$page = ltrim($page, '/');
 
 		$regex = '/^';
@@ -412,7 +408,7 @@ class TemplateEngine {
 			$regex .= '$/';
 		}
 
-		if (preg_match($regex, $this->request->get_page())) {
+		if (preg_match($regex, Request::get_page())) {
 			return 'selected';
 		} else {
 			return '';
@@ -420,9 +416,7 @@ class TemplateEngine {
 	}
 
 	protected function BREADCRUMBS($items) {
-		if (is_null($this->request)) return '';
-
-		$page = $this->request->get_page();
+		$page = Request::get_page();
 		$base = $this->get_local($items, 'BASEURL');
 
 		$page = str_replace('//', '/', $page);

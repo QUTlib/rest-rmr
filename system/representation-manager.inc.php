@@ -85,8 +85,8 @@ public static function dumpClass($klass) {
 		self::$list[] = $rep;
 	}
 
-	public static function represent($model, $request) {
-		$accepted_types = $request->content_types();
+	public static function represent($model) {
+		$accepted_types = Request::content_types();
 		if (!$accepted_types) {
 			// if the client didn't specify anything, we have
 			// to assume they will accept everything.
@@ -114,11 +114,11 @@ public static function dumpClass($klass) {
 		}
 
 		if ($best_rep) {
-			$response = new Response($request->http_version());
+			$response = new Response(Request::http_version());
 			$best_rep->represent($model, $best_type, $response);
 		} else {
 			// urgh.. build up a nice response
-			$response = self::generate406( $request->uri(), $reps );
+			$response = self::generate406( Request::uri(), $reps );
 		}
 		return $response;
 	}

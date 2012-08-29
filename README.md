@@ -100,9 +100,7 @@ A trailing slash can be made optional by appending a question-mark:
 * `'/hello/?'` matches `'/hello'` and `'/hello/'`
 
 #### Handler ####
-The handler is invoked with parameter:
-
-* The Request object, which may be queried for example to inspect any HTTP request parameters.
+The handler is invoked without parameters; however the framework provides global access to the Request object, which may be queried for example to inspect any HTTP request parameters.
 
 ### Representations ###
 

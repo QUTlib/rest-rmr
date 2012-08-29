@@ -18,73 +18,62 @@
 
 
 class Request {
-	public static $HTTP_METHODS = array(
-		#'OPTIONS' => 'OPTIONS', // TO DO
-		'GET'  => 'GET',
-		'HEAD' => 'HEAD',
-		'POST' => 'POST',
-		'PUT'  => 'PUT',
-		'DELETE'  => 'DELETE',
-		#'TRACE'   => 'TRACE',
-		#'CONNECT' => 'CONNECT',
-	);
+	private function __construct() {}
+	private function __clone() {}
+	private function __wakeup() {}
 
-	private $protocol = NULL;
-	private $method  = NULL;
-	private $uri     = NULL;
-	private $headers = NULL;
-	private $get  = NULL;
-	private $post = NULL;
-	private $params = NULL;
+	private static $protocol = NULL;
+	private static $method  = NULL;
+	private static $uri     = NULL;
+	private static $headers = NULL;
+	private static $get  = NULL;
+	private static $post = NULL;
+	private static $params = NULL;
 
-	private $startup = NULL;
-
-	public function __construct() {
-		$this->startup = microtime(TRUE);
-
+	public static static function init() {
 		if (isset($_GET['path']) && ($path = $_GET['path'])) {
-			$this->uri = $path;
+			self::$uri = $path;
 			unset($_GET['path']);
 		} else {
-			$this->uri = '/';
+			self::$uri = '/';
 		}
 
-		$this->protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
-		$this->method = (isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
-		$this->headers = getallheaders();
-		$this->get  = $_GET;
-		$this->post = $_POST;
+		self::$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
+		self::$method = (isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
+		self::$headers = getallheaders();
+		self::$get  = $_GET;
+		self::$post = $_POST;
 	}
 
 ### DEBUG
-public function dump() {
-	print($this->method . ' ' . $this->uri . ' ' . $this->protocol . "\n");
-	foreach ($this->headers as $k=>$v) print("$k: $v\n");
+public static function dump() {
+	print(self::$method . ' ' . self::$uri . ' ' . self::$protocol . "\n");
+	foreach (self::$headers as $k=>$v) print("$k: $v\n");
 	print("\n");
-	if ($this->params) {
+	if (self::$params) {
 		print("PARAMS:\n");
-		foreach ($this->params as $k=>$v) print("$k: $v\n");
+		foreach (self::$params as $k=>$v) print("$k: $v\n");
 	}
-	if ($this->get) {
+	if (self::$get) {
 		print("GET:\n");
-		foreach ($this->get as $k=>$v) print("$k: $v\n");
+		foreach (self::$get as $k=>$v) print("$k: $v\n");
 	}
-	if ($this->post) {
+	if (self::$post) {
 		print("POST:\n");
-		foreach ($this->post as $k=>$v) print("$k: $v\n");
+		foreach (self::$post as $k=>$v) print("$k: $v\n");
 	}
 }
 ### /DEBUG
 
-	public function uri() { return $this->uri; }
-	public function protocol() { return $this->protocol; }
+	public static function uri() { return self::$uri; }
+	public static function protocol() { return self::$protocol; }
 
 	/**
 	 * Gets the request's HTTP version, as "major.minor"
 	 * Returns FALSE if it doesn't look like HTTP.
 	 */
-	public function http_version() {
-		if (preg_match('@HTTP/(\d+\.\d+)@', $this->protocol, $m)) {
+	public static function http_version() {
+		if (preg_match('@HTTP/(\d+\.\d+)@', self::$protocol, $m)) {
 			return $m[1];
 		} else {
 			return FALSE;
@@ -104,9 +93,10 @@ public function dump() {
 	 *  <http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.1>
 	 *
 	 * @param String[] $allowed (optional) list of allowed methods
+	 * @param Integer  $errcode (optional) what statuc code to use if not allowed (405=Not Allowed, 501=Not Implemented,...)
 	 * @return the HTTP request method from the current request, or FALSE
 	 */
-	public function method($allowed=NULL) {
+	public static function method($allowed=NULL, $errcode=405) {
 		if (func_num_args() > 0) {
 			$allowed = func_get_args();
 			$upcased = array();
@@ -114,22 +104,18 @@ public function dump() {
 			$head = false;
 			foreach($allowed as $meth) {
 				$meth = strtoupper($meth);
-				if ($this->method == $meth) return $meth; // short circuit
+				if (self::$method == $meth) return $meth; // short circuit
 				if ($meth == 'GET') $get = true;
 				if ($meth == 'HEAD') $head = true;
 				$upcased[] = $meth;
 			}
 			// If we get here, the actual method wasn't in the allowed list
-			if (isset(Request::$HTTP_METHODS[$method])) {
-				$code = 405; // Method Not Allowed
-			} else {
-				$code = 501; // Not Implemented
-			}
+			$code = ($errcode ? $errcode : 405);
 			$allow = implode(', ', $upcased);
 			header("Allow: $allow", TRUE, $code);
 			return FALSE;
 		} else {
-			return $this->method;
+			return self::$method;
 		}
 	}
 
@@ -144,8 +130,8 @@ public function dump() {
 	 * @param String[] $preferred (optional) list of preferred content types
 	 * @return the best content type, or FALSE if there's no nice resolution
 	 */
-	public function content_type($preferred=NULL) {
-		$client_types = $this->content_types();
+	public static function content_type($preferred=NULL) {
+		$client_types = self::content_types();
 		if (func_num_args() > 0) {
 			// build lookup tables for what the client wants to see
 			$default_weight = 0;
@@ -205,12 +191,12 @@ public function dump() {
 	 *
 	 * @return accepted content types, or FALSE
 	 */
-	public function content_types() {
-		if (isset($this->headers['Accept']) && ($accept = $this->headers['Accept'])) { }
+	public static function content_types() {
+		if (isset(self::$headers['Accept']) && ($accept = self::$headers['Accept'])) { }
 		elseif (isset($_SERVER['HTTP_ACCEPT']) && ($accept = $_SERVER['HTTP_ACCEPT'])) { }
 		else return FALSE;
 
-		return $this->parse_qvalues($accept);
+		return self::parse_qvalues($accept);
 	}
 
 	/**
@@ -225,12 +211,12 @@ public function dump() {
 	 *
 	 * @return accepted charsets, or FALSE
 	 */
-	public function charsets() {
-		if (isset($this->headers['Accept-Charset']) && ($charset = $this->headers['Accept-Charset'])) { }
+	public static function charsets() {
+		if (isset(self::$headers['Accept-Charset']) && ($charset = self::$headers['Accept-Charset'])) { }
 		elseif (isset($_SERVER['HTTP_ACCEPT_CHARSET']) && ($charset = $_SERVER['HTTP_ACCEPT_CHARSET'])) { }
 		else return FALSE;
 
-		$results = $this->parse_qvalues($charset);
+		$results = self::parse_qvalues($charset);
 
 		// ensure that ISO-8859-1 is in there (default: q=1)
 		$iso_8859_1 = false;
@@ -265,12 +251,12 @@ public function dump() {
 	 *
 	 * @return accepted encodings, or FALSE
 	 */
-	public function encodings() {
-		if (isset($this->headers['Accept-Encoding']) && ($accept = $this->headers['Accept-Encoding'])) { }
+	public static function encodings() {
+		if (isset(self::$headers['Accept-Encoding']) && ($accept = self::$headers['Accept-Encoding'])) { }
 		elseif (isset($_SERVER['HTTP_ACCEPT_ENCODING']) && ($accept = $_SERVER['HTTP_ACCEPT_ENCODING'])) { }
 		else return FALSE;
 
-		return $this->parse_qvalues($accept);
+		return self::parse_qvalues($accept);
 	}
 
 	/**
@@ -300,7 +286,7 @@ public function dump() {
 	 * @param String $raw_header the header from the client, e.g. $_SERVER['HTTP_ACCEPT']
 	 * @return accepted content types, or FALSE
 	 */
-	public function parse_qvalues($raw_header) {
+	public static function parse_qvalues($raw_header) {
 		$result = array();
 		$options = preg_split('/\s*,\s*/', $raw_header);
 		foreach ($options as $raw_option) {
@@ -321,8 +307,8 @@ public function dump() {
 	}
 
 
-	public function _set_params($params) {
-		$this->params = $params;
+	public static function _set_params($params) {
+		self::$params = $params;
 	}
 
 	/**
@@ -333,10 +319,10 @@ public function dump() {
 	 *
 	 * If still not found, returns NULL.
 	 */
-	public function parameter($name) {
-		if (isset($this->params[$name])) return $this->params[$name];
-		if (isset($this->get[$name])) return $this->get[$name];
-		if (isset($this->post[$name])) return $this->post[$name];
+	public static function parameter($name) {
+		if (isset(self::$params[$name])) return self::$params[$name];
+		if (isset(self::$get[$name])) return self::$get[$name];
+		if (isset(self::$post[$name])) return self::$post[$name];
 		return NULL;
 	}
 
@@ -345,14 +331,14 @@ public function dump() {
 	 * has taken place).
 	 * Returns NULL if not found.
 	 */
-	public function uri_parameter($name) {
-		if (isset($this->params[$name])) return $this->params[$name];
+	public static function uri_parameter($name) {
+		if (isset(self::$params[$name])) return self::$params[$name];
 		return NULL;
 	}
 
 	/** alias for #uri_parameter() */
-	public function param($name) {
-		if (isset($this->params[$name])) return $this->params[$name];
+	public static function param($name) {
+		if (isset(self::$params[$name])) return self::$params[$name];
 		return NULL;
 	}
 
@@ -360,8 +346,8 @@ public function dump() {
 	 * Gets the value of the named query parameter.
 	 * Returns NULL if not found.
 	 */
-	public function query_parameter($name) {
-		if (isset($this->get[$name])) return $this->get[$name];
+	public static function query_parameter($name) {
+		if (isset(self::$get[$name])) return self::$get[$name];
 		return NULL;
 	}
 
@@ -369,8 +355,8 @@ public function dump() {
 	 * Gets the value of the named parameter from the request entity, if any.
 	 * Returns NULL if not found.
 	 */
-	public function entity_parameter($name) {
-		if (isset($this->post[$name])) return $this->post[$name];
+	public static function entity_parameter($name) {
+		if (isset(self::$post[$name])) return self::$post[$name];
 		return NULL;
 	}
 
@@ -378,8 +364,8 @@ public function dump() {
 	 * Gets the value of the named request header, if any.
 	 * Returns NULL if not found.
 	 */
-	public function header($name) {
-		if (isset($this->headers[$name])) return $this->headers[$name];
+	public static function header($name) {
+		if (isset(self::$headers[$name])) return self::$headers[$name];
 		return NULL;
 	}
 
@@ -390,23 +376,23 @@ public function dump() {
 	 *
 	 * Missing parts are NULL.
 	 */
-	public function interface_module_page() {
-		if (is_null($this->__uri_parts)) {
-			$url = ltrim($this->uri, '/');
+	public static function interface_module_page() {
+		if (is_null(self::$__uri_parts)) {
+			$url = ltrim(self::$uri, '/');
 			$parts = explode('/', $url, 3);
 			while (count($parts) < 3) $parts[] = NULL;
-			$this->__uri_parts = $parts;
+			self::$__uri_parts = $parts;
 		}
-		return $this->__uri_parts;
+		return self::$__uri_parts;
 	}
-	private $__uri_parts = NULL;
+	private static $__uri_parts = NULL;
 
 	/**
 	 * Gets the page part of the URI.
 	 * Returns NULL if there isn't one.
 	 */
-	public function get_interface() {
-		$parts = $this->interface_module_page();
+	public static function get_interface() {
+		$parts = self::interface_module_page();
 		return $parts[0];
 	}
 
@@ -414,8 +400,8 @@ public function dump() {
 	 * Gets the page part of the URI.
 	 * Returns NULL if there isn't one.
 	 */
-	public function get_module() {
-		$parts = $this->interface_module_page();
+	public static function get_module() {
+		$parts = self::interface_module_page();
 		return $parts[1];
 	}
 
@@ -423,8 +409,8 @@ public function dump() {
 	 * Gets the page part of the URI.
 	 * Returns NULL if there isn't one.
 	 */
-	public function get_page() {
-		$parts = $this->interface_module_page();
+	public static function get_page() {
+		$parts = self::interface_module_page();
 		return $parts[2];
 	}
 }

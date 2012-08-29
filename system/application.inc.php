@@ -105,12 +105,13 @@ class Application {
 	 * Creates and returns an appropriate Response object.
 	 */
 	public static function handle_request() {
-		$request = new Request();
-		$http_method = strtoupper($request->method());
+		Request::init();
+
+		$http_method = strtoupper(Request::method());
 		if ($http_method == 'OPTIONS') {
 			// If we get an OPTIONS request, try to handle it according to
 			// the HTTP/1.1 spec. (i.e. report the Allowed HTTP methods)
-			$uri = $request->uri();
+			$uri = Request::uri();
 			if ($uri == '*') {
 				// general server capabilities; usually Apache intercepts this,
 				// but if we do receive it, report all the HTTP methods we know
@@ -123,7 +124,7 @@ class Application {
 			if ($methods) {
 				// create a 200 OK response, and poke in an Allow header for the
 				// HTTP methods we think are cool
-				$response = new Response($request->http_version());
+				$response = new Response(Request::http_version());
 				$response->header('Allow', implode(', ', $methods));
 			} else {
 				// no such resource; no methods would work. Send a 404 Not Found.
@@ -139,16 +140,16 @@ class Application {
 		} else {
 			// probably one of the more standard HTTP methods (GET, POST, PUT, DELETE)
 			// pass it off to the handlers, and see what comes of it.
-			$model = self::get_model_for($request);
+			$model = self::get_model();
 			if ($model instanceof Response) {
 				// short circuit; usually means get_model_for failed
 				$response = $model;
 			} else {
 				// we have a model, now we need to represent it
-				$response = self::get_response_for($model, $request);
+				$response = self::get_response_for($model);
 			}
 		}
-		$response->commit($request);
+		$response->commit();
 	}
 
 	/**
@@ -158,9 +159,9 @@ class Application {
 	 * If the handler succeeds, it returns a Model.  If not, it returns a
 	 * Response object.
 	 */
-	protected static function get_model_for($request) {
-		$httpmethod = strtoupper( $request->method() );
-		$uri = $request->uri();
+	protected static function get_model() {
+		$httpmethod = strtoupper( Request::method() );
+		$uri = Request::uri();
 
 		if (!URIMap::knows_method($httpmethod)) {
 			return self::_tweak_allow_headers(Response::generate(501), $uri);
@@ -173,13 +174,13 @@ class Application {
 			if (preg_match($regex, $uri, $hits)) {
 				$result = array_combine($match, $hits);
 				array_shift($result); // drop $result[0] -- pattern=>uri
-				$request->_set_params($result);
+				Request::_set_params($result);
 
 				$handler = $rule['handler'];
 				$handler = URIMap::realise_handler($handler);
 
 				try {
-					$model = call_user_func($handler, $request);
+					$model = call_user_func($handler);
 					return $model;
 				} catch (Exception $e) {
 					if (is_null($final_response)) {
@@ -230,9 +231,9 @@ class Application {
 	 * Uses the RepresentationManager to represent a given Model according
 	 * to the incoming request.
 	 */
-	protected static function get_response_for($model, $request) {
+	protected static function get_response_for($model) {
 		try {
-			$response = RepresentationManager::represent($model, $request);
+			$response = RepresentationManager::represent($model);
 		} catch (Exception $e) {
 			$response = Response::generate_ex($e);
 		}

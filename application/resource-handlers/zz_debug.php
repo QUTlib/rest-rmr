@@ -23,8 +23,8 @@
 /**
  * Uses phpinfo() to print debug information about the server.
  */
-function debug_phpinfo($request) {
-	$response = new Response($request->http_version());
+function debug_phpinfo() {
+	$response = new Response(Request::http_version());
 	$response->content_type('text/html');
 	$response->start_recording();
 	phpinfo();
@@ -36,11 +36,11 @@ function debug_phpinfo($request) {
  * Prints debug info about the current request object.
  * Always outputs as 'text/plain'.
  */
-function debug_request($request) {
-	$response = new Response($request->http_version());
+function debug_request() {
+	$response = new Response(Request::http_version());
 	$response->content_type('text/plain; charset=iso-8859-1');
 	$response->start_recording();
-	$request->dump();
+	Request::dump();
 	$response->stop_recording();
 	return $response;
 }
@@ -49,8 +49,8 @@ function debug_request($request) {
  * Prints debug info about the current response object.
  * Always outputs as 'text/plain'.
  */
-function debug_response($request) {
-	$response = new Response($request->http_version());
+function debug_response() {
+	$response = new Response(Request::http_version());
 	$response->content_type('text/plain; charset=iso-8859-1');
 	$response->start_recording();
 	$response->dump();
@@ -62,8 +62,8 @@ function debug_response($request) {
  * Prints debug info about the currently-registered request handlers.
  * Always outputs as 'text/html'.
  */
-function debug_handlers($request) {
-	$response = new Response($request->http_version());
+function debug_handlers() {
+	$response = new Response(Request::http_version());
 	$response->start_recording();
 	#$response->content_type('text/plain; charset=iso-8859-1');
 	#URIMap::dump();
@@ -77,8 +77,8 @@ function debug_handlers($request) {
  * Prints debug info about the current-registered representers.
  * Always outputs as 'text/html'.
  */
-function debug_representers($request) {
-	$response = new Response($request->http_version());
+function debug_representers() {
+	$response = new Response(Request::http_version());
 	$response->start_recording();
 	#$response->content_type('text/plain; charset=iso-8859-1');
 	#RepresentationManager::dump();
@@ -91,11 +91,11 @@ function debug_representers($request) {
 /**
  * Prints debug info about a single representer, by classname.
  */
-function debug_representer($request) {
-	$response = new Response($request->http_version());
+function debug_representer() {
+	$response = new Response(Request::http_version());
 	$response->start_recording();
 
-	$klass = $request->param('klass');
+	$klass = Request::param('klass');
 	$response->content_type('text/plain; charset=iso-8859-1');
 	RepresentationManager::dumpClass($klass);
 
@@ -107,8 +107,8 @@ function debug_representer($request) {
  * A simple listing of the various debug handlers.
  * Outputs as 'text/html'.
  */
-function debug_index($request) {
-	$response = new Response($request->http_version());
+function debug_index() {
+	$response = new Response(Request::http_version());
 	$response->content_type('text/html; charset=iso-8859-1');
 	$response->body(<<<HTML
 <!doctype html>
@@ -136,8 +136,8 @@ HTML
 /**
  * Generates a random exception/error.
  */
-function debug_error($request) {
-	switch ( $request->parameter('code') ) {
+function debug_error() {
+	switch ( Request::parameter('code') ) {
 		case 'exception':
 		case '0':
 			$key = 0;

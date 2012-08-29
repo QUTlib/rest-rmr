@@ -455,7 +455,7 @@ public function dump() {
 	/**
 	 * Executes the response, sends it to the browser, etc.
 	 */
-	public function commit($request) {
+	public function commit() {
 		// HTTP Status Line
 		$vrsn = $this->version;
 		$code = $this->status;
@@ -474,7 +474,7 @@ public function dump() {
 
 		// if the browser wants encoded (read: compressed) data, we should
 		// try to accommodate it.
-		if (!$this->header('Content-Encoding') && $request && ($accepted_encodings = $request->encodings())) {
+		if (!$this->header('Content-Encoding') && ($accepted_encodings = Request::encodings())) {
 			$this->attempt_compression($accepted_encodings);
 		}
 
@@ -501,7 +501,7 @@ public function dump() {
 		}
 
 		// Send the entity, if there is one
-		if ($request->method() != 'HEAD')
+		if (Request::method() != 'HEAD')
 			print($this->body);
 	}
 
@@ -735,8 +735,13 @@ public function dump() {
 	public static function error($title, $message, $errfile, $errline) {
 		$code = self::_source($errfile, $errline);
 		$message = '<p class="mesg">'.nl2br(htmlspecialchars($message)).'</p>';
-		header('Content-Type: text/html; charset=iso-8859-1', TRUE, 500);
-		echo self::generate_html($title, $message.$code);
+		#header('Content-Type: text/html; charset=iso-8859-1', TRUE, 500);
+		#echo self::generate_html($title, $message.$code);
+
+		$r = new Response(NULL, 500);
+		$r->content_type('text/html; charset=iso-8859-1');
+		$r->body( self::generate_html($title, $message.$code) );
+		$r->commit(NULL);
 		exit;
 	}
 

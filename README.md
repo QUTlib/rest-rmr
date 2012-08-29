@@ -136,7 +136,7 @@ Off the bat, the framework will provide the following features:
 * Mostly correct HTTP OPTIONS request support.
 
 I would like to provide support for:
-* <s>Some data access layer (DAO, ActiveRecord, ORM, ...)</s> (done, 2012-08-29)
+* ~~Some data access layer (DAO, ActiveRecord, ORM, ...)~~ (done, 2012-08-29)
 * Response caching and ETag support
 
 License & Copyright

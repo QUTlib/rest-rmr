@@ -804,7 +804,7 @@ public function dump() {
 .code {background:#d8d8d8;border:2px inset #777;}
 .line {background:#fa5;}
 .numb {font-weight:bold;}
-.mama {font-family:sans-serif;}
+.prod {font-family:sans-serif;}
 .time {font-family:sans-serif;font-size:90%}
 .foot {color:#888;}
 CSS;
@@ -817,7 +817,7 @@ CSS;
 		} else {
 			// if the template fails, do it by hand minimally
 			$now = date('c');
-			$verstr = '<span class="mama">' . Application::TITLE . '</span> v' . Application::VERSION;
+			$verstr = '<span class="prod">' . Application::TITLE . '</span> v' . Application::VERSION;
 			return <<<HTML
 <!doctype html>
 <html lang="en">

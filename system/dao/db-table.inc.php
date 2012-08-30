@@ -51,21 +51,44 @@ class DBTable {
 	public function columns() { return array_keys($this->columns); }
 
 	/**
-	 * Gets the name/definition of the primary key in this DAO's table.  May be NULL.
+	 * Gets the name/definition of the primary keys in this DAO's table.  May be an array, or NULL.
 	 *
 	 * @param boolean $object [optional] if given and true, returns the actual object
 	 * @param boolean $fatal [optiona] if given and true, throws an exception if no key defined
 	 */
 	public function primary_key($object=FALSE, $fatal=FALSE) {
+		$keys = $this->primary_keys($object, $fatal);
+		if (is_null($keys) || count($keys) > 1) {
+			// either we found a bunch, or we didn't find any and
+			// primary_keys didn't raise an exception.
+			return $keys;
+		} else {
+			// just the one
+			return $keys[0];
+		}
+	}
+
+	/**
+	 * Gets the name/definition of the primary keys in this DAO's table, as an array.  May be NULL.
+	 *
+	 * @param boolean $object [optional] if given and true, returns the actual object
+	 * @param boolean $fatal [optiona] if given and true, throws an exception if no key defined
+	 */
+	public function primary_keys($object=FALSE, $fatal=FALSE) {
+		$keys = array();
 		foreach ($this->columns as $name=>$def) {
 			if ($def->pkey()) {
-				return ($object ? $def : $name);
+				$keys[] = ($object ? $def : $name);
 			}
 		}
-		// didn't find one
-		if ($fatal) {
-			throw new Exception("no primary key defined");
+		if ($keys) {
+			// found some
+			return $keys;
+		} elseif ($fatal) {
+			// no keys -- die
+			throw new Exception("no primary keys defined");
 		} else {
+			// no keys -- NULL
 			return NULL;
 		}
 	}
@@ -114,15 +137,14 @@ class DBTable {
 	 */
 	public function parseFields($fields) {
 		$tbl = $this->name;
-		// if NULL, default to primary key
+		// if NULL, default to primary keys
 		if (!$fields) {
-			$key = $this->primary_key();
-			return "`$tbl`.`$key` AS `$key`\n";
-		}
+			$fields = $this->primary_keys();
 		// if '*', replace with all, explicitly
-		if ($fields == '*') {
+		} elseif ($fields == '*') {
 			#return "*\n";
 			$fields = $this->columns();
+		// otherwise, just make sure it's an array
 		} elseif (! is_array($fields)) {
 			$fields = array($fields);
 		}

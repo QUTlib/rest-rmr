@@ -27,6 +27,7 @@ class DBColumn {
 	const TIME = 4;
 	const DATETIME = 5;
 	const TIMESTAMP = 6;
+	const FLOAT = 7;
 
 	private $name = NULL;
 	private $type = NULL;

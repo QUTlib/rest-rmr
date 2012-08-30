@@ -40,7 +40,7 @@ require_once(SYSDIR.'/dao/lib.inc.php');
 require_once(SYSDIR.'/utils/xmldom.inc.php');
 
 class Application {
-	const VERSION = '0.8-20120829';
+	const VERSION = '0.8-20120830';
 	const TITLE = 'REST-RMR';
 
 	/* standard interfaces */

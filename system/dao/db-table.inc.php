@@ -171,7 +171,11 @@ class DBTable {
 	protected function _cast($value, $type, $db) {
 		switch ($type) {
 		case DBColumn::BOOLEAN:
-			$value = "b'" . ($value ? 1 : 0) . "'";
+			switch (strtolower($value)) {
+			case 'true':  $value = "b'1'"; break;
+			case 'false': $value = "b'0'"; break;
+			default:      $value = "b'" . ($value ? 1 : 0) . "'";
+			}
 			break;
 		case DBColumn::STRING:
 		case DBColumn::TIME:

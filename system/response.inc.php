@@ -734,8 +734,9 @@ public function dump() {
 	/**
 	 * Immediately handles an unrecoverable error, and terminates the request.
 	 */
-	public static function error($title, $message, $errfile, $errline) {
+	public static function error($title, $message, $errfile, $errline, $stack=NULL) {
 		$code = self::_source($errfile, $errline);
+		if ($stack) $code .= self::_stack($stack);
 		$message = '<p class="mesg">'.nl2br(htmlspecialchars($message)).'</p>';
 		#header('Content-Type: text/html; charset=iso-8859-1', TRUE, 500);
 		#echo self::generate_html($title, $message.$code);

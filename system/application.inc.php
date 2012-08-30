@@ -246,6 +246,7 @@ class Application {
 	 * Does a little bit of niceification, then passes it off to Response.
 	 */
 	public static function error_response($errno, $errstr, $errfile, $errline) {
+		if (error_reporting()==0) return;
 		$tmp = array();
 		for ($i = 0; $i < 15; $i++) {
 			switch ($errno & pow(2,$i)) {
@@ -268,7 +269,10 @@ class Application {
 		}
 		if ($tmp) $title = 'PHP Error: ' . implode(' | ', $tmp);
 		else $title = "PHP Error: #$errno";
-		Response::error($title, $errstr, $errfile, $errline);
+		$stack = debug_backtrace();
+		array_shift($stack); // remove error_response()
+		array_shift($stack); // remove errfile/errline
+		Response::error($title, $errstr, $errfile, $errline, $stack);
 	}
 
 	private function __construct() {}

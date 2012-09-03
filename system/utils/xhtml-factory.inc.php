@@ -144,6 +144,9 @@ class XHTMLFactory {
 		return self::add($parent, $li, $value, $attrs);
 	}
 
+	/**
+	 * Creates DT/DD elements.  Creates a DL if $parent isn't already one.
+	 */
 	public static function define($parent, $terms) {
 		if (($parent instanceof DOMElement) && (strtolower($parent->tagName) == 'dl')) {
 			$dl = $parent;

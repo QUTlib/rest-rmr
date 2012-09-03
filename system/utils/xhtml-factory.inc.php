@@ -85,6 +85,81 @@ class XHTMLFactory {
 	}
 
 	/**
+	 * Creates a SECTION element, with an optional automatic H1.
+	 */
+	public static function section($parent, $heading=NULL, $attrs=array()) {
+		if (! $attrs && is_array($heading)) {
+			$attrs = $heading;
+			$heading = NULL;
+		}
+		$s = self::add($parent, 'section', NULL, $attrs);
+		if ($heading) {
+			self::add($s, 'h1', $heading);
+		}
+		return $s;
+	}
+
+	/**
+	 * Creates a new list-type element (by default, a UL).
+	 */
+	public static function lst($parent, $type='ul', $attrs=array()) {
+		if (! $attrs && is_array($type)) {
+			$attrs = $type;
+			$type = 'ul';
+		} elseif (! $type) {
+			$type = 'ul';
+		}
+		return self::add($parent, $type, $attrs);
+	}
+
+	/**
+	 * Creates a new list item.  The parent must be a UL, OL, or SELECT element.
+	 */
+	public static function list_item($parent, $value=NULL, $attrs=array()) {
+		if (!($parent instanceof DOMElement)) {
+			throw new Exception("not a list [".get_class($parent)."]");
+		}
+
+		if (! $attrs && is_array($value)) {
+			$attrs = $value;
+			$value = '';
+		}
+
+		switch (strtolower($parent->tagName)) {
+		case 'select':
+			$li = 'option';
+			break;
+		#case 'dl':
+		#	$li = 'dd';//or dt..?
+		#	break;
+		case 'ol':
+		case 'ul':
+			$li = 'li';
+			break;
+		default:
+			//$li = 'p';
+			throw new Exception("not a list [".$parent->tagName."]");
+		}
+
+		return self::add($parent, $li, $value, $attrs);
+	}
+
+	public static function define($parent, $terms) {
+		if (($parent instanceof DOMElement) && (strtolower($parent->tagName) == 'dl')) {
+			$dl = $parent;
+		} else {
+			$dl = self::add($parent, 'dl');
+		}
+		foreach ($terms as $dt=>$dd) {
+			self::add($dl, 'dt', $dt);
+			if (! is_array($dd)) $dd = array($dd);
+			foreach ($dd as $dd0) {
+				self::add($dl, 'dd', $dd0);
+			}
+		}
+	}
+
+	/**
 	 * Creates any HTML TAG, with all the appropriate whatsernames.
 	 */
 	public static function add($parent, $tag, $value=NULL, $attrs=array()) {

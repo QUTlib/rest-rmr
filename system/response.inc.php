@@ -683,7 +683,6 @@ public function dump() {
 		}
 	}
 
-
 	/**	
 	 * Creates a new Response object with some pre-filled-out details.
 	 */
@@ -703,6 +702,15 @@ public function dump() {
 		return $response
 			->content_type('text/html; charset=iso-8859-1')
 			->body( self::generate_html($title, $message) );
+	}
+
+	/**
+	 * Creates a new Response object with enough pre-filled-out details
+	 * to instruct a browser to go somewhere else.
+	 */
+	public static function generate_redirect($url, $permanent=false) {
+		$response = new Response();
+		return $response->redirect($url, $permanent);
 	}
 
 	/**

@@ -360,6 +360,109 @@ class TemplateEngine {
 	}
 
 	/**
+	 * Tries as hard as it can to get a sitemap filename, given either a String or NULL.
+	 *
+	 * $f -> dir($this->default_filename).$f -> APPDIR.$f
+	 *
+	 */
+	protected function find_sitemap($f=NULL) {
+		if (is_null($f)) $f = 'sitemap.inf';
+
+		$filenames = array();
+		$filenames[] = $f;
+		if (isset($this->default_filename) && ($dir = dirname($this->default_filename)) && ($dir != '.'))
+			$filenames[] = rtrim($dir, '/').'/'.$f;
+		$filenames[] = APPDIR.'/'.$f;
+
+		foreach ($filenames as $filename) {
+			if (file_exists($filename) && is_readable($filename)) {
+				return $filename;
+			}
+		}
+if(defined('DEBUG')&&DEBUG)
+		throw new Exception("file not found: ".implode(', ',$filenames));
+else
+		throw new Exception("file not found: '$f'");
+	}
+
+	/**
+	 * Locates, opens, and parses a sitemap file.  Returns the parsed content, as an array.
+	 */
+	public function load_sitemap($f=NULL) {
+		$raw = parse_ini_file($this->find_sitemap($f), TRUE);
+
+		$sitemap = array();
+		foreach ($raw as $base=>$pages) {
+			$base = rtrim($base, '/');
+			if (!$base) $base = '';
+
+			$map = array();
+			foreach ($pages as $pattern=>$breadcrumb) {
+				$parts = array();
+				foreach (explode('*', $base.$pattern) as $p) {
+					$parts[] = preg_quote($p, '#');
+				}
+				$regex = '#^' . implode('([^/]+)', $parts) . '$#';
+				$map[$regex] = $breadcrumb;
+			}
+			$sitemap[$base] = $map;
+		}
+		return $sitemap;
+	}
+
+	/**
+	 * Generates an array of ( $path=>'crumb' ) pairs for each directory in the
+	 * current request's URI.
+	 */
+	public function breadcrumbs($f=NULL) {
+		$sitemap = $this->load_sitemap($f);
+
+		$url = Request::uri();
+		$url = str_replace('//', '/', $url);
+
+		// FIND AND REMOVE THE COMMON BASE (if any)
+		// This finds the longest matching 'base' part.
+		$base = NULL;
+		$map  = NULL;
+		foreach ($sitemap as $b=>$m) {
+			if (!$b || substr($url,0,strlen($b)) == $b) {
+				if (is_null($base) || strlen($b) > strlen($base)) {
+					$base = $b;
+					$map = $m;
+				}
+			}
+		}
+		if (is_null($map)) return NULL;
+		if ($base) $url = substr($url, strlen($base));
+
+		// WORK OUT HOW/WHEN TO APPEND SLASHES
+		if (substr($url,-1)=='/'){
+			$url=rtrim($url,'/');
+			$isdir=true;
+		}else{
+			$isdir=false;
+		}
+
+		// FOR EACH DIRECTORY IN THE URL, ADD DIRPATH=>CRUMB TO AN ARRAY
+		$parts = explode('/',$url);
+		$n = count($parts) - 1;
+		$array = array();
+		$accum = $base;
+		foreach ($parts as $i=>$p) {
+			$accum .= $p . (($i==$n&&!$isdir) ? '' : '/');
+			$got = false;
+			foreach ($map as $pattern=>$crumb) {
+				if (preg_match($pattern, $accum)) {
+					$array[$accum] = preg_replace($pattern, $crumb, $accum);
+					continue 2;
+				}
+			}
+			$array[$accum] = $p;
+		}
+		return $array;
+	}
+
+	/**
 	 * Commands are of the form:
 	 *
 	 *   COMMAND
@@ -371,19 +474,19 @@ class TemplateEngine {
 	public function invoke($command, $items=NULL) {
 		if (is_null($items)) $items = $this->items;
 		$args = explode(':', $command);
-		$cmd = array_shift($args);
+		$cmd = 't_'.array_shift($args);
 		array_unshift($args, $items);
 		return call_user_func_array( array($this, $cmd), $args );
 	}
 
 	// FIXME ??
-	protected function LASTMODIFIED($items) {
+	protected function t_LASTMODIFIED($items) {
 		return date('M j, Y');
 	}
 
 	// prints the current date
 	// if long is given and not 'short', uses a long format
-	protected function NOW($items, $long=FALSE) {
+	protected function t_NOW($items, $long=FALSE) {
 		if ($long && strtolower($long) != 'short') {
 			return date('c');
 		} else {
@@ -391,11 +494,11 @@ class TemplateEngine {
 		}
 	}
 
-	protected function BENCHMARK($items) {
+	protected function t_BENCHMARK($items) {
 		return sprintf('%0.3f', elapsed());
 	}
 
-	protected function SELECTED($items, $page) {
+	protected function t_SELECTED($items, $page) {
 		$page = ltrim($page, '/');
 
 		$regex = '/^';
@@ -415,33 +518,17 @@ class TemplateEngine {
 		}
 	}
 
-	protected function BREADCRUMBS($items) {
-		$page = Request::get_page();
-		$base = $this->get_local($items, 'BASEURL');
-
-		$page = str_replace('//', '/', $page);
-
-		$b = ltrim($base,'/');
-		$l = strlen($b);
-		if (substr($page, 0, $l) == $b) {
-			$page = ltrim(substr($page, $l), '/');
-		}
-
-		$page = rtrim($page, '/');
+	protected function t_BREADCRUMBS($items) {
+		$filename = $this->get_local($items, 'SITEMAP'); // may be NULL
+		$sitemap = $this->breadcrumbs($filename);
 
 		$s = '';
 		$s .= '<div id="breadcrumb" class="breadcrumb"><span class="bold">location:</span> ';
 		$s .= '<ul id="breadcrumb-list">';
-		$s .= '<li><a href="'.$base.'/">home</a></li>';
+		#$s .= '<li><a href="'.$base.'/">home</a></li>';
 
-		if ($page) {
-			$parts = explode('/', $page);
-			$accum = $base.'/';
-			foreach ($parts as $part) {
-				// TODO: part titles? do I need a full tree description somewhere?
-				$accum .= $part . '/';
-				$s .= '<li><a href="'.$accum.'">'.$part.'</a></li>';
-			}
+		foreach ($sitemap as $path=>$crumb) {
+			$s .= '<li><a href="'.$path.'">'.$crumb.'</a></li>';
 		}
 
 		$s .= '</ul>';

@@ -412,7 +412,7 @@ else
 
 	/**
 	 * Generates an array of ( $path=>'crumb' ) pairs for each directory in the
-	 * current request's URI.
+	 * current request's URI.  May be NULL.
 	 */
 	public function breadcrumbs($f=NULL) {
 		$sitemap = $this->load_sitemap($f);
@@ -432,7 +432,6 @@ else
 				}
 			}
 		}
-		if (is_null($map)) return NULL;
 		if ($base) $url = substr($url, strlen($base));
 
 		// WORK OUT HOW/WHEN TO APPEND SLASHES
@@ -451,10 +450,12 @@ else
 		foreach ($parts as $i=>$p) {
 			$accum .= $p . (($i==$n&&!$isdir) ? '' : '/');
 			$got = false;
-			foreach ($map as $pattern=>$crumb) {
-				if (preg_match($pattern, $accum)) {
-					$array[$accum] = preg_replace($pattern, $crumb, $accum);
-					continue 2;
+			if ($map) {
+				foreach ($map as $pattern=>$crumb) {
+					if (preg_match($pattern, $accum)) {
+						$array[$accum] = preg_replace($pattern, $crumb, $accum);
+						continue 2;
+					}
 				}
 			}
 			$array[$accum] = $p;

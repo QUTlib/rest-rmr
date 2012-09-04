@@ -458,7 +458,13 @@ else
 					}
 				}
 			}
-			$array[$accum] = $p;
+			if ($p) {
+				$array[$accum] = $p;
+			} elseif ($i == 0) {
+				$array[$accum] = '<i>root</i>';
+			} else {
+				$array[$accum] = '?';
+			}
 		}
 		return $array;
 	}

@@ -20,10 +20,13 @@
     RewriteBase /
 
     # Forcibly deny access to the /system/ folder
-    RewriteRule ^(system/*)$ index.php?path=/$1 [L,QSA]
+    RewriteRule ^(system(/.*)?)$ index.php?path=/$1 [L,QSA]
 
     # Forcibly deny access to the /application/ folder
-    RewriteRule ^(application/*)$ index.php?path=/$1 [L,QSA]
+    RewriteRule ^(application(/.*)?)$ index.php?path=/$1 [L,QSA]
+
+    # rewrite any index.php/a/b/c to index.php?path=/a/b/c
+    RewriteRule ^index\.php(/.*)$ index.php?path=$1 [L,QSA]
 
     # rewrite any /a/b/c to index.php?path=/a/b/c
     RewriteCond %{REQUEST_FILENAME} !-f

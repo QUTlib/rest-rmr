@@ -36,6 +36,9 @@ class DOMDocument extends DOMNode {
 			$string .= "<?xml $version $encoding $standalone ?".">\n";
 #		}
 
+		if ($this->doctype)
+			$string .= $this->doctype->_xml($xmlstyle);
+
 		foreach ($this->childNodes as $node) {
 			$string .= $node->_xml($xmlstyle);
 		}
@@ -88,6 +91,22 @@ class DOMDocument extends DOMNode {
 		if (isset($this->classmap[$baseclass]))
 			return $this->classmap[$baseclass];
 		return $baseclass;
+	}
+
+	public function appendChild($newnode) {
+		if (is_null($this->documentElement)) {
+			parent::appendChild($newnode);
+			$this->documentElement = $newnode;
+			return $newnode;
+		} else {
+			throw new Exception("cannot redefine documentElement");
+		}
+	}
+	public function insertBefore($newnode,$refnode=NULL) {
+		throw new Exception("cannot redefine documentElement");
+	}
+	public function insertAfter($newnode,$refnode=NULL) {
+		throw new Exception("cannot redefine documentElement");
 	}
 
 	### API

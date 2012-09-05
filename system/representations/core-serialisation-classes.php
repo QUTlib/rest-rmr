@@ -52,8 +52,8 @@ class JSONRepresenter extends BasicRepresenter {
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
-		$this->response_type($response, $t, $c);
-		$this->response_language($response, $l, FALSE);
+		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE);
+		$this->response_language($response, 'en', FALSE, TRUE);
 		$response->body( json_encode($m) );
 	}
 }
@@ -90,8 +90,8 @@ class YAMLRepresenter extends BasicRepresenter {
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
-		$this->response_type($response, $t, $c);
-		$this->response_language($response, $l, FALSE);
+		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE);
+		$this->response_language($response, 'en', FALSE, TRUE);
 		$response
 			->body("%YAML 1.2\n---\n")
 			->append( $this->_yaml_encode($m, '', '', false, false) );
@@ -200,8 +200,8 @@ class XMLRepresenter extends BasicRepresenter {
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
-		$this->response_type($response, $t, $c);
-		$this->response_language($response, $l, FALSE);
+		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE);
+		$this->response_language($response, 'en', FALSE, TRUE);
 
 		if (is_object($m) && ($m instanceof SimpleXMLElement)) {
 			$response->body( $m->asXML() );
@@ -347,12 +347,22 @@ class XHTMLRepresenter extends BasicRepresenter {
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
-		$this->response_type($response, $t, $c);
-		$this->response_language($response, $l, FALSE);
-		if ($m instanceof SimpleXMLElement)
+		if ($m instanceof SimpleXMLElement) {
+			$this->response_type($response, $t, $c);
+			$this->response_language($response, $l, FALSE);
 			$response->body( $m->asXML() );
-		else
+		} else {
+			if ($x = $m->xmlEncoding) {
+				// override the requested/matched charset with that
+				// specified in the document itself.
+				$this->response_type($response, $t, $x, TRUE, TRUE);
+			} else {
+				// must be what was requested/matched
+				$this->response_type($response, $t, $c);
+			}
+			$this->response_language($response, $l, FALSE);
 			$response->body( $m->saveXML() );
+		}
 	}
 }
 

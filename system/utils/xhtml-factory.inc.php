@@ -29,7 +29,7 @@ class XHTMLFactory {
 		$doctype->name = 'html';
 		$doctype->publicId = '-//W3C//DTD XHTML Basic 1.1//EN';
 		$doctype->systemId = 'http://www.w3.org/TR/xhtml-basic/xhtml-basic11.dtd';
-		$doc->appendChild($doctype);
+		$doc->doctype = $doctype;
 
 		$html = $doc->createElement('html');
 		$html->setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');

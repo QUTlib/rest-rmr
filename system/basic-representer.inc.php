@@ -168,29 +168,36 @@ abstract class BasicRepresenter extends Representer {
 	 * Sets the response Content-Type string ($t), with optional charset ($c).
 	 *
 	 * Throws an exception if I don't have a type for $t, and $strict is TRUE.
+	 * Sets it anyway, if $strict is FALSE and $force is TRUE.
 	 */
-	protected function response_type($response, $t, $c, $strict=TRUE) {
-		$t = strtolower($t);
-		$c = strtolower($c);
+	protected function response_type($response, $_t, $_c, $strict=TRUE, $force=FALSE) {
+		$t = strtolower($_t);
+		$c = strtolower($_c);
 		if (isset($this->types[$t])) {
-			$mime = clone $this->types[$t];
+			$mime = $this->types[$t];
 			while (($mapto = $mime->mapto()) && isset($this->types[strtolower($mapto)])) {
 				// FIXME: if there's a mapto, but it's invalid, the following
 				// charset thing will have no effect.
-				$mime = clone $this->types[strtolower($mapto)];
+				$mime = $this->types[strtolower($mapto)];
 			}
 			// if we have a matching character set, poke it onto the MIME type
 			// FIXME: is this the right thing to do?
 			if (isset($this->charsets[$c])) {
+				$mime = clone $mime;
 				$mime->set_param('charset', $this->charsets[$c]->charset());
+			} elseif ($force) {
+				$mime = clone $mime;
+				$mime->set_param('charset', $_c);
 			}
 			// note: effective_mime is only required in the case there's an
 			// invalid mapto somewhere
-			$response->content_type( $mime->effective_mime() );
+			$response->content_type( $mime->full_mime() );
 			return;
 		}
 		if ($strict) {
-			throw new Exception("unrecognised type '$t'");
+			throw new Exception("unrecognised type '$_t'");
+		} elseif ($force) {
+			$response->content_type( $_t.';charset='.$_c );
 		}
 	}
 
@@ -198,16 +205,19 @@ abstract class BasicRepresenter extends Representer {
 	 * Sets the response Content-Language string ($l).
 	 *
 	 * Throws an exception if I don't have a language for $l, and $strict is TRUE.
+	 * Sets it anyway, if $strict is FALSE and $force is TRUE.
 	 */
-	protected function response_language($response, $l, $strict=TRUE) {
-		$l = strtolower($l);
+	protected function response_language($response, $_l, $strict=TRUE, $force=FALSE) {
+		$l = strtolower($_l);
 		if (isset($this->languages[$l])) {
 			$lang = $this->languages[$l];
 			$response->content_language( $lang->language() );
 			return;
 		}
 		if ($strict) {
-			throw new Exception("unrecognised language '$l'");
+			throw new Exception("unrecognised language '$_l'");
+		} elseif ($force) {
+			$response->content_language( $_l );
 		}
 	}
 

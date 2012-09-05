@@ -19,11 +19,6 @@
     RewriteEngine On
     RewriteBase /
 
-    # rewrite any /a/b/c.phps to /source.php?file=a/b/c.php
-    # DEBUG ONLY!
-    RewriteCond %{REQUEST_FILENAME} !-s
-    RewriteRule ^(.*\.php)s$ source.php?file=$1 [L]
-
     # Forcibly deny access to the /system/ folder
     RewriteRule ^(system/*)$ index.php?path=/$1 [L,QSA]
 

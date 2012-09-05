@@ -24,14 +24,19 @@ class TemplateRepresenter extends BasicRepresenter {
 				new InternetMediaType('text', 'html', 1.0, TRUE),
 				new InternetMediaType('*', '*', 0.001, FALSE, 'text/html'),
 			),
+			array(),
+			array(),
 			array(
 				'object:TemplateEngine',
 			)
 		);
 	}
 
-	public function represent($m, $t, $response) {
+	public function represent($m, $t, $c, $l, $response) {
 		$response->content_type("text/html; charset=utf-8");
+		// todo: magical translation magic? (fixme)
+		if ($lang = $m->language())
+			$response->content_language($lang);
 		$response->header('X-UA-Compatible', 'IE=edge');
 		$response->body( $m->execFile() );
 	}

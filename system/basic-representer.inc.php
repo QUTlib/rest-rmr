@@ -23,6 +23,8 @@
 abstract class BasicRepresenter extends Representer {
 
 	private $types = array();
+	private $charsets = array();
+	private $languages = array();
 	private $all_models = FALSE;
 	private $model_types = NULL;
 	private $model_classes = NULL;
@@ -31,6 +33,8 @@ abstract class BasicRepresenter extends Representer {
 	 * Creates a new BasicRepresenter object.
 	 *
 	 * $types should be an array of InternetMediaType objects, or media type strings.
+	 * $languages should be an array of ContentLanguage objects, or language strings.
+	 * $charsets should be an array of CharacterSet objects, or character set strings.
 	 *
 	 * $models should be either:
 	 * * TRUE, if this representer can do any PHP value; or
@@ -38,16 +42,33 @@ abstract class BasicRepresenter extends Representer {
 	 *   * the type of a value supported (as per gettype()), or
 	 *   * a description of the classname supported (e.g. 'object:ClassName')
 	 */
-	public function __construct($types, $models) {
+	public function __construct($types, $languages, $charsets, $models) {
 		foreach ($types as $t) {
 			if (is_object($t) && ($t instanceof InternetMediaType)) {
-				$this->types[ $t->mime() ] = $t;
 			} elseif (is_string($t)) {
 				$t = InternetMediaType::parse($t);
-				$this->types[ $t->mime() ] = $t;
 			} else {
 				throw new Exception("not an internet media type: '$t'");
 			}
+			$this->types[ strtolower($t->mime()) ] = $t;
+		}
+		foreach ($languages as $l) {
+			if (is_object($l) && ($l instanceof ContentLanguage)) {
+			} elseif (is_string($l)) {
+				$l = ContentLanguage::parse($l);
+			} else {
+				throw new Exception("not a language: '$l'");
+			}
+			$this->languages[ strtolower($l->language()) ] = $l;
+		}
+		foreach ($charsets as $c) {
+			if (is_object($c) && ($c instanceof CharacterSet)) {
+			} elseif (is_string($c)) {
+				$c = CharacterSet::parse($c);
+			} else {
+				throw new Exception("not a character set: '$c'");
+			}
+			$this->charsets[ strtolower($c->charset()) ] = $c;
 		}
 
 		if ($models === TRUE) {
@@ -82,6 +103,24 @@ abstract class BasicRepresenter extends Representer {
 		return $result;
 	}
 
+	public function list_charsets() {
+		$result = array();
+		foreach ($this->charsets as $c) {
+			if ($c->advertised())
+				$result[ $c->charset() ] = $c->qvalue();
+		}
+		return $result;
+	}
+
+	public function list_languages() {
+		$result = array();
+		foreach ($this->languages as $l) {
+			if ($l->advertised())
+				$result[ $l->language() ] = $l->qvalue();
+		}
+		return $result;
+	}
+
 	public function can_do_model($model) {
 		if ($this->all_models) return TRUE;
 
@@ -99,38 +138,77 @@ abstract class BasicRepresenter extends Representer {
 	}
 
 	public function preference_for_type($t) {
-		$type = $t['option'];
-		if (isset($this->types[$type])) {
-			return $this->types[$type]->qvalue();
+		if (count($this->types) == 0) return 1.0;
+		$t = strtolower($t);
+		if (isset($this->types[$t])) {
+			return $this->types[$t]->qvalue();
+		}
+		return 0.0;
+	}
+
+	public function preference_for_charset($c) {
+		if (count($this->charsets) == 0) return 1.0;
+		$c = strtolower($c);
+		if (isset($this->charsets[$c])) {
+			return $this->charsets[$c]->qvalue();
+		}
+		return 0.0;
+	}
+
+	public function preference_for_language($l) {
+		if (count($this->languages) == 0) return 1.0;
+		$l = strtolower($l);
+		if (isset($this->languages[$l])) {
+			return $this->languages[$l]->qvalue();
 		}
 		return 0.0;
 	}
 
 	/**
-	 * Gets the InternetMediaType object associated with the given MIME ($t).
-	 * May be NULL.
-	 */
-	protected function pick_type($t) {
-		$type = $t['option'];
-		if (isset($this->types[$type])) {
-			return $this->types[$type];
-		}
-		return NULL;
-	}
-
-	/**
-	 * Sets the response Content-Type string ($t).
+	 * Sets the response Content-Type string ($t), with optional charset ($c).
 	 *
-	 * Throws an exception if I don't have a type for $t.
+	 * Throws an exception if I don't have a type for $t, and $strict is TRUE.
 	 */
-	protected function response_type($response, $t) {
-		$type = $t['option'];
-		if (isset($this->types[$type])) {
-			$mime = $this->types[$type];
+	protected function response_type($response, $t, $c, $strict=TRUE) {
+		$t = strtolower($t);
+		$c = strtolower($c);
+		if (isset($this->types[$t])) {
+			$mime = clone $this->types[$t];
+			while (($mapto = $mime->mapto()) && isset($this->types[strtolower($mapto)])) {
+				// FIXME: if there's a mapto, but it's invalid, the following
+				// charset thing will have no effect.
+				$mime = clone $this->types[strtolower($mapto)];
+			}
+			// if we have a matching character set, poke it onto the MIME type
+			// FIXME: is this the right thing to do?
+			if (isset($this->charsets[$c])) {
+				$mime->set_param('charset', $this->charsets[$c]->charset());
+			}
+			// note: effective_mime is only required in the case there's an
+			// invalid mapto somewhere
 			$response->content_type( $mime->effective_mime() );
 			return;
 		}
-		throw new Exception("unrecognised type '$type'");
+		if ($strict) {
+			throw new Exception("unrecognised type '$t'");
+		}
+	}
+
+	/**
+	 * Sets the response Content-Language string ($l).
+	 *
+	 * Throws an exception if I don't have a language for $l, and $strict is TRUE.
+	 */
+	protected function response_language($response, $l, $strict=TRUE) {
+		$l = strtolower($l);
+		if (isset($this->languages[$l])) {
+			$lang = $this->languages[$l];
+			$response->content_language( $lang->language() );
+			return;
+		}
+		if ($strict) {
+			throw new Exception("unrecognised language '$l'");
+		}
 	}
 
 }

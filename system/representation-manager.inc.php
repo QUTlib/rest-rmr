@@ -92,33 +92,51 @@ public static function dumpClass($klass) {
 			// to assume they will accept everything.
 			$accepted_types = array(
 				1000 => array(
-					array('option'=>'*/*','raw'=>'*/*' ),
+					//array('option'=>'*/*','raw'=>'*/*' ),
+					'*',
 				)
 			);
 		}
+		$accepted_charsets = Request::charsets();
+		if (!$accepted_charsets) {
+			$accepted_charsets = array( 1000 => array('*') );
+		}
+		$accepted_languages = Request::languages();
+		if (!$accepted_languages) {
+			$accepted_languages = array( 1000 => array('*') );
+		}
 
-		$reps = array();
+		$candidate_reps = array();
 		$best_rep = NULL;
 		$best_type = NULL;
+		$best_charset = NULL;
+		$best_language = NULL;
 		$best_qvalue = 0;
 		foreach (self::$list as $rep) {
 			if ($rep->can_do_model($model)) {
-				$reps[] = $rep;
-				$array = $rep->pick_best($accepted_types);
-				if ($array && $array['weight'] > $best_qvalue) {
+				$candidate_reps[] = $rep;
+				$array = $rep->pick_best($accepted_types, $accepted_charsets, $accepted_languages);
+				$prod = 1;
+				foreach (array('type','charset','language') as $key) {
+					if ($array[$key]) $prod *= ($array[$key]['weight'] / 10000.0);
+					else $prod = 0;
+				}
+				if ($prod > $best_qvalue) {
 					$best_rep = $rep;
-					$best_type = $array['type'];
-					$best_qvalue = $array['weight'];
+					$best_type = $array['type']['type'];
+					$best_charset = $array['charset']['charset'];
+					$best_language = $array['language']['language'];
+					$best_qvalue = $prod;
 				}
 			}
 		}
 
 		if ($best_rep) {
 			$response = new Response(Request::http_version());
-			$best_rep->represent($model, $best_type, $response);
+			$best_rep->represent($model, $best_type, $best_charset, $best_language, $response);
 		} else {
 			// urgh.. build up a nice response
-			$response = self::generate406( Request::uri(), $reps );
+			$response = self::generate406( Request::uri(), $candidate_reps );
 		}
 		return $response;
 	}

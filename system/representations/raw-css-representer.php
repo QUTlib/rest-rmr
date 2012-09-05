@@ -35,14 +35,17 @@ class RawCSSDocRepresenter extends BasicRepresenter {
 				new InternetMediaType('application', 'x-pointplus', 1.0, FALSE, 'text/css'), # yeah, yeah, shut up
 				new InternetMediaType('*', '*', 0.001, FALSE, 'text/css'),
 			),
+			array(),
+			array(),
 			array(
 				'object:RawCSSDoc',
 			)
 		);
 	}
 
-	public function represent($m, $t, $response) {
-		$this->response_type($response, $t);
+	public function represent($m, $t, $c, $l, $response) {
+		$this->response_type($response, $t, $c);
+		$this->response_language($response, $l, FALSE);
 		$response->body( $m->doc );
 	}
 }

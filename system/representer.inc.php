@@ -23,13 +23,12 @@ abstract class Representer {
 	abstract public function can_do_model($m);
 
 	/**
-	 * $t is of the form:
-	 *    array('option'=>'foo/bar', 'raw'=>'foo/bar;q=0.8;baz=quux')
+	 * $type is a string like: '* /*', 'foo/*', or 'foo/bar'
 	 *
 	 * Should return a number from 0.000 to 1.000, inclusive.
 	 * (1 = I'd love to; 0 = dunno how)
 	 */
-	abstract public function preference_for_type($t);
+	abstract public function preference_for_type($type);
 
 	/**
 	 * Advertise types we want to represent, in the form:
@@ -38,33 +37,73 @@ abstract class Representer {
 	abstract public function list_types();
 
 	/**
+	 * $charset is a string, like: 'iso-8859-1', or '*'
+	 *
+	 * Should return a number from 0.000 to 1.000, inclusive.
+	 * (1 = I'd love to; 0 = dunno how)
+	 */
+	abstract public function preference_for_charset($charset);
+
+	/**
+	 * Advertise types we want to represent, in the form:
+	 *    array( 'iso-8859-1'=>1.0, 'utf-8'=>0.5, ...)
+	 */
+	abstract public function list_charsets();
+
+	/**
+	 * $lang is a string, like: 'en', 'en-US', or '*'
+	 *
+	 * Should return a number from 0.000 to 1.000, inclusive.
+	 * (1 = I'd love to; 0 = dunno how)
+	 */
+	abstract public function preference_for_language($lang);
+
+	/**
+	 * Advertise types we want to represent, in the form:
+	 *    array( 'en'=>1.0, 'fr'=>0.5, ...)
+	 */
+	abstract public function list_languages();
+
+	/**
 	 * Picks the best type from $types, according to what the client
 	 * wants (qvalue) and what this representer can represent.
 	 */
-	public function pick_best($types) {
-		$best_type = NULL;
+	protected function pick_best_of($name, $list) {
+		$best = NULL;
 		$best_weight = 0;
-		foreach ($types as $qt => $tt) {
-			foreach ($tt as $type) {
-				$w = $this->preference_for_type($type); // float from 0.000 to 1.000
+		foreach ($list as $qt => $array) {
+			foreach ($array as $item) {
+				$w = call_user_func(array($this,"preference_for_$name"), $item['option']); // float from 0.000 to 1.000
 				$w = $qt * $w; // qt is int from 0 to 1000
 				$w = intval($w * 100); // final w is int from 0 to 100000 (5 precision, as per RFC2295/6)
 				if ($w > $best_weight) {
-					$best_type = $type;
+					$best = $item['option'];
 					$best_weight = $w;
 				}
 			}
 		}
-		if ($best_type == NULL) return FALSE;
-		return array( 'type' => $best_type, 'weight' => $best_weight );
+		if ($best == NULL) return FALSE;
+		return array( $name => $best, 'weight' => $best_weight );
 	}
 
 	/**
-	 * Represent model $m as type $t.
-	 *
-	 * The framework guarantees to never invoke this with a $t that scored 0.000
-	 * in #preference_for_type($t)
+	 * Picks the best type, charset, and language, according to what the client
+	 * wants (qvalue) and what this representer can represent.
 	 */
-	abstract public function represent($m, $t, $response);
+	public function pick_best($types, $charsets, $languages) {
+		return array(
+			'type'     => $this->pick_best_of('type',     $types),
+			'charset'  => $this->pick_best_of('charset',  $charsets),
+			'language' => $this->pick_best_of('language', $languages),
+		);
+	}
+
+	/**
+	 * Represent model $m as type $t, charset $c, language $l.
+	 *
+	 * The framework guarantees to never invoke this with an attribute that scored 0.000
+	 * in preference_for_FOO()
+	 */
+	abstract public function represent($m, $t, $c, $l, $response);
 }
 

@@ -21,13 +21,19 @@ add_include_path(SYSDIR);
 add_include_path(APPDIR);
 
 require_once('http-exception.inc.php');
+
 require_once('autoloader.inc.php');
+
 require_once('internet-media-type.inc.php');
+require_once('language.inc.php');
+require_once('charset.inc.php');
+
 require_once('uri-map.inc.php');
 require_once('uri-registrar.inc.php');
 require_once('representation-manager.inc.php');
 require_once('representer.inc.php');
 require_once('basic-representer.inc.php');
+
 require_once('request.inc.php');
 require_once('response.inc.php');
 
@@ -40,7 +46,7 @@ require_once(SYSDIR.'/dao/lib.inc.php');
 require_once(SYSDIR.'/utils/xmldom.inc.php');
 
 class Application {
-	const VERSION = '20120903';
+	const VERSION = '20120905';
 	const TITLE = 'REST-RMR';
 
 	/* standard interfaces */

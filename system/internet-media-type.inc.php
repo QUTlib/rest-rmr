@@ -71,7 +71,7 @@ class InternetMediaType {
 	}
 
 	/**
-	 * @param $include_qvalue TRUE=always, FALSE=never, NULL=if not 1.000
+	 * @param $include_qvalue TRUE=always, FALSE*=never, NULL=if not 1.000
 	 */
 	public function full_mime($include_qvalue=FALSE) {
 		$params = '';

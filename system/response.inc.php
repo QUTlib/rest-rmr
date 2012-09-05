@@ -183,6 +183,19 @@ public function dump() {
 	}
 
 	/**
+	 * 0 args: gets the content language of the response
+	 * 1 args: sets it, and returns $this
+	 */
+	public function content_language($value=NULL) {
+		if (func_num_args() > 0) {
+			$this->header['Content-Language'] = $value;
+			return $this;
+		} else {
+			return $this->header('Content-Language');
+		}
+	}
+
+	/**
 	 * Sets the status of this response to 'OK'
 	 * @chainable
 	 */
@@ -710,7 +723,9 @@ public function dump() {
 	 */
 	public static function generate_redirect($url, $permanent=false) {
 		$response = new Response();
-		return $response->redirect($url, $permanent);
+		return $response
+			->redirect($url, $permanent)
+			->body( self::generate_html('Moved', '<p>The document you requested has moved to <a href="'.$url.'">'.$url.'</a>.</p>', TRUE) );
 	}
 
 	/**

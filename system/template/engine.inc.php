@@ -27,6 +27,7 @@ class TemplateEngine {
 		'_PAGETITLE' => '',
 		'CONTENT'    => '',
 		'CSS'        => '',
+		'LANGUAGE'   => '',
 		# Magic:
 		'DOCTITLE'  => SITENAME,
 		'PAGETITLE' => SITENAME,
@@ -138,6 +139,17 @@ class TemplateEngine {
 			return $this->get('CONTENT');
 		} else {
 			return $this->set('CONTENT', $value);
+		}
+	}
+
+	/**
+	 * Get or set the language.
+	 */
+	public function language($value=NULL) {
+		if (func_num_args() < 1) {
+			return $this->get('LANGUAGE');
+		} else {
+			return $this->set('LANGUAGE', $value);
 		}
 	}
 

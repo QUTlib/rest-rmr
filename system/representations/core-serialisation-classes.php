@@ -45,12 +45,15 @@ class JSONRepresenter extends BasicRepresenter {
 				new InternetMediaType('text',        'x-json', 0.9),
 				new InternetMediaType('*', '*', 0.001, FALSE, 'application/json'),
 			),
+			array(),
+			array(),
 			array('object', 'array')
 		);
 	}
 
-	public function represent($m, $t, $response) {
-		$this->response_type($response, $t);
+	public function represent($m, $t, $c, $l, $response) {
+		$this->response_type($response, $t, $c);
+		$this->response_language($response, $l, FALSE);
 		$response->body( json_encode($m) );
 	}
 }
@@ -80,12 +83,15 @@ class YAMLRepresenter extends BasicRepresenter {
 				new InternetMediaType('application', 'yaml',   0.9),
 				new InternetMediaType('*', '*', 0.001, FALSE, 'text/yaml'),
 			),
+			array(),
+			array(),
 			array('integer','double','boolean','NULL','string','array','object')
 		);
 	}
 
-	public function represent($m, $t, $response) {
-		$this->response_type($response, $t);
+	public function represent($m, $t, $c, $l, $response) {
+		$this->response_type($response, $t, $c);
+		$this->response_language($response, $l, FALSE);
 		$response
 			->body("%YAML 1.2\n---\n")
 			->append( $this->_yaml_encode($m, '', '', false, false) );
@@ -103,7 +109,7 @@ class YAMLRepresenter extends BasicRepresenter {
 			$o = 'null';
 			break;
 		case 'string':
-			if (preg_match('/^\s|\s$|[\000-\031\\\'"\177-\377]|^\d+(\.\d*)?$/', $o)) {
+			if (preg_match('/^\s|\s$|[\000-\031\\\'"\177-\377]|^[+-]?\d+(\.\d*)?$/', $o)) {
 				$o = '"' . addcslashes($o, "\000..\031\"\\\177..\377") . '"';
 			}
 			break;
@@ -187,12 +193,15 @@ class XMLRepresenter extends BasicRepresenter {
 				new InternetMediaType('text',        'xml', 0.9),
 				new InternetMediaType('*', '*', 0.001, FALSE, 'application/xml'),
 			),
+			array(),
+			array(),
 			array('integer','double','boolean','NULL','string','array','object')
 		);
 	}
 
-	public function represent($m, $t, $response) {
-		$this->response_type($response, $t);
+	public function represent($m, $t, $c, $l, $response) {
+		$this->response_type($response, $t, $c);
+		$this->response_language($response, $l, FALSE);
 
 		if (is_object($m) && ($m instanceof SimpleXMLElement)) {
 			$response->body( $m->asXML() );
@@ -326,6 +335,8 @@ class XHTMLRepresenter extends BasicRepresenter {
 				new InternetMediaType('text',        'html',      0.5),
 				new InternetMediaType('*', '*', 0.001, FALSE, 'application/xhtml+xml'),
 			),
+			array(),
+			array(),
 			array() // note: I'm overriding can_do_model myself
 		);
 	}
@@ -335,8 +346,9 @@ class XHTMLRepresenter extends BasicRepresenter {
 		    or (is_object($m) && ($m instanceof DOMDocument) && $m->getElementsByTagName('html')->length > 0);
 	}
 
-	public function represent($m, $t, $response) {
-		$this->response_type($response, $t);
+	public function represent($m, $t, $c, $l, $response) {
+		$this->response_type($response, $t, $c);
+		$this->response_language($response, $l, FALSE);
 		if ($m instanceof SimpleXMLElement)
 			$response->body( $m->asXML() );
 		else

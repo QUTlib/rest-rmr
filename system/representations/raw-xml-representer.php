@@ -35,14 +35,17 @@ class RawXMLDocRepresenter extends BasicRepresenter {
 				new InternetMediaType('text',        'xml', 0.9),
 				new InternetMediaType('*', '*', 0.001, FALSE, 'application/xml'),
 			),
+			array(),
+			array(),
 			array(
 				'object:RawXMLDoc',
 			)
 		);
 	}
 
-	public function represent($m, $t, $response) {
-		$this->response_type($response, $t);
+	public function represent($m, $t, $c, $l, $response) {
+		$this->response_type($response, $t, $c);
+		$this->response_language($response, $l, FALSE);
 		$response->body( $m->doc );
 	}
 }

@@ -112,20 +112,23 @@ Representation objects must extend the `Representer` abstract class, implementin
 `preference_for_type($t)`
 * returns a three-decimal-digit-precision floating-point number from 0.000 to 1.000 expressing this representation's preference for representing a given type
 
+`preference_for_charset($c)`
+* returns a three-decimal-digit-precision floating-point number from 0.000 to 1.000 expressing this representation's preference for representing a given character set
+
+`preference_for_language($l)`
+* returns a three-decimal-digit-precision floating-point number from 0.000 to 1.000 expressing this representation's preference for representing a given language
+
 `list_types()`
 * returns an associative array of `type=>preference` for all types this representer wishes to advertise supporting.  Note that this list does not have to include every type that would return a non-zero value in `#preference_for_type`
 
-`represent($m, $t, $response)`
-* represents the given model as the given type, and pokes it into the given response object
+`list_charsets()`
+* returns an associative array of `charset=>preference` for all character sets this representer wishes to advertise supporting.  Note that this list does not have to include every character set that would return a non-zero value in `#preference_for_charset`
 
-Note that wherever a type is given by the framework, it is a complex data structure of the form:
+`list_languages()`
+* returns an associative array of `language=>preference` for all languages this representer wishes to advertise supporting.  Note that this list does not have to include every language that would return a non-zero value in `#preference_for_language`
 
-    array(
-        'option' => 'foo/bar',
-        'raw' => 'foo/bar;q=0.8;baz=quux',
-    )
-
-where the “option” is the name of the type, and “raw” is the value supplied by the client, including quality values and other parameters.
+`represent($model, $type, $charset, $language, $response)`
+* represents the given model as the given type, charset, and language, and pokes it into the given response object
 
 Magic
 -----

@@ -33,14 +33,17 @@ class RawHTMLDocRepresenter extends BasicRepresenter {
 				new InternetMediaType('text', 'html', 1.0, TRUE),
 				new InternetMediaType('*', '*', 0.001, FALSE, 'text/html'),
 			),
+			array(),
+			array(),
 			array(
 				'object:RawHTMLDoc',
 			)
 		);
 	}
 
-	public function represent($m, $t, $response) {
-		$this->response_type($response, $t);
+	public function represent($m, $t, $c, $l, $response) {
+		$this->response_type($response, $t, $c);
+		$this->response_language($response, $l, FALSE);
 		$response->body( $m->doc );
 	}
 }

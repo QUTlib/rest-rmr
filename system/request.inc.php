@@ -260,6 +260,23 @@ public static function dump() {
 	}
 
 	/**
+	 * Gets a nice prioritised list of the preferred languages.
+	 *
+	 * If the client didn't supply any accepted languages, returns FALSE.
+	 *
+	 * @see #parse_qvalues for more description
+	 *
+	 * @return accepted languages, or FALSE
+	 */
+	public static function languages() {
+		if (isset(self::$headers['Accept-Language']) && ($accept = self::$headers['Accept-Language'])) { }
+		elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && ($accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'])) { }
+		else return FALSE;
+
+		return self::parse_qvalues($accept);
+	}
+
+	/**
 	 * Gets a nice prioritised list of options from an "Accept"-type HTTP
 	 * request header.
 	 *

@@ -30,7 +30,7 @@ class Request {
 	private static $post = NULL;
 	private static $params = NULL;
 
-	public static static function init() {
+	public static function init() {
 		if (isset($_GET['path']) && ($path = $_GET['path'])) {
 			self::$uri = $path;
 			unset($_GET['path']);

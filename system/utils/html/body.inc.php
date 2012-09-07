@@ -16,29 +16,9 @@
  * under the License.
  */
 
-/*
- * This file exists because our horrible sysadmins don't let us
- * use PHP DOM, and SimpleXML is terribly insufficient.
- */
-
-class DOMComment extends DOMCharacterData {
-
-	### MAGIC
-
-	public $nodeType = XML_COMMENT_NODE;
-	public $nodeName = '!--';
-
-	public function _xml($xmlstyle=TRUE) {
-		return '<!-- ' . $this->data . ' -->';
+class HTMLBody extends HTMLElement {
+	public function __construct($attrs=NULL) {
+		parent::__construct('body', $attrs);
 	}
-
-	### API
-
-	public function __construct($value=NULL) {
-		parent::__construct();
-		$this->data = (string)$value;
-		$this->_l();
-	}
-
 }
 

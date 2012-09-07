@@ -16,26 +16,20 @@
  * under the License.
  */
 
-/*
- * This file exists because our horrible sysadmins don't let us
- * use PHP DOM, and SimpleXML is terribly insufficient.
- */
+class HTMLCData extends HTMLHierarchyNode {
+	protected $value = '';
 
-class DOMXPath {
-
-	### MAGIC
-
-	### API
-
-	public $document;
-
-	public function __construct($doc) {
-		$this->document = $doc;
+	public function __construct($value=NULL) {
+		if ($value) $this->value = $value;
 	}
-	#public function evaluate($expression, $contextnode=NULL, $registerNodeNS=TRUE) {}
-	#public function query($expression, $contextnode=NULL, $registerNodeNS=TRUE) {}
-	#public function registerNamespace($prefix, $namespaceURI) {}
-	#public function registerPhpFunction($restrict=NULL) {}
+
+	public function value($v=NULL) {
+		if (func_num_args() > 0) { $this->value = $v; return $this; }
+		else { return $this->value; }
+	}
+
+	public function html() { return '<![CDATA[' . $this->value . ']]>'; }
+	public function xml() { return '<![CDATA[' . $this->value . ']]>'; }
 
 }
 

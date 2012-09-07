@@ -16,26 +16,9 @@
  * under the License.
  */
 
-/*
- * This file exists because our horrible sysadmins don't let us
- * use PHP DOM, and SimpleXML is terribly insufficient.
- */
-
-class DOMCdataSection extends DOMText {
-
-	### MAGIC
-
-	public $nodeType = XML_CDATA_SECTION_NODE;
-	public $nodeName = '![CDATA[';
-
-	public function _xml($xmlstyle=TRUE) {
-		return '<![CDATA[' . $this->wholeText . ']]>';
-	}
-
-	### API
-
-	public function __construct($value) {
-		parent::__construct($value);
-	}
+abstract class HTMLNode {
+	abstract public function html();
+	abstract public function xml();
+	public function is($other) { return spl_object_hash($other) == spl_object_hash($this); }
 }
 

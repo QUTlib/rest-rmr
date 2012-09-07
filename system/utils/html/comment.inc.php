@@ -16,25 +16,10 @@
  * under the License.
  */
 
-/*
- * This file exists because our horrible sysadmins don't let us
- * use PHP DOM, and SimpleXML is terribly insufficient.
- */
+class HTMLComment extends HTMLCData {
 
-class DOMEntity extends DOMNode {
+	public function html() { return '<!-- ' . $this->value . ' -->'; }
+	public function xml() { return '<!-- ' . $this->value . ' -->'; }
 
-	### MAGIC
-
-	public $nodeType = XML_ENTITY_NODE;
-	public $nodeName = '!ENTITY';
-
-	### API
-
-	public $publicId = NULL;
-	public $systemId = NULL;
-	public $notationName = NULL;
-	public $actualEncoding = NULL;
-	public $encoding = NULL;
-	public $version = NULL;
 }
 

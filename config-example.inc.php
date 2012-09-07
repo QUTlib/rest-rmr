@@ -16,6 +16,8 @@
  * under the License.
  */
 
+#date_default_timezone_set('Australia/Brisbane');
+
 define('SYSDIR', 'system');
 define('APPDIR', 'application');
 

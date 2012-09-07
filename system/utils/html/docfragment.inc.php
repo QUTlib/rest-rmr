@@ -16,28 +16,28 @@
  * under the License.
  */
 
-/*
- * This file exists because our horrible sysadmins don't let us
- * use PHP DOM, and SimpleXML is terribly insufficient.
- */
-
-class DOMDocumentFragment extends DOMNode {
-
-	### MAGIC
-
-	public $nodeType = XML_DOCUMENT_FRAG_NODE;
-
-	public function _xml($xmlstyle=TRUE) {
-		$string = '';
-		foreach ($this->childNodes as $node) {
-			$string .= $node->_xml($xmlstyle);
-		}
-		return $string;
+// Note: this isn't just a HTMLHierarchyNode because I want to
+// inherit the useful HTMLElement add_* methods.
+class HTMLDocumentFragment extends HTMLElement {
+	public function __construct() {
+		parent::__construct('');
 	}
 
-	### API
+	public function html() {
+		$s = '';
+		foreach ($this as $child) {
+			$s .= $child->html();
+		}
+		return $s;
+	}
 
-	public function appendXML($data) { $this->nodeValue = $data; } #XXX
+	public function xml() {
+		$s = '';
+		foreach ($this as $child) {
+			$s .= $child->xml();
+		}
+		return $s;
+	}
 
 }
 

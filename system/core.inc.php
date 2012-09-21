@@ -64,3 +64,14 @@ function elapsed() {
 	return microtime(TRUE) - $GLOBALS['__STARTUP__'];
 }
 
+/**
+ * Gets a HTTP-date for the given time (or 'now'), in RFC822/RFC1123 format.
+ */
+function httpdate($timestamp=NULL) {
+	if (func_num_args() > 0) {
+		return gmdate('D, d M Y H:i:s T', $timestamp);
+	} else {
+		return gmdate('D, d M Y H:i:s T');
+	}
+}
+

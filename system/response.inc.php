@@ -20,10 +20,14 @@
 class Response {
 	private $version = '1.1';
 	private $status = 200;
-	#private $header = array();
-	// until I sort out proper caching, treat everything as dynamic and fresh
-	private $header = array('Cache-Control'=>'no-cache', 'Expires'=>'Thu, 23 Dec 1980 22:15:00 GMT', 'Pragma'=>'no-cache');
+	private $header = array();
 	private $body   = '';
+
+	// special header info, stored separately
+	private $last_modified = NULL;
+
+	private $allow_compression = true;
+	private $allow_not_modified = true;
 
 	private $recording = false;
 
@@ -31,6 +35,7 @@ class Response {
 		if (func_num_args() > 0 && $http_version) $this->version = $http_version;
 		if (func_num_args() > 1) $this->status($status); // including validation
 		// Set the default headers
+		$this->nocache();
 		foreach (headers_list() as $header) {
 			$parts = explode(': ', $header, 2);
 			if (count($parts) == 2)
@@ -202,12 +207,15 @@ public function dump() {
 	public function last_modified($value=NULL) {
 		if (func_num_args() > 0) {
 			if (is_int($value)) {
-				$value = gmdate('D, j M Y H:i:s T', $value);
+				$this->last_modified = $value;
+				$value = httpdate($value);
+			} else {
+				$this->last_modified = strtotime($value);
 			}
 			$this->header['Last-Modified'] = $value;
 			return $this;
 		} else {
-			return $this->header('Last-Modified');
+			return $this->last_modified;
 		}
 	}
 
@@ -226,7 +234,7 @@ public function dump() {
 		}
 		unset($this->header['Pragma']);
 		$this->header['Cache-Control'] = 'public';
-		$this->header['Expires'] = gmdate('D, j M Y H:i:s T', $expires);
+		$this->header['Expires'] = httpdate($expires);
 		return $this;
 	}
 
@@ -515,12 +523,6 @@ public function dump() {
 	 * Executes the response, sends it to the browser, etc.
 	 */
 	public function commit() {
-		// HTTP Status Line
-		$vrsn = $this->version;
-		$code = $this->status;
-		$msg  = $this->status_message();
-		header("HTTP/$vrsn $code $msg", TRUE, $code);
-
 		// get any response body that was printed, rather than appended
 		if ($this->recording) {
 			$this->stop_recording();
@@ -528,12 +530,19 @@ public function dump() {
 
 		// mandatory header #1
 		if (!$this->header('Date')) {
-			$this->header('Date', gmdate('D, d M Y H:i:s T'));
+			$this->header('Date', httpdate());
+		}
+
+		// if the browser has a cached copy, skip some network traffic
+		// (only do it for '200 OK' responses)
+		if ($this->allow_not_modified && $this->status == 200 && isset($this->last_modified) && $this->last_modified < $GLOBALS['__STARTUP__']) {
+			$this->status = 304;
+			$this->body = '';
 		}
 
 		// if the browser wants encoded (read: compressed) data, we should
 		// try to accommodate it.
-		if (!$this->header('Content-Encoding') && ($accepted_encodings = Request::encodings())) {
+		if ($this->allow_compression && $this->length() && !$this->header('Content-Encoding') && ($accepted_encodings = Request::encodings())) {
 			$this->attempt_compression($accepted_encodings);
 		}
 
@@ -545,6 +554,14 @@ public function dump() {
 
 		// secret magic
 		$this->add_header('X-Powered-By', strip_tags(Application::TITLE.'/'.Application::VERSION));
+
+		// ------- NO OUTPUT ABOVE THIS LINE ----------------------------
+
+		// HTTP Status Line
+		$vrsn = $this->version;
+		$code = $this->status;
+		$msg  = $this->status_message();
+		header("HTTP/$vrsn $code $msg", TRUE, $code);
 
 		// Registered headers
 		foreach ($this->headers() as $k=>$a) {

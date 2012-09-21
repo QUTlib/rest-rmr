@@ -21,11 +21,16 @@
  * The simplest model of all.
  *
  * Contains a single, basic PHP value (usually a String).
+ *
+ * Optionally can contain a timestamp describing when the
+ * value was last modified/generated.
  */
 class RawDocument {
 	public $doc = '';
-	public function __construct($doc) {
+	public $mtime = NULL;
+	public function __construct($doc, $mtime=NULL) {
 		$this->doc = $doc;
+		if (func_num_args()>1) $this->mtime = $mtime;
 	}
 }
 

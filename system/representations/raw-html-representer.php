@@ -44,6 +44,10 @@ class RawHTMLDocRepresenter extends BasicRepresenter {
 	public function represent($m, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c);
 		$this->response_language($response, $l, FALSE);
+		if (isset($m->mtime)) {
+			$response->last_modified($m->mtime);
+			$response->cache();
+		}
 		$response->body( $m->doc );
 	}
 }

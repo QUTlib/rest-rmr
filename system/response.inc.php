@@ -22,7 +22,7 @@ class Response {
 	private $status = 200;
 	#private $header = array();
 	// until I sort out proper caching, treat everything as dynamic and fresh
-	private $header = array('Cache-Control'=>'no-cache', 'Expires'=>'Tue, 23 Dec 1980 22:15:00 GMT', 'Pragma'=>'no-cache');
+	private $header = array('Cache-Control'=>'no-cache', 'Expires'=>'Thu, 23 Dec 1980 22:15:00 GMT', 'Pragma'=>'no-cache');
 	private $body   = '';
 
 	private $recording = false;
@@ -193,6 +193,52 @@ public function dump() {
 		} else {
 			return $this->header('Content-Language');
 		}
+	}
+
+	/**
+	 * 0 args: gets the last-modified time of the response
+	 * 1 args: sets it, and returns $this
+	 */
+	public function last_modified($value=NULL) {
+		if (func_num_args() > 0) {
+			if (is_int($value)) {
+				$value = gmdate('D, j M Y H:i:s T', $value);
+			}
+			$this->header['Last-Modified'] = $value;
+			return $this;
+		} else {
+			return $this->header('Last-Modified');
+		}
+	}
+
+	/**
+	 * Sets the appropriate headers to indicate that this response is cacheable.
+	 * NOTE: as yet this DOES NOT perform any server-side caching of the response.
+	 *
+	 * @param $duration either a number of seconds, or a string that #strtotime can handle.
+	 * @chainable
+	 */
+	public function cache($duration='+1 year') {
+		if (is_int($duration)) {
+			$expires = time() + $duration;
+		} else {
+			$expires = strtotime($duration);
+		}
+		unset($this->header['Pragma']);
+		$this->header['Cache-Control'] = 'public';
+		$this->header['Expires'] = gmdate('D, j M Y H:i:s T', $expires);
+		return $this;
+	}
+
+	/**
+	 * Sets the appropriate headers to indicate that this response is NOT cacheable.
+	 * @chainable
+	 */
+	public function nocache() {
+		$this->header['Cache-Control'] = 'no-cache';
+		$this->header['Expires'] = 'Thu, 23 Dec 1980 22:15:00 GMT';
+		$this->header['Pragma'] = 'no-cache';
+		return $this;
 	}
 
 	/**

@@ -26,6 +26,7 @@ class Request {
 	private static $method  = NULL;
 	private static $uri     = NULL;
 	private static $headers = NULL;
+	private static $headers_index = NULL;
 	private static $get  = NULL;
 	private static $post = NULL;
 	private static $params = NULL;
@@ -43,6 +44,13 @@ class Request {
 		self::$headers = getallheaders();
 		self::$get  = $_GET;
 		self::$post = $_POST;
+
+		// build a header index
+		$headers_index = array();
+		foreach (self::$headers as $k=>$v) {
+			$headers_index[strtolower($k)] = $k;
+		}
+		self::$headers_index = $headers_index;
 	}
 
 ### DEBUG
@@ -192,7 +200,7 @@ public static function dump() {
 	 * @return accepted content types, or FALSE
 	 */
 	public static function content_types() {
-		if (isset(self::$headers['Accept']) && ($accept = self::$headers['Accept'])) { }
+		if ($accept = self::header('Accept')) {}
 		elseif (isset($_SERVER['HTTP_ACCEPT']) && ($accept = $_SERVER['HTTP_ACCEPT'])) { }
 		else return FALSE;
 
@@ -212,7 +220,7 @@ public static function dump() {
 	 * @return accepted charsets, or FALSE
 	 */
 	public static function charsets() {
-		if (isset(self::$headers['Accept-Charset']) && ($charset = self::$headers['Accept-Charset'])) { }
+		if ($charset = self::header('Accept-Charset')) {}
 		elseif (isset($_SERVER['HTTP_ACCEPT_CHARSET']) && ($charset = $_SERVER['HTTP_ACCEPT_CHARSET'])) { }
 		else return FALSE;
 
@@ -252,7 +260,7 @@ public static function dump() {
 	 * @return accepted encodings, or FALSE
 	 */
 	public static function encodings() {
-		if (isset(self::$headers['Accept-Encoding']) && ($accept = self::$headers['Accept-Encoding'])) { }
+		if ($accept = self::header('Accept-Encoding')) {}
 		elseif (isset($_SERVER['HTTP_ACCEPT_ENCODING']) && ($accept = $_SERVER['HTTP_ACCEPT_ENCODING'])) { }
 		else return FALSE;
 
@@ -269,7 +277,7 @@ public static function dump() {
 	 * @return accepted languages, or FALSE
 	 */
 	public static function languages() {
-		if (isset(self::$headers['Accept-Language']) && ($accept = self::$headers['Accept-Language'])) { }
+		if ($accept = self::header('Accept-Language')) {}
 		elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && ($accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'])) { }
 		else return FALSE;
 
@@ -382,7 +390,8 @@ public static function dump() {
 	 * Returns NULL if not found.
 	 */
 	public static function header($name) {
-		if (isset(self::$headers[$name])) return self::$headers[$name];
+		$name = strtolower($name);
+		if (isset(self::$headers_index[$name])) return self::$headers[ self::$headers_index[$name] ];
 		return NULL;
 	}
 

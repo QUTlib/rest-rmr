@@ -535,9 +535,13 @@ public function dump() {
 
 		// if the browser has a cached copy, skip some network traffic
 		// (only do it for '200 OK' responses)
-		if ($this->allow_not_modified && $this->status == 200 && isset($this->last_modified) && $this->last_modified < $GLOBALS['__STARTUP__']) {
-			$this->status = 304;
-			$this->body = '';
+		if ($this->allow_not_modified && $this->status == 200 && isset($this->last_modified) && ($ims = Request::header('If-Modified-Since'))) {
+			// todo: should I deal with dodgy/broken headers?
+			$stamp = @strtotime($ims);
+			if (!empty($stamp) && $stamp >= $this->last_modified) {
+				$this->status = 304;
+				$this->body = '';
+			}
 		}
 
 		// if the browser wants encoded (read: compressed) data, we should

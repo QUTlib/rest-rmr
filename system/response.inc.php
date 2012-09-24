@@ -207,7 +207,9 @@ public function dump() {
 	 *
 	 * If given, the $value (an integer timestamp, or a string that can
 	 * be parsed by strtotime()) will be assigned to the property, and
-	 * the function will return the same value as #modified_response()
+	 * the function will return this response object.
+	 *
+	 * @see #modified_response()
 	 */
 	public function last_modified($value=NULL) {
 		if (func_num_args() > 0) {
@@ -218,7 +220,7 @@ public function dump() {
 				$this->last_modified = strtotime($value);
 			}
 			$this->header['Last-Modified'] = $value;
-			return $this->modified_response();
+			return $this;
 		} else {
 			return $this->last_modified;
 		}

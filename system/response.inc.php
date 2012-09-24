@@ -649,13 +649,13 @@ public function dump() {
 			// update appropriate 'simple' headers (encoding, length)
 			$this->header('Content-Encoding', $method);
 			$this->header('Content-Length', $this->length());
-			// if there's a Vary: header, add 'content-encoding' as an important thingy
+			// if there's a Vary: header, add 'Accept-Encoding' as an important thingy
 			if ($vary = $this->header('Vary')) {
-				if (! preg_match('/(^|,)\s*content-encoding\s*(,|$)/i', $vary)) {
-					$this->header('Vary', $vary . ', content-encoding');
+				if (! preg_match('/(^|,)\s*Accept-Encoding\s*(,|$)/i', $vary)) {
+					$this->header('Vary', $vary . ', Accept-Encoding');
 				}
 			} else {
-				$this->header('Vary', 'content-encoding');
+				$this->header('Vary', 'Accept-Encoding');
 			}
 			return TRUE;
 		}

@@ -17,6 +17,7 @@
  */
 
 Application::register_class('RawHTMLDoc', SYSDIR.'/models/raw-html-model.php');
+Application::register_class('HTMLFile',   SYSDIR.'/models/html-file-model.php');
 
 /**
  * A basic HTML representer that displays RawHTMLDoc models as text/html
@@ -37,6 +38,7 @@ class RawHTMLDocRepresenter extends BasicRepresenter {
 			array(),
 			array(
 				'object:RawHTMLDoc',
+				'object:HTMLFile',
 			)
 		);
 	}
@@ -44,11 +46,13 @@ class RawHTMLDocRepresenter extends BasicRepresenter {
 	public function represent($m, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c);
 		$this->response_language($response, $l, FALSE);
-		if (isset($m->mtime)) {
-			$response->last_modified($m->mtime);
+		if ($mtime = $m->mtime()) {
+			$response->last_modified($mtime);
 			$response->cache();
 		}
-		$response->body( $m->doc );
+		if ($response->modified_response()) {
+			$response->body( $m->doc() );
+		}
 	}
 }
 

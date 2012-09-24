@@ -17,24 +17,12 @@
  */
 
 
+require_once(SYSDIR.'/models/file-model.php');
+
 /**
- * The simplest model of all.
- *
- * Contains a single, basic PHP value (usually a String).
- *
- * Optionally can contain a timestamp describing when the
- * value was last modified/generated.
- *
- * API-identical to FileModel
+ * A simple model which likes to be rendered as 'text/html'
+ * by RawHTMLDocRepresenter
  */
-class RawDocument {
-	private $doc = '';
-	private $mtime = NULL;
-	public function __construct($doc, $mtime=NULL) {
-		$this->doc = $doc;
-		if (func_num_args()>1) $this->mtime = $mtime;
-	}
-	public function doc() { return $this->doc; }
-	public function mtime() { return $this->mtime; }
+class HTMLFile extends FileModel {
 }
 

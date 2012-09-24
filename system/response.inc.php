@@ -29,6 +29,7 @@ class Response {
 	private $allow_compression = true;
 	private $allow_not_modified = true;
 
+	private $committed = false;
 	private $recording = false;
 
 	public function __construct($http_version='1.1', $status=200) {
@@ -201,8 +202,12 @@ public function dump() {
 	}
 
 	/**
-	 * 0 args: gets the last-modified time of the response
-	 * 1 args: sets it, and returns $this
+	 * Without parameters, this method returns the currently-assigned
+	 * last-modified-time of the response object.
+	 *
+	 * If given, the $value (an integer timestamp, or a string that can
+	 * be parsed by strtotime()) will be assigned to the property, and
+	 * the function will return the same value as #modified_response()
 	 */
 	public function last_modified($value=NULL) {
 		if (func_num_args() > 0) {
@@ -213,10 +218,31 @@ public function dump() {
 				$this->last_modified = strtotime($value);
 			}
 			$this->header['Last-Modified'] = $value;
-			return $this;
+			return $this->modified_response();
 		} else {
 			return $this->last_modified;
 		}
+	}
+
+	/**
+	 * Tests the response to see if it has been modified.
+	 *
+	 * A response is considered unmodified if it has a #last_modified time, a
+	 * status of '200 OK', and the current Request included a valid
+	 * If-Modified-Since header that is less than or equal to the response's
+	 * #last_modified time.
+	 *
+	 * @return the response object if modified, or FALSE if not
+	 */
+	public function modified_response() {
+		if ($this->allow_not_modified && $this->status == 200 && isset($this->last_modified) && ($ims = Request::header('If-Modified-Since'))) {
+			// todo: should I deal with dodgy/broken headers?
+			$stamp = @strtotime($ims);
+			if (!empty($stamp) && $stamp >= $this->last_modified) {
+				return FALSE;
+			}
+		}
+		return $this;
 	}
 
 	/**
@@ -523,6 +549,11 @@ public function dump() {
 	 * Executes the response, sends it to the browser, etc.
 	 */
 	public function commit() {
+		if ($this->committed) {
+			throw new Exception("already committed");
+		}
+		$this->committed = TRUE;
+
 		// get any response body that was printed, rather than appended
 		if ($this->recording) {
 			$this->stop_recording();
@@ -535,13 +566,9 @@ public function dump() {
 
 		// if the browser has a cached copy, skip some network traffic
 		// (only do it for '200 OK' responses)
-		if ($this->allow_not_modified && $this->status == 200 && isset($this->last_modified) && ($ims = Request::header('If-Modified-Since'))) {
-			// todo: should I deal with dodgy/broken headers?
-			$stamp = @strtotime($ims);
-			if (!empty($stamp) && $stamp >= $this->last_modified) {
-				$this->status = 304;
-				$this->body = '';
-			}
+		if (! $this->modified_response()) {
+			$this->status = 304;
+			$this->body = '';
 		}
 
 		// if the browser wants encoded (read: compressed) data, we should
@@ -834,7 +861,7 @@ public function dump() {
 		$r = new Response(NULL, 500);
 		$r->content_type('text/html; charset=iso-8859-1');
 		$r->body( self::generate_html($title, $message.$code) );
-		$r->commit(NULL);
+		$r->commit();
 		exit;
 	}
 

@@ -16,25 +16,31 @@
  * under the License.
  */
 
-
 /**
- * The simplest model of all.
+ * A model that refers to a file in the filesystem.
  *
- * Contains a single, basic PHP value (usually a String).
+ * Everything is lazy-initialised.
  *
- * Optionally can contain a timestamp describing when the
- * value was last modified/generated.
- *
- * API-identical to FileModel
+ * API-identical to RawDocument
  */
-class RawDocument {
-	private $doc = '';
+class FileModel {
+	private $filename = NULL;
+	private $doc = NULL;
 	private $mtime = NULL;
-	public function __construct($doc, $mtime=NULL) {
-		$this->doc = $doc;
-		if (func_num_args()>1) $this->mtime = $mtime;
+	public function __construct($filename) {
+		$this->filename = $filename;
 	}
-	public function doc() { return $this->doc; }
-	public function mtime() { return $this->mtime; }
+	public function doc() {
+		if (!isset($this->doc)) {
+			$this->doc = file_get_contents($this->filename);
+		}
+		return $this->doc;
+	}
+	public function mtime() {
+		if (!isset($this->mtime)) {
+			$this->mtime = filemtime($this->filename);
+		}
+		return $this->mtime;
+	}
 }
 

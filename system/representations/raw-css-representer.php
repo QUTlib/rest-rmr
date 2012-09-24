@@ -17,6 +17,7 @@
  */
 
 Application::register_class('RawCSSDoc', SYSDIR.'/models/raw-css-model.php');
+Application::register_class('CSSFile',   SYSDIR.'/models/css-file-model.php');
 
 /**
  * A basic CSS representer that displays RawCSSDoc models as text/css
@@ -39,6 +40,7 @@ class RawCSSDocRepresenter extends BasicRepresenter {
 			array(),
 			array(
 				'object:RawCSSDoc',
+				'object:CSSFile',
 			)
 		);
 	}
@@ -46,11 +48,13 @@ class RawCSSDocRepresenter extends BasicRepresenter {
 	public function represent($m, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c);
 		$this->response_language($response, $l, FALSE);
-		if (isset($m->mtime)) {
-			$response->last_modified($m->mtime);
+		if ($mtime = $m->mtime()) {
+			$response->last_modified($mtime);
 			$response->cache();
 		}
-		$response->body( $m->doc );
+		if ($response->modified_response()) {
+			$response->body( $m->doc() );
+		}
 	}
 }
 

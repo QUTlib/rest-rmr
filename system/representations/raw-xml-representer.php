@@ -17,6 +17,7 @@
  */
 
 Application::register_class('RawXMLDoc', SYSDIR.'/models/raw-xml-model.php');
+Application::register_class('XMLFile',   SYSDIR.'/models/xml-file-model.php');
 
 /**
  * A basic XML representer that displays RawXMLDoc models as application/xml
@@ -39,6 +40,7 @@ class RawXMLDocRepresenter extends BasicRepresenter {
 			array(),
 			array(
 				'object:RawXMLDoc',
+				'object:XMLFile',
 			)
 		);
 	}
@@ -46,11 +48,13 @@ class RawXMLDocRepresenter extends BasicRepresenter {
 	public function represent($m, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c);
 		$this->response_language($response, $l, FALSE);
-		if (isset($m->mtime)) {
-			$response->last_modified($m->mtime);
+		if ($mtime = $m->mtime()) {
+			$response->last_modified($mtime);
 			$response->cache();
 		}
-		$response->body( $m->doc );
+		if ($response->modified_response()) {
+			$response->body( $m->doc() );
+		}
 	}
 }
 

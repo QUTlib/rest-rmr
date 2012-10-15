@@ -185,6 +185,53 @@ class HTMLElement extends HTMLHierarchyNode {
 		return $dl;
 	}
 
+	/**
+	 * Creates an INPUT element.
+	 */
+	public function add_input($name, $value=NULL, $attrs=array()) {
+		if (func_num_args() == 2 && is_array($value)) {
+			$attrs = $value;
+			$value = NULL;
+		}
+		if (!$attrs) $attrs = array();
+		if (!isset($attrs['type'])) $attrs['type'] = 'text';
+		if (!isset($attrs['name'])) $attrs['name'] = $name;
+		if (!isset($attrs['value'])) $attrs['value'] = $value;
+		$node = $this->add_tag('input', $attrs, TRUE);
+		return $node;
+	}
+
+	/**
+	 * Creates a TEXTAREA element.
+	 */
+	public function add_textarea($name, $value=NULL, $attrs=array()) {
+		if (func_num_args() == 2 && is_array($value)) {
+			$attrs = $value;
+			$value = NULL;
+		}
+		if (!$attrs) $attrs = array();
+		if (!isset($attrs['name'])) $attrs['name'] = $name;
+		$node = $this->add_tag('textarea', $attrs, TRUE);
+		$node->add_text($value);
+		return $node;
+	}
+
+	/**
+	 * Creates a button INPUT element.
+	 */
+	public function add_button($caption, $name=NULL, $attrs=array()) {
+		if (func_num_args() == 2 && is_array($name)) {
+			$attrs = $name;
+			$name = NULL;
+		}
+		if (!$attrs) $attrs = array();
+		if (!isset($attrs['type'])) $attrs['type'] = 'button';
+		if (!isset($attrs['value'])) $attrs['value'] = $caption;
+		if (!isset($attrs['name'])) $attrs['name'] = $name;
+		$node = $this->add_tag('input', $attrs, TRUE);
+		return $node;
+	}
+
 
 }
 

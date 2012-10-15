@@ -27,6 +27,7 @@ class TemplateEngine {
 		'_PAGETITLE' => '',
 		'CONTENT'    => '',
 		'CSS'        => '',
+		'JS'         => '',
 		'LANGUAGE'   => '',
 		# Magic:
 		'DOCTITLE'  => SITENAME,
@@ -177,6 +178,25 @@ class TemplateEngine {
 	 */
 	public function append_css($css) {
 		$this->items['CSS'] .= $css;
+		return $this;
+	}
+
+	/**
+	 * Get or set custom javascript.
+	 */
+	public function js($value=NULL) {
+		if (func_num_args() < 1) {
+			return $this->get('JS');
+		} else {
+			return $this->set('JS', $value);
+		}
+	}
+
+	/**
+	 * Append some javascript to the page's custom script.
+	 */
+	public function append_js($js) {
+		$this->items['JS'] .= $js;
 		return $this;
 	}
 

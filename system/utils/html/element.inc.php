@@ -16,10 +16,36 @@
  * under the License.
  */
 
+class HTMLElementHolder {
+	private $obj = NULL;
+	public function __construct($obj) {
+		$this->obj = $obj;
+	}
+	public function __call($name, $args) {
+		$result = call_user_func_array(array($this->obj, $name), $args);
+		// HACK! Any call that, e.g. creates a child, now returns $this
+		if (is_object($result) && $result instanceof HTMLHierarchyNode) {
+			return $this;
+		} else {
+			return $result;
+		}
+	}
+	// This is the only standard HTMLHierarchyNode method that returns a node
+	// that we don't want to override using the __call hack.
+	public function parent() { return $this->obj->parent(); }
+
+	// ...
+	public function release() { return $this->obj; }
+
+	// Erk
+	public function hold() { return $this; }
+}
+
 class HTMLElement extends HTMLHierarchyNode {
 	private $tag = NULL;
 	private $attrs = array();
 	private $can_hang = FALSE;
+	private $holder = NULL;
 
 	public function __construct($tagname, $attributes=NULL, $can_hang=FALSE) {
 		$this->tag = $tagname;
@@ -30,6 +56,15 @@ class HTMLElement extends HTMLHierarchyNode {
 		}
 		$this->can_hang = !!($can_hang);
 	}
+
+	public function hold() {
+		if (!isset($this->holder)) {
+			$this->holder = new HTMLElementHolder($this);
+		}
+		return $this->holder;
+	}
+	// FIXME: should this just error?
+	public function release() { return $this; }
 
 	public function tagname() { return $this->tag; }
 
@@ -186,6 +221,21 @@ class HTMLElement extends HTMLHierarchyNode {
 	}
 
 	/**
+	 * Adds a definition term (DT), and a blank definition element (DD).
+	 * Creates a DL if this element isn't already one.
+	 * Returns the DD.
+	 */
+	public function def($term) {
+		if (strtolower($this->tag) == 'dl') {
+			$dl = $this;
+		} else {
+			$dl = $this->add_tag('dl');
+		}
+		$dl->add_xml_value('dt', $term);
+		return $dl->add_tag('dd');
+	}
+
+	/**
 	 * Creates an INPUT element.
 	 */
 	public function add_input($name, $value=NULL, $attrs=array()) {
@@ -231,7 +281,6 @@ class HTMLElement extends HTMLHierarchyNode {
 		$node = $this->add_tag('input', $attrs, TRUE);
 		return $node;
 	}
-
 
 }
 

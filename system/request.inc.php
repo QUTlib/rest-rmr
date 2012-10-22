@@ -30,6 +30,7 @@ class Request {
 	private static $get  = NULL;
 	private static $post = NULL;
 	private static $params = NULL;
+	private static $entity_body = NULL;
 
 	public static function init() {
 		if (isset($_GET['path']) && ($path = $_GET['path'])) {
@@ -398,9 +399,62 @@ public static function dump() {
 	/**
 	 * Gets the raw value of the request entity, if any.
 	 * Always returns a String.
+	 *
+	 * FIXME: this won't work with multipart/form-data entities
+	 * because PHP.  >_<
+	 *
+	 * FIXME: clarify if this is the entity-body or message-body
+	 * (do clients ever use a Transfer-Encoding like gzip?)
 	 */
+	public static function entity_body() {
+		if (is_null(self::$entity_body)) {
+			self::$entity_body = file_get_contents('php://input');
+		}
+		return self::$entity_body;
+	}
+
+	// FIXME: use Content-Length as trigger for there being an entity..?
 	public static function entity() {
-		return file_get_contents('php://input');
+		$type = self::header('Content-Type');
+		if (strtoupper(self::$method) == 'POST') {
+			if (!$type) {
+				return self::$post;
+			} elseif (preg_match('@^application/x-www-form-urlencoded(\s*;|$)@i', $type)) {
+				return self::$post;
+			} elseif (preg_match('@^multipart/form-data(\s*;|$)@i', $type)) {
+				return array(self::$post, '_FILES'=>$_FILES);
+			} elseif (preg_match('@^multipart/@i', $type)) {
+				return self::parse_multipart_entity($type);
+			} else {
+				return self::entity_body();
+			}
+		} else {
+			if (preg_match('@^multipart/@i', $type)) {
+				return self::parse_multipart_entity($type);
+			} else {
+				return self::entity_body();
+			}
+		}
+	}
+
+	protected static function parse_multipart_entity($type) {
+		$bcharsnospace = "-0-9A-Z'()+_,./:=?";
+		$bchars = $bcharsnospace . ' ';
+		if (!preg_match('@^multipart/.*;\s*boundary=("?)('.$bchars.'{0,69}'.$bcharsnospace.')\\1@iU', $type, $matches)) {
+			throw new BadRequestException("can't determine multipart entity boundary");
+		}
+		$delimiter = "\r\n--".$matches[2];
+		$body = self::entity_body();
+		// 1. strip the epilogue (if any)
+		$tmp = explode($delimiter."--\r\n", $body, 2);
+		$body = $tmp[0];
+		// 2. break on delimiters
+		$tmp = explode($delimiter, $body);
+		// 3. dump the preamble (if any)
+		$tmp = array_slice($tmp, 1);
+		// NOTE: I'm not parsing the individual thingies here, they can go as-is,
+		// including headers fields and whatnot
+		return $tmp;
 	}
 
 	/**

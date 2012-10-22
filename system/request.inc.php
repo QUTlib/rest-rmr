@@ -396,6 +396,14 @@ public static function dump() {
 	}
 
 	/**
+	 * Gets the raw value of the request entity, if any.
+	 * Always returns a String.
+	 */
+	public static function entity() {
+		return file_get_contents('php://input');
+	}
+
+	/**
 	 * Gets the parts of the URI.
 	 *
 	 *    /interface/module/page...

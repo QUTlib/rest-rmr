@@ -93,7 +93,9 @@ class HTMLElement extends HTMLHierarchyNode {
 	public function attribute_string() {
 		$attr = '';
 		foreach ($this->attrs as $key=>$val) {
-			$attr .= sprintf(' %s="%s"', $key, htmlspecialchars($val));
+			if ($val !== NULL) {
+				$attr .= sprintf(' %s="%s"', $key, htmlspecialchars($val));
+			}
 		}
 		return $attr;
 	}

@@ -26,8 +26,8 @@ class Response {
 	// special header info, stored separately
 	private $last_modified = NULL;
 
-	private $allow_compression = true;
-	private $allow_not_modified = true;
+	public $allow_compression = true;
+	public $allow_not_modified = true;
 
 	private $committed = false;
 	private $recording = false;

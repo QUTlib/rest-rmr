@@ -108,8 +108,9 @@ class DBConn {
 			throw new Exception('Query error: ['.$this->link->errno.']'.$this->link->error);
 		}
 		$affected = $this->link->affected_rows;
-
-		$query_result->free();
+		if (is_object($query_result)) {
+			$query_result->free();
+		}
 		return $affected;
 	}
 

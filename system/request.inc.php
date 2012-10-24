@@ -343,57 +343,69 @@ public static function dump() {
 	 * First checks parameters in the request's URI; then if not found, checks
 	 * for an appropriate request entity.
 	 *
-	 * If still not found, returns NULL.
+	 * If still not found, returns $default (NULL).
 	 */
-	public static function parameter($name) {
+	public static function parameter($name, $default=NULL) {
 		if (isset(self::$params[$name])) return self::$params[$name];
 		if (isset(self::$get[$name])) return self::$get[$name];
 		if (isset(self::$post[$name])) return self::$post[$name];
-		return NULL;
+		return $default;
 	}
 
 	/**
 	 * Gets the value of the named uri parameter (after URI Pattern matching
 	 * has taken place).
-	 * Returns NULL if not found.
+	 * Returns $default (NULL) if not found.
 	 */
-	public static function uri_parameter($name) {
+	public static function uri_parameter($name, $default=NULL) {
 		if (isset(self::$params[$name])) return self::$params[$name];
-		return NULL;
+		return $default;
 	}
 
 	/** alias for #uri_parameter() */
-	public static function param($name) {
+	public static function param($name, $default=NULL) {
 		if (isset(self::$params[$name])) return self::$params[$name];
-		return NULL;
+		return $default;
 	}
 
 	/**
 	 * Gets the value of the named query parameter.
-	 * Returns NULL if not found.
+	 * Returns $default (NULL) if not found.
 	 */
-	public static function query_parameter($name) {
+	public static function query_parameter($name, $default=NULL) {
 		if (isset(self::$get[$name])) return self::$get[$name];
-		return NULL;
+		return $default;
+	}
+
+	/** alias for #query_parameter() */
+	public static function query_param($name, $default=NULL) {
+		if (isset(self::$get[$name])) return self::$get[$name];
+		return $default;
 	}
 
 	/**
 	 * Gets the value of the named parameter from the request entity, if any.
-	 * Returns NULL if not found.
+	 * Returns $default (NULL) if not found.
 	 */
-	public static function entity_parameter($name) {
+	public static function entity_parameter($name, $default=NULL) {
 		if (isset(self::$post[$name])) return self::$post[$name];
-		return NULL;
+		return $default;
+	}
+
+	/** alias for #entity_parameter() */
+	public static function entity_param($name, $default=NULL) {
+		if (isset(self::$post[$name])) return self::$post[$name];
+		return $default;
 	}
 
 	/**
 	 * Gets the value of the named request header, if any.
-	 * Returns NULL if not found.
+	 * Returns $default (NULL) if not found.
 	 */
-	public static function header($name) {
+	public static function header($name, $default=NULL) {
 		$name = strtolower($name);
 		if (isset(self::$headers_index[$name])) return self::$headers[ self::$headers_index[$name] ];
-		return NULL;
+		return $default;
 	}
 
 	/**

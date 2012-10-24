@@ -93,6 +93,12 @@ class HTMLElement extends HTMLHierarchyNode {
 	public function attribute_string() {
 		$attr = '';
 		foreach ($this->attrs as $key=>$val) {
+			// array( 'w', 'x', 'y'=>true, 'z'=>true ) becomes 'w="w" x="x" y="y" z="z"'
+			if (is_int($key)) {
+				$key = $val;
+			} elseif ($val === TRUE) {
+				$val = $key;
+			}
 			if ($val !== NULL) {
 				$attr .= sprintf(' %s="%s"', $key, htmlspecialchars($val));
 			}
@@ -281,6 +287,26 @@ class HTMLElement extends HTMLHierarchyNode {
 		if (!isset($attrs['value'])) $attrs['value'] = $caption;
 		if (!isset($attrs['name'])) $attrs['name'] = $name;
 		$node = $this->add_tag('input', $attrs, TRUE);
+		return $node;
+	}
+
+	public function add_dropdown($name, $values, $selected=NULL, $attrs=array()) {
+		if (func_num_args() == 2 && is_array($selected)) {
+			$attrs = $selected;
+			$selected = NULL;
+		}
+		if ($selected) $selected = strtolower($selected);
+		if (!$attrs) $attrs = array();
+		if (!isset($attrs['name'])) $attrs['name'] = $name;
+		$node = $this->add_tag('select', $attrs);
+		foreach ($values as $k=>$v) {
+			if (is_int($k)) $k = $v;
+			$opt_attrs = array('value'=>$k);
+			if ($selected && $selected == strtolower($k)) {
+				$opt_attrs['selected'] = 'selected';
+			}
+			$node->add_xml_value('option', $v, $opt_attrs);
+		}
 		return $node;
 	}
 

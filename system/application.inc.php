@@ -43,7 +43,7 @@ require_once(SYSDIR.'/dao/lib.inc.php');
 require_once(SYSDIR.'/utils/html.inc.php');
 
 class Application {
-	const VERSION = '20120905';
+	const VERSION = '20121024';
 	const TITLE = 'REST-RMR';
 
 	/* standard interfaces */

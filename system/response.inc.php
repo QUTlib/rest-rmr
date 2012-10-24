@@ -621,31 +621,59 @@ public function dump() {
 		// disable the PHP magic; apparently it doesn't play
 		// nice with our Content-Length header anyway
 		if (ini_get('zlib.output_compression'))
-			ini_set('zlip.output_compression', 'Off');
+			ini_set('zlib.output_compression', 'Off');
 
-		// todo: deal with the 'identity' encoding ..?
+		$data = $this->body;
+		$size = $this->length();
 		foreach ($methods as $qvalue => $meths) {
+			$identity = FALSE;
+			$bestmethod = FALSE;
+			$bestdata = $data;
+			$bestsize = $size;
 			foreach ($meths as $comp) {
 				$method = $comp['option'];
 				switch ($method) {
 				case 'x-gzip':
 				case 'gzip':
-					$body = gzencode($this->body, 9);
-					return $this->_apply_compression($body, $method);
+					$zip = gzencode($this->body, 9);
+					break;
 				case 'deflate':
-					$body = gzcompress($this->body, 9);
-					return $this->_apply_compression($body, $method);
+					$zip = gzcompress($this->body, 9);
+					break;
 				case 'bzip2':
-					$body = bzcompress($this->body, 9);
-					return $this->_apply_compression($body, $method);
+					$zip = bzcompress($this->body, 9);
+					break;
+				case 'identity':
+					$identity = TRUE;
+					#fallthrough:
+				default:
+					continue 2;
 				}
+				$zipsize = strlen($zip);
+				if ($zipsize < $bestsize) {
+					$bestmethod = $method;
+					$bestdata = $zip;
+					$bestsize = $zipsize;
+				}
+			}
+			if ($bestmethod) {
+				// apply the most-compact encoding at this qvalue-level
+				$this->_apply_compression($bestdata, $bestmethod);
+				return;
+			} elseif ($identity) {
+				// if none of the other encodings at this qvalue-level was
+				// any good and the client said they'd like 'identity',
+				// we should just send the data unencoded.
+				// Note: the 'identity' content-coding SHOULD NOT be used
+				// in the Content-Encoding header (RFC 2616, 3.5)
+				return;
 			}
 		}
 	}
 	protected function _apply_compression($body, $method) {
-		// we can still bail out here if there's not enough of an
-		// improvement (currently 'enough' means 'any')
-		if (strlen($body) < $this->length()) {
+#		// we can still bail out here if there's not enough of an
+#		// improvement (currently 'enough' means 'any')
+#		if (strlen($body) < $this->length()) {
 			// update the response body
 			$this->body( $body );
 			// update appropriate 'simple' headers (encoding, length)
@@ -659,9 +687,9 @@ public function dump() {
 			} else {
 				$this->header('Vary', 'Accept-Encoding');
 			}
-			return TRUE;
-		}
-		return FALSE;
+#			return TRUE;
+#		}
+#		return FALSE;
 	}
 
 	public static function statusName($code, $allow_unknown=false) {

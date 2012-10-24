@@ -21,18 +21,18 @@ The general structure supported by the framework is:
                Controller               Resource URI                   ┏━━━━━━━━━┓
                (router)                 Mapper                       ┏━┻━━━━━━━┓ ┃ (uri_pattern)
                ┏━━━━━━━━━┓    3 URI     ┏━━━━━━━━━┓                ┏━┻━━━━━━━┓ ┃ ┃ (http-to-model method map)
-    1 request  ┃         ┃ ───────────▷ ┃         ┃  2a regsiter   ┃         ┃ ┣━┛
-    ─────────▷ ┃         ┃ ◁─────────── ┃         ┃ ◁───────────── ┃         ┣━┛
+    1 request  ┃         ┃ ───────────> ┃         ┃  2a regsiter   ┃         ┃ ┣━┛
+    ─────────> ┃         ┃ <─────────── ┃         ┃ <───────────── ┃         ┣━┛
                ┗━━━━━━━━━┛  4 resource  ┗━━━━━━━━━┛                ┗━━━━━━━━━┛
-                │  △  ◸ ╲     type                                      △1             ┏━━━━━━━━━┓
+                │  ^  ^ ╲     type                                      ^1             ┏━━━━━━━━━┓
                 │  │   ╲ `────.                                         │              ┃         ┃
-    5 resource/ │  │    `────. ╲7 model                                 │      ? ────▷ ┃         ┃
-      query     │  │6 rep.    ╲ ╲          ┏━━━━━━━━━┓                  ▽1             ┗━━━━━━━━━┛
-                ▽  │         8 ╲ ╲       ┏━┻━━━━━━━┓ ┃             ┏━━━━━━━━━┓          DB Layer
-               ┏━━━━━━━━━┓ output `──▷ ┏━┻━━━━━━━┓ ┃ ┃             ┃         ┃
+    5 resource/ │  │    `────. ╲7 model                                 │      ? ────> ┃         ┃
+      query     │  │6 rep.    ╲ ╲          ┏━━━━━━━━━┓                  v1             ┗━━━━━━━━━┛
+                v  │         8 ╲ ╲       ┏━┻━━━━━━━┓ ┃             ┏━━━━━━━━━┓          DB Layer
+               ┏━━━━━━━━━┓ output `──> ┏━┻━━━━━━━┓ ┃ ┃             ┃         ┃
                ┃         ┃       `──── ┃         ┃ ┣━┛             ┃         ┃
                ┃         ┃ 2b register ┃         ┣━┛               ┗━━━━━━━━━┛
-               ┗━━━━━━━━━┛ ◁────────── ┗━━━━━━━━━┛                  Model
+               ┗━━━━━━━━━┛ <────────── ┗━━━━━━━━━┛                  Model
                Representation          Representations
                Factory                 (can_handle)
 

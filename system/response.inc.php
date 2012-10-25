@@ -782,7 +782,7 @@ public function dump() {
 		case 401: return "The request requires authentication.";
 		case 402: return ""; # reserved for future use
 		case 403: return "The server understood the request but is refusing to fulfill it. Authorisation will not help.";
-		case 404: return "The request resource could not be found at this location.";
+		case 404: return "The requested resource could not be found at this location.";
 		case 405: return "The method specified in the request is not allowed for this resource.";
 		case 406: return "The requested resource cannot be represented acceptably according to your request parameters.";
 		case 407: return "The request requires proxy authentication.";

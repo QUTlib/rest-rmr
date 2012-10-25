@@ -294,6 +294,9 @@ class HTMLElement extends HTMLHierarchyNode {
 		return $node;
 	}
 
+	/**
+	 * Creates a dropdown list (a SELECT element).
+	 */
 	public function add_dropdown($name, $values, $selected=NULL, $attrs=array()) {
 		if (func_num_args() == 2 && is_array($selected)) {
 			$attrs = $selected;
@@ -310,6 +313,26 @@ class HTMLElement extends HTMLHierarchyNode {
 				$opt_attrs['selected'] = 'selected';
 			}
 			$node->add_xml_value('option', $v, $opt_attrs);
+		}
+		return $node;
+	}
+
+	/**
+	 * Creates a FORM element.
+	 */
+	public function add_form($action, $legend, $method='GET', $attrs=array()) {
+		if (func_num_args() == 3 && is_array($method)) {
+			$attrs = $method;
+			$method = 'GET';
+		}
+		if (!$attrs) $attrs = array();
+		if (!$method) $method = 'GET';
+		if (!isset($attrs['action'])) $attrs['action'] = $action;
+		if (!isset($attrs['method'])) $attrs['method'] = $method;
+		$node = $this->add_tag('form', $attrs);
+		if ($legend) {
+			$node = $node->add_tag('fieldset');
+			$node->add_xml_value('legend', $legend);
 		}
 		return $node;
 	}

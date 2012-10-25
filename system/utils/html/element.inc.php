@@ -222,7 +222,11 @@ class HTMLElement extends HTMLHierarchyNode {
 			$dl->add_xml_value('dt', $dt);
 			if (! is_array($dd)) $dd = array($dd);
 			foreach ($dd as $dd0) {
-				$dl->add_xml_value('dd', $dd0);
+				if (is_object($dd0) && $dd0 instanceof HTMLHierarchyNode) {
+					$dl->add_child($dd0);
+				} else {
+					$dl->add_xml_value('dd', $dd0);
+				}
 			}
 		}
 		return $dl;

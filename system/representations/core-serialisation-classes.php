@@ -94,10 +94,10 @@ class YAMLRepresenter extends BasicRepresenter {
 		$this->response_language($response, 'en', FALSE, TRUE);
 		$response
 			->body("%YAML 1.2\n---\n")
-			->append( $this->_yaml_encode($m, '', '', false, false) );
+			->append( $this->_yaml_encode($m, '', '', '', false, false) );
 	}
 
-	protected function _yaml_encode($o, $p1, $pn, $inarray, $inhash) {
+	protected function _yaml_encode($o, $p1, $pa, $pn, $inarray, $inhash) {
 		switch ($type = gettype($o)) {
 		case 'integer':
 		case 'double':
@@ -128,42 +128,41 @@ class YAMLRepresenter extends BasicRepresenter {
 				$first = true;
 				foreach ($o as $k=>$v) {
 					if ($first) {
-						$string .= $p1;
-						if ($inhash) $string .= "\n${pn}";
+						if ($inhash) {
+							$string .= "${p1}\n";
+							$px = $pa;
+						} else {
+							$px = $p1;
+						}
 						$first = false;
 					} else {
-						$string .= $pn;
+						$px = $pa;
 					}
-					$string .= $this->_yaml_encode($v, "{$pn}- ", "${pn}  ", true, false);
+					$string .= $this->_yaml_encode($v, "${px}- ", "${px}  ", "${px}  ", true, false);
 				}
 			} else {
 				$first = true;
 				foreach ($o as $k=>$v) {
 					if ($first) {
-						$string .= $p1;
-						if ($inhash) $string .= "\n${pn}";
+						if ($inhash) {
+							$string .= "${p1}\n";
+							$px = $pn;
+						} else {
+							$px = $p1;
+						}
 						$first = false;
 					} else {
-						$string .= $pn;
+						$px = $pn;
 					}
-					$string .= $this->_yaml_encode($v, "${pn}${k}: ", "${pn}  ", false, true);
+					$string .= $this->_yaml_encode($v, "${px}${k}: ", $px, "${px}  ", false, true);
 				}
 			}
 			return $string;
 		case 'object':
-			$string = '';
-			$first = true;
-			foreach ($o as $k=>$v) {
-				if ($first) {
-					$string .= $p1;
-					if ($inhash) $string .= "\n${pn}";
-					$first = false;
-				} else {
-					$string .= $pn;
-				}
-				$string .= $this->_yaml_encode($v, "${pn}${k}: ", "${pn}  ", false, true);
-			}
-			return $string;
+			#$key = '!<!object> '.get_class($o);
+			$key = '!<!object:'.get_class($o).'> '.spl_object_hash($o);
+			$val = (array) $o;
+			return $this->_yaml_encode(array($key=>$val), $p1, $pa, $pn, $inarray, $inhash);
 		default:
 			throw new Exception("Can't convert variable of type '$type'");
 		}

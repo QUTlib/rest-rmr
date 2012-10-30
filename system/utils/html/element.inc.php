@@ -155,7 +155,13 @@ class HTMLElement extends HTMLHierarchyNode {
 				$attrs = NULL;
 			}
 		}
-		return $this->add_xml_value($type, $value, $attrs, $can_hang);
+		if (is_object($value) && $value instanceof HTMLHierarchyNode) {
+			$node = $this->add_tag($type, $attrs, $can_hang);
+			$node->add_child($value);
+			return $node;
+		} else {
+			return $this->add_xml_value($type, $value, $attrs, $can_hang);
+		}
 	}
 
 	public function add_section($heading=NULL, $attrs=NULL) {

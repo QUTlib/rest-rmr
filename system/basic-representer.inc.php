@@ -17,17 +17,19 @@
  */
 
 /**
- * Provides simple mechanisms for regitering internet media types and
+ * Provides simple mechanisms for registering internet media types and
  * representing PHP values / objects.
  */
 abstract class BasicRepresenter extends Representer {
 
+	/**#@+ @ignore */
 	private $types = array();
 	private $charsets = array();
 	private $languages = array();
 	private $all_models = FALSE;
 	private $model_types = NULL;
 	private $model_classes = NULL;
+	/**#@-*/
 
 	/**
 	 * Creates a new BasicRepresenter object.
@@ -37,10 +39,15 @@ abstract class BasicRepresenter extends Representer {
 	 * $charsets should be an array of CharacterSet objects, or character set strings.
 	 *
 	 * $models should be either:
-	 * * TRUE, if this representer can do any PHP value; or
-	 * * an array of strings, either:
-	 *   * the type of a value supported (as per gettype()), or
-	 *   * a description of the classname supported (e.g. 'object:ClassName')
+	 * - TRUE, if this representer can do any PHP value; or
+	 * - an array of strings, either:
+	 *   - the type of a value supported (as per gettype()), or
+	 *   - a description of the classname supported (e.g. 'object:ClassName')
+	 *
+	 * @param array $types
+	 * @param array $languages
+	 * @param array $charsets
+	 * @param mixed $models
 	 */
 	public function __construct($types, $languages, $charsets, $models) {
 		foreach ($types as $t) {

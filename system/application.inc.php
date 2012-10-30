@@ -42,20 +42,30 @@ Autoloader::register('DBConn',         SYSDIR.'/utils/dbconn.inc.php');
 require_once(SYSDIR.'/dao/lib.inc.php');
 require_once(SYSDIR.'/utils/html.inc.php');
 
+/**
+ * Main namespace for all application-wide values and methods.
+ * Not instantiable.
+ */
 class Application {
-	const VERSION = '20121024';
+	/** The application framework version.  Updated by hand. */
+	const VERSION = '20121030';
+	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 
 	/* standard interfaces */
+
+	/** Public (human-readable) interface */
 	const IF_PUBLIC  = 'pub';
+	/** Public (machine-readable) interface. (i.e. api) */
 	const IF_MACHINE = 'api';
+	/** Authenticated (human-readable) interface. */
 	const IF_AUTHED  = 'auth';
 
 	/**
 	 * Initialises the application; loading resource request handlers, etc.
 	 *
-	 * Scans and includes all {APPDIR}/resource-types/*.php in alphabetical order,
-	 * then ditto {APPDIR}/representation-types/*.php
+	 * Scans and includes all {APPDIR}/resource-types/\*.php in alphabetical order,
+	 * then ditto {APPDIR}/representation-types/\*.php
 	 */
 	public static function init() {
 		set_error_handler(array('Application','error_response'), E_ALL & (~E_STRICT));
@@ -89,6 +99,7 @@ class Application {
 
 	/**
 	 * Sets up a Representer which may be able to represent a model.
+	 * @param Representer $representer the Representer object to register
 	 */
 	public static function register_representer($representer) {
 		RepresentationManager::add($representer);
@@ -96,8 +107,8 @@ class Application {
 
 	/**
 	 * Returns a registrar object which lets you register URI handlers.
-	 *
 	 * @param String $module the name of the module
+	 * @return URIRegistrar the registrar
 	 */
 	public static function uri_registrar($module) {
 		return new URIRegistrar($module);
@@ -106,7 +117,7 @@ class Application {
 	/**
 	 * Responds to an incoming HTTP request by invoking the appropriate registered handler.
 	 *
-	 * Creates and returns an appropriate Response object.
+	 * Creates and commits an appropriate Response object.
 	 */
 	public static function handle_request() {
 		Request::init();
@@ -162,6 +173,8 @@ class Application {
 	 *
 	 * If the handler succeeds, it returns a Model.  If not, it returns a
 	 * Response object.
+	 *
+	 * @return mixed a Model (success), or a Response (failure)
 	 */
 	protected static function get_model() {
 		$httpmethod = strtoupper( Request::method() );
@@ -216,13 +229,14 @@ class Application {
 		}
 
 		return $final_response;
-
 	}
 
 	/**
 	 * If the URI Map recognises the URI for any methods at all, tack
 	 * an 'Allow' header onto the response.
-	 * @return $response
+	 * @param Response $response the current Response object, whose headers to tweak
+	 * @param String $uri the current Request uri
+	 * @return mixed $response
 	 */
 	protected static function _tweak_allow_headers($response, $uri) {
 		$allowed_methods = URIMap::allowed_methods($uri);
@@ -234,6 +248,8 @@ class Application {
 	/**
 	 * Uses the RepresentationManager to represent a given Model according
 	 * to the incoming request.
+	 * @param mixed $model the thing to represent
+	 * @return Response
 	 */
 	protected static function get_response_for($model) {
 		try {
@@ -247,6 +263,10 @@ class Application {
 	/**
 	 * Called by PHP when an error occurs.
 	 * Does a little bit of niceification, then passes it off to Response.
+	 * @param int $errno the level of the error raised
+	 * @param string $errstr the error message
+	 * @param string $errfile the filename in which the error was raised
+	 * @param int $errline the line number on which the error was raised
 	 */
 	public static function error_response($errno, $errstr, $errfile, $errline) {
 		if (error_reporting()==0) return;
@@ -278,8 +298,10 @@ class Application {
 		Response::error($title, $errstr, $errfile, $errline, $stack);
 	}
 
+	/**#@+ @ignore */
 	private function __construct() {}
 	private function __clone() {}
+	/**#@-*/
 }
 
 

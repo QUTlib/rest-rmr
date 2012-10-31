@@ -95,8 +95,28 @@ class DBConn {
 	}
 
 	/**
+	 * Sends a one-off MySQL INSERT statement, and returns the resulting id
+	 * (if one of the fields in the table has the AUTO_INCREMENT attribute.)
+	 * @throws Exception if there is no valid database connection
+	 */
+	public function insert($sql)
+	{
+		$this->__assert();
+
+		$query_result = $this->link->query($sql, MYSQLI_USE_RESULT);
+		if (!$query_result) {
+			throw new Exception('Query error: ['.$this->link->errno.']'.$this->link->error);
+		}
+		$id = $this->link->insert_id;
+		if (is_object($query_result)) {
+			$query_result->free();
+		}
+		return $id;
+	}
+
+	/**
 	 * Sends a MySQL query to the connected server.
-	 * If you want to SELECT, use the `select()` method.
+	 * If you want to SELECT, use the `select()` method; to INSERT, use `insert()`.
 	 * @throws Exception if there is no valid database connection
 	 */
 	public function query($sql)

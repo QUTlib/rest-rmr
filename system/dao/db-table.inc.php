@@ -115,16 +115,25 @@ class DBTable {
 
 	/**
 	 * Resolves a column name/alias to the actual column name.
+	 * $column can be an array.
 	 * If $full is given and true, does the whole `table`.`column` thing.
 	 */
 	public function resolve($column, $full=FALSE) {
-		$col = $this->column($column, TRUE);
-		if ($full) {
-			$t = $this->name();
-			$c = $col->name();
-			return "`$t`.`$c`";
+		if (is_array($column)) {
+			$result = array();
+			foreach ($column as $c) {
+				$result[] = $this->resolve($c, $full);
+			}
+			return $result;
 		} else {
-			return $col->name();
+			$col = $this->column($column, TRUE);
+			if ($full) {
+				$t = $this->name();
+				$c = $col->name();
+				return "`$t`.`$c`";
+			} else {
+				return $col->name();
+			}
 		}
 	}
 
@@ -135,7 +144,7 @@ class DBTable {
 	 * Throws an exception if any field name doesn't correspond with an actual
 	 * column.
 	 */
-	public function parseFields($fields) {
+	public function parseFields($fields, $no_cast=FALSE) {
 		$tbl = $this->name;
 		// if NULL, default to primary keys
 		if (!$fields) {
@@ -153,13 +162,17 @@ class DBTable {
 		foreach ($fields as $field) {
 			$column = $this->column($field, TRUE);
 			$name = $column->name();
-			switch ($column->type()) {
-			case DBColumn::BOOLEAN:
-				$field_array[] = "CAST(`$tbl`.`$name` AS UNSIGNED) AS `$field`";
-				break;
-			default:
-				$field_array[] = "`$tbl`.`$name` AS `$field`";
-				break;
+			if ($no_cast) {
+				$field_array[] = "`$name`";
+			} else {
+				switch ($column->type()) {
+				case DBColumn::BOOLEAN:
+					$field_array[] = "CAST(`$tbl`.`$name` AS UNSIGNED) AS `$field`";
+					break;
+				default:
+					$field_array[] = "`$tbl`.`$name` AS `$field`";
+					break;
+				}
 			}
 		}
 		return implode(",\n  ", $field_array);
@@ -225,7 +238,7 @@ class DBTable {
 				$op = '=';
 			}
 			$val = $this->_cast($val, $type, $db);
-			$equals = "`$tbl`.`$col` $op $val";
+			$equals = "`$tbl`.`$name` $op $val";
 		}
 		return $equals;
 	}
@@ -248,6 +261,44 @@ class DBTable {
 			$f[] = $this->compare($db, $column, $value);
 		}
 		return implode(' AND ', $f);
+	}
+
+	/**
+	 * Builds a query fragment: "$col = $val"
+	 */
+	public function set($db, $col, $val) {
+		$tbl = $this->name();
+		$def = $this->column($col, TRUE);
+		$name = $def->name();
+		$type = $def->type();
+
+		$val = $this->_cast($val, $type, $db);
+		$equals = "`$tbl`.`$name` = $val";
+		return $equals;
+	}
+
+	/**
+	 * Builds a query fragment: "$col = $val"
+	 */
+	public function val($db, $col, $val) {
+		$tbl = $this->name();
+		$def = $this->column($col, TRUE);
+		$type = $def->type();
+
+		$val = $this->_cast($val, $type, $db);
+		return $val;
+	}
+
+	/**
+	 * Given $values = array( 'col1'=>'val1', 'col2'=>'val2' ),
+	 * builds a query fragment: "col1 = val1, col2 = val2"
+	 */
+	public function updateFields($db, $values) {
+		$f = array();
+		foreach ($values as $column=>$value) {
+			$f[] = $this->val($db, $column, $value);
+		}
+		return implode(', ', $f);
 	}
 
 }

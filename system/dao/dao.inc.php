@@ -160,5 +160,35 @@ SQL;
 		$query = $this->get_query($table, $fields, $filters, $sort);
 		return $this->db()->select($query);
 	}
+
+	/** builds and returns an INSERT statement */
+	protected function insert_query($table, $values) {
+		if (is_string($table)) $table = $this->table($table);
+
+		$tname = $table->name();
+		$field_str = $table->parseFields(array_keys($values), TRUE);
+		$value_str = $table->updateFields($this->db(), $values);
+
+		return <<<SQL
+INSERT INTO `$tname`
+(
+  $field_str
+)
+VALUES
+  ($value_str)
+SQL;
+	}
+
+	/**
+	 * Does the heavy lifting of adding a new object to the database.
+	 * @param mixed $table
+	 * @param array $values a key=>value map of fields and values for the new object
+	 * @return the value of the first AUTO_INCREMENT field in the created record
+	 */
+	protected function create($table, $values) {
+		$query = $this->insert_query($table, $values);
+		$result = $this->db()->insert($query);
+		return $result;
+	}
 }
 

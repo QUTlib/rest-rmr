@@ -43,21 +43,46 @@ th,td{padding:0 1em;}
 <body>
 <h1><a href="/debug/">Debug</a>: Representers</h1>
 <table>
-<tr class="top"><th>Class</th><th>QS</th><th>Type</th></tr>
+<tr class="top"><th>Rep. Class</th><th>Model</th><th>Type</th><th>QS</th></tr>
 HTML;
 	foreach (self::$list as $r) {
 		$a = $r->list_types();
+		$n=0;foreach($a as $t=>$q)$n++;
 		echo '<tr class="big">
 <th>' . htmlspecialchars(get_class($r)) . '</th>
 ';
 		$first = true;
 		foreach ($a as $t=>$q) {
-			if ($first)
+			if (!$first) {
+				echo "<td></td>";
+			}
+			if ($first) {
+				echo '<td rowspan="'.$n.'">';
+				if ($r instanceof BasicRepresenter){
+					$ev = var_export($r,1);
+					$ev = preg_replace('/(\S+)::__set_state\(/U', '(', $ev);
+					$ev = eval('return '.$ev.';');
+					if ($ev['all_models']) {
+						echo '<code>*</code>';
+					} else {
+						foreach ($ev['model_types'] as $m=>$x) {
+							if ($x) echo '<div><code>'.$m.'</code></div>';
+							else echo '<div><code>! '.$m.'</code></div>';
+						}
+						foreach ($ev['model_classes'] as $m) {
+							echo '<div><code>object:'.$m.'</code></div>';
+						}
+					}
+#var_dump($ev['all_models'], $ev['model_types'], $ev['model_classes']);
+#var_dump($ev);
+				} else {
+					echo "?";
+				}
+				echo "</td>\n";
 				$first = false;
-			else
-				echo '<tr><td></td>';
-			echo '<td>'.sprintf('%0.3f', intval($q*1000)/1000.0)."</td>\n";
+			}
 			echo '<td><code>' . htmlspecialchars($t)."</code></td>\n";
+			echo '<td>'.sprintf('%0.3f', intval($q*1000)/1000.0)."</td>\n";
 		echo "</tr>\n";
 		}
 	}

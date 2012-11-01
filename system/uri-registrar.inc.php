@@ -18,29 +18,13 @@
 
 
 class URIRegistrar {
-	private $module = null;
-	private $interface = null;
-	private $prefix = null;
+	protected $prefix = null;
 
 	/**
 	 * Constructs a new registrar, on which one may call #register_handler
 	 */
-	public function __construct($module, $interface=NULL) {
-		$this->module = $module;
-		if (func_num_args() > 1)
-			$this->set_interface($interface);
-	}
-
-	/**
-	 * Update the current interface of this registrar.
-	 *
-	 * @see the IF_... consts in Application
-	 */
-	public function set_interface($interface) {
-		$this->interface = $interface;
-		$this->prefix = '/' . $this->interface . '/' . $this->module;
-		if (!preg_match('#^/[a-z]+/[a-z_][a-z0-9_-]*$#', $this->prefix))
-			throw new Exception("invalid interface/module ['{$this->prefix}']");
+	public function __construct($prefix) {
+		$this->prefix = '/' . trim($prefix, '/');
 	}
 
 	/**
@@ -64,9 +48,72 @@ class URIRegistrar {
 	 * @param Mixed $handler 'function', 'class->method', 'class::static_method', array(object,'method'), array('class','method')
 	 */
 	public function register_handler($http_method, $uri_pattern, $handler) {
-		if (is_null($this->interface)) throw new Exception("interface not set");
 		if (substr($uri_pattern,0,1) != '/') $uri_pattern = '/' . $uri_pattern;
 		URIMap::register($http_method, $this->prefix . $uri_pattern, $handler);
+	}
+
+	/**
+	 * Sets up a handler to accept incoming requests, like #register_handler .
+	 * Also sets up a redirect handler, so that any request not ending in slash
+	 * is automatically reidrected to a slashed equivalent.
+	 *
+	 * c.f. http://httpd.apache.org/docs/2.2/mod/mod_dir.html#directoryslash
+	 */
+	public function register_with_redirect($http_method, $uri_pattern, $handler) {
+		if (substr($uri_pattern,-1) == '/') {
+			$uri_pattern2 = substr($uri_pattern,0,-1);
+		} else {
+			$uri_pattern2 = $uri_pattern;
+			$uri_pattern .= '/';
+		}
+		$this->register_handler($http_method, $uri_pattern, $handler);
+		$this->register_handler($http_method, $uri_pattern2, 'URIRegistrar::redirect_with_slash');
+	}
+
+	/**
+	 * Sets up a GET handler.
+	 * @param string $uri_pattern {@see #register_handler}
+	 * @param Mixed $handler {@see #register_handler}
+	 * @param boolean $redirect_slash if given and true, uses #register_with_redirect
+	 */
+	public function get($uri_pattern, $handler, $redirect_slash=FALSE) {
+		if ($redirect_slash) {
+			$this->register_with_redirect('GET', $uri_pattern, $handler);
+		} else {
+			$this->register_handler('GET', $uri_pattern, $handler);
+		}
+	}
+
+	/**
+	 * Sets up a HEAD handler.
+	 * @param string $uri_pattern {@see #register_handler}
+	 * @param Mixed $handler {@see #register_handler}
+	 * @param boolean $redirect_slash if given and true, uses #register_with_redirect
+	 */
+	public function head($uri_pattern, $handler, $redirect_slash=FALSE) {
+		if ($redirect_slash) {
+			$this->register_with_redirect('HEAD', $uri_pattern, $handler);
+		} else {
+			$this->register_handler('HEAD', $uri_pattern, $handler);
+		}
+	}
+
+	/**
+	 * Sets up a POST handler.
+	 * @param string $uri_pattern {@see #register_handler}
+	 * @param Mixed $handler {@see #register_handler}
+	 */
+	public function post($uri_pattern, $handler) {
+		$this->register_handler('POST', $uri_pattern, $handler);
+	}
+
+	/**
+	 * Creates a Response that directs the client to the requested
+	 * uri with an appended slash.
+	 * @return Response a HTTP 301 with an appended slash
+	 */
+	public static function redirect_with_slash() {
+		return Response::generate_redirect(Request::uri().'/', TRUE);
 	}
 
 }

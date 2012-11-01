@@ -30,6 +30,7 @@ require_once('charset.inc.php');
 
 require_once('uri-map.inc.php');
 require_once('uri-registrar.inc.php');
+require_once('interfaced-uri-registrar.inc.php');
 require_once('representation-manager.inc.php');
 require_once('representer.inc.php');
 require_once('basic-representer.inc.php');
@@ -48,7 +49,7 @@ require_once(SYSDIR.'/utils/html.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. */
-	const VERSION = '20121031';
+	const VERSION = '20121101';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 
@@ -108,10 +109,19 @@ class Application {
 	/**
 	 * Returns a registrar object which lets you register URI handlers.
 	 * @param String $module the name of the module
-	 * @return URIRegistrar the registrar
+	 * @return InterfacedURIRegistrar the registrar
 	 */
-	public static function uri_registrar($module) {
-		return new URIRegistrar($module);
+	public static function interfaced_uri_registrar($module) {
+		return new InterfacedURIRegistrar($module);
+	}
+
+	/**
+	 * Returns a registrar object which lets you register URI handlers.
+	 * @param String $prefix the prefix of all URIs registered
+	 * @return SimpleURIRegistrar the registrar
+	 */
+	public static function uri_registrar($prefix) {
+		return new URIRegistrar($prefix);
 	}
 
 	/**

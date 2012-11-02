@@ -169,6 +169,9 @@ class DBTable {
 				case DBColumn::BOOLEAN:
 					$field_array[] = "CAST(`$tbl`.`$name` AS UNSIGNED) AS `$field`";
 					break;
+				case DBColumn::TIMESTAMP:
+					$field_array[] = "DATE_FORMAT(`$tbl`.`$name`, '%Y-%m-%dT%T') AS $field";
+					break;
 				default:
 					$field_array[] = "`$tbl`.`$name` AS `$field`";
 					break;

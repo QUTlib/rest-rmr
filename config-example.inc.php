@@ -21,6 +21,7 @@
 define('SYSDIR', 'system');
 define('APPDIR', 'application');
 
+define('SITEHOST', 'www.example.com');
 define('SITENAME', 'My Site');
 
 #define('DEBUG', 1);

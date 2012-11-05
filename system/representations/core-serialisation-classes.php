@@ -161,12 +161,22 @@ class YAMLRepresenter extends BasicRepresenter {
 		case 'object':
 			#$key = '!<!object> '.get_class($o);
 			$key = '!<!object:'.get_class($o).'> '.spl_object_hash($o);
-			$val = (array) $o;
+			$val = $this->arrayify($o);
 			return $this->_yaml_encode(array($key=>$val), $p1, $pa, $pn, $inarray, $inhash);
 		default:
 			throw new Exception("Can't convert variable of type '$type'");
 		}
 		return "${p1}${o}\n";
+	}
+
+	protected function arrayify($o) {
+		$a = (array)$o;
+		$b = array();
+		foreach ($a as $k=>$v) {
+			$k = preg_replace('/^(\0[^\0]+\0|\*)/', '', $k);
+			$b[$k] = $v;
+		}
+		return $b;
 	}
 
 }

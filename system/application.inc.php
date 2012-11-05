@@ -49,7 +49,7 @@ require_once(SYSDIR.'/utils/html.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. */
-	const VERSION = '20121102';
+	const VERSION = '20121105';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 

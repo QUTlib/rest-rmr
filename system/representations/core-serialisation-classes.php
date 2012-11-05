@@ -219,7 +219,7 @@ class XMLRepresenter extends BasicRepresenter {
 		} else {
 			$response
 				->body( '' )
-				->append_line( '<?xml version="1.0" encoding="ISO-8859-1" standalone="yes"?>' )
+				->append_line( '<?xml version="1.0" encoding="ISO-8859-1"?>' )
 				->append_line( '<?xml-stylesheet href="/assets/generic-xml.xsl" type="text/xsl"?>' )
 				->append_line( '<document xmlns="http://www.library.qut.edu.au/generic-xml/">' )
 				->append( $this->_xml_encode($m) )

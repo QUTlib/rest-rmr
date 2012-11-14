@@ -172,7 +172,7 @@ class HTMLElement extends HTMLHierarchyNode {
 		if (!$attrs) $attrs = array();
 		$node = $this->add_tag('section', $attrs);
 		if ($heading) {
-			$node->add_xml_value('h1', $heading);
+			$node->add('h1', $heading, NULL, FALSE);
 		}
 		return $node;
 	}
@@ -184,7 +184,7 @@ class HTMLElement extends HTMLHierarchyNode {
 		}
 		if (!$attrs) $attrs = array();
 		$attrs['href'] = $href;
-		$node = $this->add_xml_value('a', $text, $attrs);
+		$node = $this->add('a', $text, $attrs, FALSE);
 		return $node;
 	}
 
@@ -210,7 +210,7 @@ class HTMLElement extends HTMLHierarchyNode {
 			throw new Exception("not a list [".$this->tag."]");
 		}
 
-		$node = $this->add_xml_value($li, $value, $attrs);
+		$node = $this->add($li, $value, $attrs, FALSE);
 		return $node;
 	}
 
@@ -225,14 +225,10 @@ class HTMLElement extends HTMLHierarchyNode {
 			$dl = $this->add_tag('dl');
 		}
 		foreach ($terms as $dt=>$dd) {
-			$dl->add_xml_value('dt', $dt);
+			$dl->add('dt', $dt, NULL, FALSE);
 			if (! is_array($dd)) $dd = array($dd);
 			foreach ($dd as $dd0) {
-				if (is_object($dd0) && $dd0 instanceof HTMLHierarchyNode) {
-					$dl->add_child($dd0);
-				} else {
-					$dl->add_xml_value('dd', $dd0);
-				}
+				$dl->add('dd', $dd0, NULL, FALSE);
 			}
 		}
 		return $dl;
@@ -249,7 +245,7 @@ class HTMLElement extends HTMLHierarchyNode {
 		} else {
 			$dl = $this->add_tag('dl');
 		}
-		$dl->add_xml_value('dt', $term);
+		$dl->add('dt', $term, NULL, FALSE);
 		return $dl->add_tag('dd');
 	}
 
@@ -318,7 +314,7 @@ class HTMLElement extends HTMLHierarchyNode {
 			if ($selected && $selected == strtolower($k)) {
 				$opt_attrs['selected'] = 'selected';
 			}
-			$node->add_xml_value('option', $v, $opt_attrs);
+			$node->add('option', $v, $opt_attrs, FALSE);
 		}
 		return $node;
 	}
@@ -338,7 +334,7 @@ class HTMLElement extends HTMLHierarchyNode {
 		$node = $this->add_tag('form', $attrs);
 		if ($legend) {
 			$node = $node->add_tag('fieldset');
-			$node->add_xml_value('legend', $legend);
+			$node->add('legend', $legend, NULL, FALSE);
 		}
 		return $node;
 	}

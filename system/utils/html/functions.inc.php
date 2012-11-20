@@ -31,6 +31,7 @@ $HTML_HANGING_TAGS = array(
 	'br'     => FALSE,
 	'hr'     => FALSE,
 	'link'   => TRUE,
+	'meta'   => FALSE,
 	'script' => TRUE,
 	'p'      => array('p', 'div', 'table', 'blockquote'),
 	'tr'     => 'tr',
@@ -40,9 +41,10 @@ $HTML_HANGING_TAGS = array(
 	'li'     => 'li',
 	'dt'     => array('dt', 'dd'),
 	'dd'     => array('dt', 'dd'),
+	'img'    => FALSE,
 );
 
-function parse_html($html) {
+function parse_html($html, $trim_ws=TRUE) {
 	// first clear off xml declarations, doctype, etc.
 	$offset = 0;
 	while ($html && preg_match('/^\s*(<\?xml\b([^?]+|\?[^>])*\?>|<!doctype\s[^>]*>)/i', $html, $matches)) {
@@ -50,7 +52,7 @@ function parse_html($html) {
 		$offset += $strlen;
 		$html = substr($html, $strlen);
 	}
-	$roots = get_html_doms($html, $offset);
+	$roots = get_html_doms($html, $offset, $trim_ws);
 	$htmlroot = NULL;
 	foreach ($roots as $root) {
 		if ($root instanceof HTMLElement) {
@@ -102,15 +104,17 @@ function parse_html($html) {
 }
 
 function parse_tag_attrs($tag, $string, $offset=0) {
+#if PCRE.VERSION >= 8.00
+/*
 	// this is a very relaxed pattern
 	$pattern = '/^([^\s=]+)\s*=\s*(?|"([^"]*)"|\'([^\']*)\')|^([^\s=]+)/';
 	$attrs = array();
 	while ($string = trim($string)) {
 		if (preg_match($pattern, $string, $matches)) {
 			$string = substr($string, strlen($matches[0]));
-			if (isset($matches[4])) {
+			if (isset($matches[3])) {
 				// if the tag is like <foo attr> interpret it as <foo attr="attr">
-				$attrs[ $matches[4] ] = $matches[4];
+				$attrs[ $matches[3] ] = $matches[3];
 			} else {
 				$attrs[ $matches[1] ] = $matches[2];
 			}
@@ -118,11 +122,36 @@ function parse_tag_attrs($tag, $string, $offset=0) {
 			throw new HTMLParseException("can't parse attributes in $tag tag around offset $offset");
 		}
 	}
+*/
+#else
+	// damn you to hell, red hat
+	$pattern = '/^([^\s=]+)\s*=\s*(?:"([^"]*)"|\'([^\']*)\')|^([^\s=]+)/';
+	$attrs = array();
+	while ($string = trim($string)) {
+		if (preg_match($pattern, $string, $matches)) {
+			$string = substr($string, strlen($matches[0]));
+			if (!empty($matches[4])) {
+				// if the tag is like <foo attr> interpret it as <foo attr="attr">
+				$attrs[ $matches[4] ] = $matches[4];
+			} elseif (!empty($matches[3])) {
+				$attrs[ $matches[1] ] = $matches[3];
+			} else {
+				$attrs[ $matches[1] ] = $matches[2];
+			}
+		} else {
+			throw new HTMLParseException("can't parse attributes in $tag tag around offset $offset");
+		}
+	}
+#endif
 	return $attrs;
 }
 
-function get_html_doms($html, $offset=0) {
+function get_html_doms($html, $offset=0, $trim_ws=TRUE) {
 	global $HTML_HANGING_TAGS;
+
+	if ($trim_ws) {
+		$html = preg_replace('/(>)\s+(.*?)\s+(<)/', '$1 $2 $3', $html);
+	}
 
 	$pattern = '~^(?:
 			\s*<!--((?:  [^-]+  |  -[^-]  |  --[^>]  )*)-->         # 1 = comment
@@ -171,8 +200,13 @@ function get_html_doms($html, $offset=0) {
 				$node = new HTMLTextNode($matches[6], TRUE);
 			} elseif (isset($matches[5])) {
 				// WHITESPACE NODE -- IGNORE
-				// next chunk of text, thanks
-				continue;
+				if ($trim_ws) {
+					// next chunk of text, thanks
+					continue;
+				} else {
+					// hang on, this might be important ...
+					$node = new HTMLTextNode($matches[5], TRUE);
+				}
 			} elseif (isset($matches[3])) { # and 4
 				// TAG
 				$tagstr = $matches[3];
@@ -181,12 +215,12 @@ function get_html_doms($html, $offset=0) {
 					// this is a Bad Way(tm) to do this...
 					// Add a fake closing-tag to the start of the current html
 					// string, and give it a negative offset to compensate.
-					$node = new HTMLElement($tagstr, parse_tag_attrs($tagstr, $amatches[1], $offset));
+					$node = new HTMLElement($tagstr, parse_tag_attrs($tagstr, $amatches[1], $offset), isset($HTML_HANGING_TAGS[$tagstr]));
 					$ctag = '</'.$tagstr.'>';
 					$html = $ctag . $html;
 					$offset -= strlen($ctag);
 				} else {
-					$node = new HTMLElement($tagstr, parse_tag_attrs($tagstr, $attstr, $offset));
+					$node = new HTMLElement($tagstr, parse_tag_attrs($tagstr, $attstr, $offset), isset($HTML_HANGING_TAGS[$tagstr]));
 				}
 			} elseif (isset($matches[2])) {
 				// CDATA: <![CDATA[(*)]]>

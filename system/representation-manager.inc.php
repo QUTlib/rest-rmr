@@ -117,8 +117,7 @@ public static function dumpClass($klass) {
 			// to assume they will accept everything.
 			$accepted_types = array(
 				1000 => array(
-					//array('option'=>'*/*','raw'=>'*/*' ),
-					'*',
+					array('option'=>'*/*','raw'=>'*/*' ),
 				)
 			);
 		}

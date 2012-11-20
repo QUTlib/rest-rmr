@@ -18,8 +18,8 @@
 
 #date_default_timezone_set('Australia/Brisbane');
 
-define('SYSDIR', 'system');
-define('APPDIR', 'application');
+define('SYS_DIR', 'system');
+define('APP_DIR', 'application');
 
 define('SITEHOST', 'www.example.com');
 define('SITENAME', 'My Site');

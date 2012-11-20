@@ -358,6 +358,7 @@ class XHTMLRepresenter extends BasicRepresenter {
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
+		$response->header('X-UA-Compatible', 'IE=edge');
 		if ($m instanceof HTMLDocument) {
 			if ($x = $m->encoding()) $this->response_type($response, $t, $x, TRUE, TRUE); // strict type, force charset
 			else $this->response_type($response, $t, $c); // strict type, only set charset if recognised (i.e. never?)
@@ -412,6 +413,8 @@ class HTMLRepresenter extends BasicRepresenter {
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
+		$response->header('X-UA-Compatible', 'IE=edge');
+
 		if ($x = $m->encoding()) $this->response_type($response, $t, $x, TRUE, TRUE); // strict type, force charset
 		else $this->response_type($response, $t, $c); // strict type, only set charset if recognised (i.e. never?)
 

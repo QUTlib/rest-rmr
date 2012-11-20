@@ -18,11 +18,11 @@
 
 $GLOBALS['__STARTUP__'] = microtime(TRUE);
 
-require_once('config.inc.php');
+include_once('config.inc.php');
 
 $here = dirname(__FILE__);
-if (!defined('SYSDIR')) define('SYSDIR',$here.'/system');
-if (!defined('APPDIR')) define('APPDIR',$here.'/application');
+if (!defined('SYSDIR')) define('SYSDIR',realpath(defined('SYS_DIR') ? SYS_DIR : 'system'));
+if (!defined('APPDIR')) define('APPDIR',realpath(defined('APP_DIR') ? APP_DIR : 'application'));
 
 require_once(SYSDIR.'/core.inc.php');
 require_once(SYSDIR.'/application.inc.php');

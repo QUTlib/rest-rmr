@@ -32,7 +32,6 @@ $HTML_HANGING_TAGS = array(
 	'hr'     => FALSE,
 	'link'   => TRUE,
 	'meta'   => FALSE,
-	#'script' => TRUE,
 	'p'      => array('p', 'div', 'table', 'blockquote'),
 	'tr'     => 'tr',
 	'td'     => array('tr', 'td'),
@@ -151,6 +150,8 @@ function get_html_doms($html, $offset=0, $trim_ws=TRUE) {
 
 	if ($trim_ws) {
 		$html = preg_replace('/(>)\s+(.*?)\s+(<)/', '$1 $2 $3', $html);
+		$html = preg_replace('/(>)\s+(.*?\S+)(<)/', '$1 $2$3', $html);
+		$html = preg_replace('/(>)(\S+.*?)\s+(<)/', '$1$2 $3', $html);
 	}
 
 	$pattern = '~^(?:

@@ -176,6 +176,16 @@ abstract class BasicRepresenter extends Representer {
 	 *
 	 * Throws an exception if I don't have a type for $t, and $strict is TRUE.
 	 * Sets it anyway, if $strict is FALSE and $force is TRUE.
+	 *
+	 * Sets unrecognised charsets if $force is TRUE, irrsepective of $strict.
+	 *
+	 * WARNING: be careful if this representer was constructed without any
+	 * types, as $strict will cause it to _always_ fail.
+	 *
+	 * @param string $_t content-type
+	 * @param string $_c charset
+	 * @param boolean $strict if TRUE (default) throws exception for unknown content-type
+	 * @param boolean $force if given and TRUE sets the content-type and/or charset even if unknown
 	 */
 	protected function response_type($response, $_t, $_c, $strict=TRUE, $force=FALSE) {
 		$t = strtolower($_t);
@@ -213,6 +223,10 @@ abstract class BasicRepresenter extends Representer {
 	 *
 	 * Throws an exception if I don't have a language for $l, and $strict is TRUE.
 	 * Sets it anyway, if $strict is FALSE and $force is TRUE.
+	 *
+	 * @param string $_l language
+	 * @param boolean $strict if TRUE (default) throws exception for unknown language
+	 * @param boolean $force if given and TRUE sets the language even if unknown (only has effect if $strict is FALSE)
 	 */
 	protected function response_language($response, $_l, $strict=TRUE, $force=FALSE) {
 		$l = strtolower($_l);

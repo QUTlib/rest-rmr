@@ -52,8 +52,8 @@ class JSONRepresenter extends BasicRepresenter {
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
-		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE);
-		$this->response_language($response, 'en', FALSE, TRUE);
+		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE); // override charset because I control it in the encoding process
+		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
 		$response->body( json_encode($m) );
 	}
 }
@@ -90,8 +90,8 @@ class YAMLRepresenter extends BasicRepresenter {
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
-		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE);
-		$this->response_language($response, 'en', FALSE, TRUE);
+		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE); // override charset because I control it in the encoding process
+		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
 		$response
 			->body("%YAML 1.2\n---\n")
 			->append( $this->_yaml_encode($m, '', '', '', false, false) );
@@ -209,8 +209,8 @@ class XMLRepresenter extends BasicRepresenter {
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
-		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE);
-		$this->response_language($response, 'en', FALSE, TRUE);
+		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE); // override charset because I control it in the encoding process
+		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
 
 		if (is_object($m) && ($m instanceof SimpleXMLElement)) {
 			$response->body( $m->asXML() );
@@ -352,25 +352,34 @@ class XHTMLRepresenter extends BasicRepresenter {
 	}
 
 	public function can_do_model($m) {
-		return (is_object($m) && ($m instanceof SimpleXMLElement) && strtolower($m->getName()) == 'html')
+		return (is_object($m) && ($m instanceof HTMLDocument))
+		    or (is_object($m) && ($m instanceof SimpleXMLElement) && strtolower($m->getName()) == 'html')
 		    or (is_object($m) && ($m instanceof DOMDocument) && $m->getElementsByTagName('html')->length > 0);
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
-		if ($m instanceof SimpleXMLElement) {
-			$this->response_type($response, $t, $c);
-			$this->response_language($response, $l, FALSE);
+		if ($m instanceof HTMLDocument) {
+			if ($x = $m->encoding()) $this->response_type($response, $t, $x, TRUE, TRUE); // strict type, force charset
+			else $this->response_type($response, $t, $c); // strict type, only set charset if recognised (i.e. never?)
+
+			if ($x = $m->lang()) $this->response_language($response, $x, FALSE, TRUE); // force language
+			#else $this->response_language($response, $l); // only set language if recognised (i.e. never?)
+
+			$response->body( $m->xml() );
+		} elseif ($m instanceof SimpleXMLElement) {
+			$this->response_type($response, $t, $c); // strict type, only set charset if recognised (i.e. never?)
+			#$this->response_language($response, $l, FALSE); // only set language if recognised (i.e. never?)
 			$response->body( $m->asXML() );
 		} else {
 			if ($x = $m->xmlEncoding) {
 				// override the requested/matched charset with that
 				// specified in the document itself.
-				$this->response_type($response, $t, $x, TRUE, TRUE);
+				$this->response_type($response, $t, $x, TRUE, TRUE); // strict type, force charset
 			} else {
 				// must be what was requested/matched
-				$this->response_type($response, $t, $c);
+				$this->response_type($response, $t, $c); // strict type, only set charset if recognised (i.e. never?)
 			}
-			$this->response_language($response, $l, FALSE);
+			#$this->response_language($response, $l, FALSE);
 			$response->body( $m->saveXML() );
 		}
 	}
@@ -403,8 +412,12 @@ class HTMLRepresenter extends BasicRepresenter {
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
-		$this->response_type($response, $t, $c);
-		$this->response_language($response, $l, FALSE);
+		if ($x = $m->encoding()) $this->response_type($response, $t, $x, TRUE, TRUE); // strict type, force charset
+		else $this->response_type($response, $t, $c); // strict type, only set charset if recognised (i.e. never?)
+
+		if ($x = $m->lang()) $this->response_language($response, $x, FALSE, TRUE); // force language
+		#else $this->response_language($response, $l); // only set language if recognised (i.e. never?)
+
 		$response->body( $m->html() );
 	}
 }

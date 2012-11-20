@@ -376,3 +376,36 @@ class XHTMLRepresenter extends BasicRepresenter {
 	}
 }
 
+/**
+ * A generic representer which will represent some objects as HTML.
+ *
+ * Note: this is an experimental class, and is not guaranteed to
+ *       work properly in all cases.
+ *
+ * Supported internet media types (MIMEs):
+ *   text/html             q=1.0 [advertised,default]
+ *   application/html      q=0.5
+ *   * / *                 q=0.001
+ */
+class HTMLRepresenter extends BasicRepresenter {
+
+	public function __construct() {
+		parent::__construct(
+			array(
+				new InternetMediaType('text',        'html', 1.0, TRUE),
+				new InternetMediaType('application', 'html', 0.5),
+				new InternetMediaType('*', '*', 0.001, FALSE, 'text/html'),
+			),
+			array(),
+			array(),
+			array('object:HTMLDocument')
+		);
+	}
+
+	public function represent($m, $t, $c, $l, $response) {
+		$this->response_type($response, $t, $c);
+		$this->response_language($response, $l, FALSE);
+		$response->body( $m->html() );
+	}
+}
+

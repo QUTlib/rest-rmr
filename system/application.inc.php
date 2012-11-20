@@ -72,7 +72,7 @@ class Application {
 		set_error_handler(array('Application','error_response'), E_ALL & (~E_STRICT));
 
 		$paths = array(
-			APPDIR.'/resource-handlers',
+			APPDIR.'/resources',
 			APPDIR.'/representations',
 		);
 		foreach ($paths as $path) {

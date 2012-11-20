@@ -32,6 +32,7 @@ require_once(SYSDIR.'/representations/core-serialisation-classes.php');
 //       by */*, one of these guys will end up handling most requests if
 //       nothing better comes along, and the JSON guy returns his data
 //       in text/* so browsers are less likely to barf at it than YAML.
+Application::register_representer( new HTMLRepresenter() );
 Application::register_representer( new XHTMLRepresenter() );
 Application::register_representer( new XMLRepresenter() );
 Application::register_representer( new JSONRepresenter() );

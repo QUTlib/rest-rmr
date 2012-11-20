@@ -60,7 +60,8 @@ class HTMLDocument extends HTMLElement {
 		$lang = $this->lang;
 		$string = '';
 		$string .= "<?xml version=\"1.0\" encoding=\"$enc\" ?".">\n";
-		$string .= "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n";
+		#$string .= "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.1//EN\" \"http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd\">\n";
+		$string .= "<!DOCTYPE html>\n";
 		$string .= "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"$lang\">";
 		$string .= $this->head->xml();
 		$string .= $this->body->xml();

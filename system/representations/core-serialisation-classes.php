@@ -221,13 +221,14 @@ class XMLRepresenter extends BasicRepresenter {
 				->body( '' )
 				->append_line( '<?xml version="1.0" encoding="ISO-8859-1"?>' )
 				->append_line( '<?xml-stylesheet href="/assets/generic-xml.xsl" type="text/xsl"?>' )
-				->append_line( '<document xmlns="http://www.library.qut.edu.au/generic-xml/">' )
+				->append_line( '<document xmlns="http://api.library.qut.edu.au/xml-data/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.library.qut.edu.au/xml-data/1.0 /xml-data/1.0">' )
 				->append( $this->_xml_encode($m) )
-				->append_line( '</document>' );
+				->append_line( '</document>' )
+			;
 		}
 
 		if (defined('DEBUG') && DEBUG)
-			$response->append_line('<!-- Represented by '.get_class($this).'-->');
+			$response->append_line('<!-- Represented by '.get_class($this).' -->');
 	}
 
 	protected function _quote($s) {
@@ -297,7 +298,7 @@ class XMLRepresenter extends BasicRepresenter {
 				// strip the first xml declaration thingy
 				if (preg_match('~<\?xml([^?]|\?[^>])+\?>[\r\n]*~i', $xml, $m)) {
 					$header = $m[0];
-					$xml = substr($xml, $header);
+					$xml = substr($xml, strlen($header));
 				}
 				// fix padding
 				$xml = str_replace("\n", "\n$p");

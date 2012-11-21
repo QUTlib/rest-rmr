@@ -49,8 +49,13 @@ class URIRegistrar {
 	 * @param Mixed $handler 'function', 'class->method', 'class::static_method', array(object,'method'), array('class','method')
 	 */
 	public function register_handler($http_method, $uri_pattern, $handler) {
-		if (substr($uri_pattern,0,1) != '/') $uri_pattern = '/' . $uri_pattern;
-		URIMap::register($http_method, $this->prefix . $uri_pattern, $handler);
+		if ($uri_pattern && substr($uri_pattern,0,1) != '/') $uri_pattern = '/' . $uri_pattern;
+		$full_pattern = $this->prefix . $uri_pattern;
+		if (! $full_pattern) {
+			#$full_pattern = '/';
+			throw new Exception("invalid handler; prefix and URI pattern are both blank");
+		}
+		URIMap::register($http_method, $full_pattern, $handler);
 	}
 
 	/**

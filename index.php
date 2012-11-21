@@ -21,6 +21,7 @@ $GLOBALS['__STARTUP__'] = microtime(TRUE);
 include_once('config.inc.php');
 
 $here = dirname(__FILE__);
+if (!defined('ROOTDIR')) define('ROOTDIR',realpath($here));
 if (!defined('SYSDIR')) define('SYSDIR',realpath(defined('SYS_DIR') ? SYS_DIR : 'system'));
 if (!defined('APPDIR')) define('APPDIR',realpath(defined('APP_DIR') ? APP_DIR : 'application'));
 

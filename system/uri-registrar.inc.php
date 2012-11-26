@@ -25,7 +25,7 @@ class URIRegistrar {
 	 */
 	public function __construct($prefix) {
 		$this->prefix = '/' . trim($prefix, '/');
-		if ($this->prefix == '/') $this->prefix = ''; // FIXME HACK
+		if ($this->prefix == '/') $this->prefix = '';
 	}
 
 	/**

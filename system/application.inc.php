@@ -69,7 +69,9 @@ class Application {
 	 * then ditto {APPDIR}/representation-types/\*.php
 	 */
 	public static function init() {
+		ini_set('display_errors', 'Off');
 		set_error_handler(array('Application','error_response'), E_ALL & (~E_STRICT));
+		register_shutdown_function(array('Application','shutdown_handler'));
 
 		$paths = array(
 			APPDIR.'/resources',
@@ -206,13 +208,22 @@ class Application {
 				$handler = $rule['handler'];
 				$handler = URIMap::realise_handler($handler);
 
-				try {
-					$model = call_user_func($handler);
-					return $model;
-				} catch (Exception $e) {
-					if (is_null($final_response)) {
-						$final_response = Response::generate_ex($e);
+				if (is_callable($handler, FALSE, $handler_name)) {
+					try {
+						$model = call_user_func($handler);
+						return $model;
+					} catch (Exception $e) {
+						if (is_null($final_response)) {
+							$final_response = Response::generate_ex($e);
+						}
 					}
+				} else {
+					if (defined('DEBUG') && DEBUG) {
+						$message = '<p class="mesg">Handler for <code>'.$uri.'</code><br>matched by pattern <code>'.$regex.'</code><br>is set to <code>'.var_export($rule['handler'],1).'</code><br>which resolves to <code>'.$handler_name.'</code><br>which is undefined.</p>';
+					} else {
+						$message = '<p class="mesg">Misconfigured handler for <code>'.$uri.'</code>: no such method <code>'.$handler_name.'</code></p>';
+					}
+					$final_response = Response::generate(500, $message, TRUE);
 				}
 			}
 		}
@@ -306,6 +317,16 @@ class Application {
 		array_shift($stack); // remove error_response()
 		array_shift($stack); // remove errfile/errline
 		Response::error($title, $errstr, $errfile, $errline, $stack);
+	}
+
+	/**
+	 * Last ditch effort to catch otherwise uncaught errors.
+	 */
+	public static function shutdown_handler() {
+		$error_info = error_get_last();
+		if ($error_info !== null && ($error_info['type'] & E_ERROR)) {
+			self::error_response($error_info['type'], $error_info['message'], $error_info['file'], $error_info['line']);
+		}
 	}
 
 	/**#@+ @ignore */

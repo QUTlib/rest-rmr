@@ -25,6 +25,7 @@ class Request {
 	private static $protocol = NULL;
 	private static $method  = NULL;
 	private static $uri     = NULL;
+	private static $https   = NULL;
 	private static $headers = NULL;
 	private static $headers_index = NULL;
 	private static $get  = NULL;
@@ -45,6 +46,7 @@ class Request {
 		self::$headers = getallheaders();
 		self::$get  = $_GET;
 		self::$post = $_POST;
+		self::$https = (isset($_SERVER['HTTPS']) ? ($_SERVER['HTTPS'] == 'on') : FALSE);
 
 		// build a header index
 		$headers_index = array();
@@ -76,6 +78,7 @@ public static function dump() {
 
 	public static function uri() { return self::$uri; }
 	public static function protocol() { return self::$protocol; }
+	public static function is_https() { return self::$https; }
 
 	/**
 	 * Gets the request's HTTP version, as "major.minor"

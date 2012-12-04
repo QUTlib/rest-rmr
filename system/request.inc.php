@@ -22,6 +22,7 @@ class Request {
 	private function __clone() {}
 	private function __wakeup() {}
 
+	private static $client_ip = NULL;
 	private static $protocol = NULL;
 	private static $method  = NULL;
 	private static $uri     = NULL;
@@ -41,6 +42,7 @@ class Request {
 			self::$uri = '/';
 		}
 
+		self::$client_ip = (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : NULL); // FIXME: http://stackoverflow.com/a/7623231/765382
 		self::$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
 		self::$method = (isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
 		self::$headers = getallheaders();
@@ -76,6 +78,7 @@ public static function dump() {
 }
 ### /DEBUG
 
+	public static function client_ip() { return self::$client_ip; }
 	public static function uri() { return self::$uri; }
 	public static function protocol() { return self::$protocol; }
 	public static function is_https() { return self::$https; }

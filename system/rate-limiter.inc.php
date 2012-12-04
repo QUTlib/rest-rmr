@@ -19,12 +19,17 @@
 require_once('utils/data-cache.inc.php');
 
 /**
- * An uninstantiable class what lets us reject requests pretty early
- * in the process, if they requester is being too requesty.
+ * An uninstantiable class that lets us reject requests pretty early
+ * in the handling process, if the requester is being too requesty.
+ *
+ * Uses the RATELIMIT value, optionally defined in config.
  */
 class RateLimiter {
 	/** How many client IP addresses to store before sweeping the cache */
 	const CACHE_SIZE_LIMIT = 50;
+
+	/** How many seconds to wait before servicing requests from a spammer */
+	const COOLDOWN_PERIOD = 300;
 
 	/**
 	 * Terminates script execution early, if the request originated
@@ -37,6 +42,7 @@ class RateLimiter {
 			return;
 		}
 
+		// who they are
 		// FIXME: http://stackoverflow.com/a/7623231/765382
 		if (isset($_SERVER['REMOTE_ADDR'])) {
 			$client_ip = $_SERVER['REMOTE_ADDR'];
@@ -44,28 +50,33 @@ class RateLimiter {
 			// argh! don't know who they are!
 			return;
 		}
-		//$now = intval(date('YmdHi'));
+
+		// the current time, to the nearest wall-clock minute
 		$now = (time() - date('s'));
-		//$now = floatval(date('Ymd.Hi'));
 
-		/* FIVE MINUTE COOLDOWN JERKS */
+		/* ----- FIVE MINUTE COOLDOWN JERKS ----- */
 
+		// If the current client is in the five-minute-cooldown bin,
+		// check to see if their time has expired yet.
 		$bancache = new DataCache('request-rate-banlist', array());
 		$banstore = $bancache->data();
 		if (isset($banstore[$client_ip])) {
 			$timeout = $banstore[$client_ip];
 			if ($timeout >= $now) {
 				// They didn't wait the full five minutes!
-				#$banstore[$client_ip] = ($now + 5*60);
+				#$banstore[$client_ip] = ($now + RateLimiter::COOLDOWN_PERIOD);
 				#$bancache->data($banstore);
 
 				header('HTTP/1.1 429 Too Many Requests', TRUE, 429);
-				header('Retry-After: 300'); // come back in 5 minutes
+				// always tell them the max time; no skin off our nose if they only
+				// had two seconds before their cooldown wears off.
+				header('Retry-After: '.RateLimiter::COOLDOWN_PERIOD);
 				if (defined('DEBUG') && DEBUG) {
-					// the time and date the cooldown wears off
+					// the actual time and date the cooldown wears off
 					header('X-CoolDown-Time: '.$timeout);
 					header('X-CoolDown-Date: '.gmdate('Y-m-d\TH:i:s',$timeout));
 				}
+				// required response entity, describing the issue
 				header('Content-Type: text/html; charset=ISO-8859-1');
 				echo '<!DOCTYPE html><html><head><title>Too Many Requests</title></head><body><h1>429 Too Many Requests</h1><p>Too many requests this minute.  Try again in 5 minutes.</p></body></html>';
 				exit;
@@ -75,13 +86,37 @@ class RateLimiter {
 				$bancache->data($banstore);
 			}
 		}
-		// TODO: sweep the banstore?
 
-		/* REGULAR PEOPLE */
+		// If the cooldown bin is getting full, do a mark-and-sweep to
+		// see if we can reduce it some.
+		// This is only run if the current request isn't already
+		// blocked for being to spammy.
+		if (count($banstore) >= RateLimiter::CACHE_SIZE_LIMIT) {
+			// the store is too full; sweep the entries and see
+			// if any can be dropped (i.e. we haven't heard from
+			// them yet this minute)
+			$ips_to_drop = array();
+			foreach ($store as $ipaddress=>$timeout) {
+				if ($timeout < $now) {
+					$ips_to_drop[] = $ipaddress;
+				}
+			}
+			if ($ips_to_drop) {
+				foreach ($ips_to_drop as $ipaddress) {
+					unset($banstore[$ipaddress]);
+				}
+				$bancache->data($banstore);
+			}
+		}
+
+		/* ----- REGULAR PEOPLE ----- */
 
 		$cache = new DataCache('request-rate-throttle', array());
 		$store = $cache->data();
 
+		// Check to see if the current client has made any
+		// requests this minute, and if they have, make sure
+		// they haven't made too many.
 		if (!isset($store[$client_ip])) {
 			// they haven't requested at all; set to 1
 			$store[$client_ip] = array($now, 1);
@@ -95,7 +130,7 @@ class RateLimiter {
 				// add them to the b& list, but let this request slide
 				// if they try anything in the next five minute they'll
 				// regret it
-				$banstore[$client_ip] = ($now + 5*60);
+				$banstore[$client_ip] = ($now + RateLimiter::COOLDOWN_PERIOD);
 				$bancache->data($banstore);
 				unset($store[$client_ip]);
 			} else {

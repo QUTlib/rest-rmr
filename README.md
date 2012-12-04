@@ -79,14 +79,16 @@ API and Interfaces
 ------------------
 
 ### URI Patterns and Handlers ###
-To deal with registering URI patterns and handlers, the framework provides two mechanisms:
+To deal with registering URI patterns and handlers, the framework provides three mechanisms:
 
 * A low-level function: `URIMap::register( $http_method, $uri_pattern, $handler )`
     * Any incoming HTTP request using  the given `$http_method`, whose request URI matches the `$uri_pattern`, is handled using the callable `$handler`.
     * If you register a handler for the HTTP GET method, an identical handler is automatically registered for the HEAD method.
-* A higher-level class: `URIRegistrar`
-    * Provides a simple mechanism to register a set of resource-paths under a single interface and module.
+* A high-level class: `URIRegistrar`
+    * Provides a simple mechanism to register a set of resource-paths under a single module.
     * Wraps the call to `URIMap::register`, with extra data sanitisation.
+* A higher-level class: `InterfacedURIRegistrar`
+    * An extension of `URIRegistrar` that includes an _interface_ as well as a module.
 
 Irrespective of _how_ they are registered, URI patterns are tested in the order they are registered.
 
@@ -94,7 +96,7 @@ Irrespective of _how_ they are registered, URI patterns are tested in the order 
 URI patterns may include named parameters:
 
 * `'/hello/:name'` matches `'/hello/foo'` and `'/hello/bar'`
-* Parameter “name” is 'foo' or 'bar'
+* Parameter “name” is set to 'foo' or 'bar'
 
 A trailing slash can be made optional by appending a question-mark:
 * `'/hello/?'` matches `'/hello'` and `'/hello/'`

@@ -37,6 +37,7 @@ require_once('basic-representer.inc.php');
 
 require_once('request.inc.php');
 require_once('response.inc.php');
+require_once('rate-limiter.inc.php');
 
 Autoloader::register('TemplateEngine', SYSDIR.'/template/engine.inc.php');
 Autoloader::register('DBConn',         SYSDIR.'/utils/dbconn.inc.php');
@@ -72,6 +73,10 @@ class Application {
 		ini_set('display_errors', 'Off');
 		set_error_handler(array('Application','error_response'), E_ALL & (~E_STRICT));
 		register_shutdown_function(array('Application','shutdown_handler'));
+
+		if (defined('RATELIMIT') && RATELIMIT > 0) {
+			RateLimiter::maybe_throttle();
+		}
 
 		$paths = array(
 			APPDIR.'/resources',

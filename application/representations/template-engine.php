@@ -16,6 +16,12 @@
  * under the License.
  */
 
+/**
+ * This representer specialises in pushing TemplateEngine data models
+ * as 'text/html'.
+ *
+ * See `{SYSDIR}/utils/template-engine.inc.php`
+ */
 class TemplateRepresenter extends BasicRepresenter {
 
 	public function __construct() {

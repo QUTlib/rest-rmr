@@ -24,13 +24,14 @@ require_once('http-exception.inc.php');
 
 require_once('autoloader.inc.php');
 
-require_once('internet-media-type.inc.php');
-require_once('language.inc.php');
-require_once('charset.inc.php');
+require_once('content-negotiation/internet-media-type.inc.php');
+require_once('content-negotiation/language.inc.php');
+require_once('content-negotiation/charset.inc.php');
 
 require_once('uri-map.inc.php');
-require_once('uri-registrar.inc.php');
-require_once('interfaced-uri-registrar.inc.php');
+require_once('utils/uri-registrar.inc.php');
+require_once('utils/interfaced-uri-registrar.inc.php');
+
 require_once('representation-manager.inc.php');
 require_once('representer.inc.php');
 require_once('basic-representer.inc.php');
@@ -39,9 +40,9 @@ require_once('request.inc.php');
 require_once('response.inc.php');
 require_once('rate-limiter.inc.php');
 
-Autoloader::register('TemplateEngine', SYSDIR.'/template/engine.inc.php');
+Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
 Autoloader::register('DBConn',         SYSDIR.'/utils/dbconn.inc.php');
-require_once(SYSDIR.'/dao/lib.inc.php');
+require_once(SYSDIR.'/utils/dao.inc.php');
 require_once(SYSDIR.'/utils/html.inc.php');
 
 /**

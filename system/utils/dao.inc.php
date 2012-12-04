@@ -16,8 +16,8 @@
  * under the License.
  */
 
-Autoloader::register('DAO',           SYSDIR.'/dao/dao.inc.php');
-Autoloader::register('DBTable',       SYSDIR.'/dao/db-table.inc.php');
-Autoloader::register('DBColumn',      SYSDIR.'/dao/db-column.inc.php');
-Autoloader::register('DBColumnAlias', SYSDIR.'/dao/db-column-alias.inc.php');
+Autoloader::register('DAO',           SYSDIR.'/utils/dao/dao.inc.php');
+Autoloader::register('DBTable',       SYSDIR.'/utils/dao/db-table.inc.php');
+Autoloader::register('DBColumn',      SYSDIR.'/utils/dao/db-column.inc.php');
+Autoloader::register('DBColumnAlias', SYSDIR.'/utils/dao/db-column-alias.inc.php');
 

@@ -24,7 +24,7 @@
  *       start with the letters 'zz_'
  */
 
-require_once(SYSDIR.'/representations/core-serialisation-classes.php');
+require_once(SYSDIR.'/core-representations/core-serialisation-classes.php');
 
 // ----- IMPORTANT ------------------------------------------------------
 // Note: the order is XHTML > XML > JSON > YAML. Since most web browsers

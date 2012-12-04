@@ -16,7 +16,6 @@
  * under the License.
  */
 
-
 abstract class Representer {
 
 	/** should return a boolean */

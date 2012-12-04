@@ -16,7 +16,7 @@
  * under the License.
  */
 
-require_once('data-cache.inc.php');
+require_once('utils/data-cache.inc.php');
 
 /**
  * An uninstantiable class what lets us reject requests pretty early

@@ -18,11 +18,17 @@
 
 #date_default_timezone_set('Australia/Brisbane');
 
+// Names of special directories, relative to the document root
 define('SYS_DIR', 'system');
 define('APP_DIR', 'application');
 
+// Site-specific config settings
 define('SITEHOST', 'www.example.com');
 define('SITENAME', 'My Site');
+
+// Limit number of requests per client address per minute.
+// To leave it unlimited, leave undefined.
+#define('RATELIMIT', 60);
 
 #define('DEBUG', 1);
 

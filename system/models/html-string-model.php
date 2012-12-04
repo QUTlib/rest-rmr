@@ -17,12 +17,12 @@
  */
 
 
-require_once(SYSDIR.'/models/raw-doc-model.php');
+require_once(SYSDIR.'/models/string-model.php');
 
 /**
- * A simple model which likes to be rendered as 'text/css'
- * by RawCSSDocRepresenter
+ * A simple model which likes to be rendered as 'text/html'
+ * by RawHTMLDocRepresenter
  */
-class RawCSSDoc extends RawDocument {
+class HTMLString extends StringModel {
 }
 

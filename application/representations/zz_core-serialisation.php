@@ -27,11 +27,27 @@
 require_once(SYSDIR.'/core-representations/core-serialisation-classes.php');
 
 // ----- IMPORTANT ------------------------------------------------------
-// Note: the order is XHTML > XML > JSON > YAML. Since most web browsers
-//       accept application/xhtml+xml and application/xml followed
-//       by */*, one of these guys will end up handling most requests if
-//       nothing better comes along, and the JSON guy returns his data
-//       in text/* so browsers are less likely to barf at it than YAML.
+// Note: the order is HTML > XHTML > XML > JSON > YAML.
+//
+//       HTML first because that's the defacto standard content-type for
+//       resource delivery on the web.
+//        * Note that the HTMLRepresenter only represents HTMLDocument
+//          objects.
+//
+//       XHTML and XML second and third because most web browsers accept
+//       application/xhtml+xml and application/xml with similar preference,
+//       and XHTML is more "web friendly" than XML.
+//        * Note that the XHTMLRepresenter only represents HTMLDocument
+//          objects, or XML DOM-type objects with a <html> root element.
+//
+//       JSON fourth because he delivers data in a 'text/*' format, so
+//       browsers are less likely to barf at it (some browsers are happy
+//       to render any text/*, while they all force the user to download
+//       application/* -- and I hate that.)
+//
+//       Finally YAML because it's an awesome format and everyone should
+//       support it.
+//
 Application::register_representer( new HTMLRepresenter() );
 Application::register_representer( new XHTMLRepresenter() );
 Application::register_representer( new XMLRepresenter() );

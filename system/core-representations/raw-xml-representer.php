@@ -16,11 +16,11 @@
  * under the License.
  */
 
-Application::register_class('RawXMLDoc', SYSDIR.'/models/raw-xml-model.php');
+Application::register_class('XMLString', SYSDIR.'/models/xml-string-model.php');
 Application::register_class('XMLFile',   SYSDIR.'/models/xml-file-model.php');
 
 /**
- * A basic XML representer that displays RawXMLDoc models as application/xml
+ * A basic XML representer that displays raw XML document models as application/xml
  *
  * Supported internet media types (MIMEs):
  *   application/xml  q=1.0 [advertised,default]
@@ -39,7 +39,7 @@ class RawXMLDocRepresenter extends BasicRepresenter {
 			array(),
 			array(),
 			array(
-				'object:RawXMLDoc',
+				'object:XMLString',
 				'object:XMLFile',
 			)
 		);

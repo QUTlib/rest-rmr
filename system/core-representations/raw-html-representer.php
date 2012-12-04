@@ -16,11 +16,11 @@
  * under the License.
  */
 
-Application::register_class('RawHTMLDoc', SYSDIR.'/models/raw-html-model.php');
+Application::register_class('HTMLString', SYSDIR.'/models/html-string-model.php');
 Application::register_class('HTMLFile',   SYSDIR.'/models/html-file-model.php');
 
 /**
- * A basic HTML representer that displays RawHTMLDoc models as text/html
+ * A basic HTML representer that displays raw HTML document models as text/html
  *
  * Supported internet media types (MIMEs):
  *   text/html        q=1.0 [advertised,default]
@@ -37,7 +37,7 @@ class RawHTMLDocRepresenter extends BasicRepresenter {
 			array(),
 			array(),
 			array(
-				'object:RawHTMLDoc',
+				'object:HTMLString',
 				'object:HTMLFile',
 			)
 		);

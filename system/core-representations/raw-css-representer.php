@@ -16,11 +16,11 @@
  * under the License.
  */
 
-Application::register_class('RawCSSDoc', SYSDIR.'/models/raw-css-model.php');
+Application::register_class('CSSString', SYSDIR.'/models/css-string-model.php');
 Application::register_class('CSSFile',   SYSDIR.'/models/css-file-model.php');
 
 /**
- * A basic CSS representer that displays RawCSSDoc models as text/css
+ * A basic CSS representer that displays raw CSS document models as text/css
  *
  * Supported internet media types (MIMEs):
  *   text/css                q=1.0 [advertised,default]
@@ -39,7 +39,7 @@ class RawCSSDocRepresenter extends BasicRepresenter {
 			array(),
 			array(),
 			array(
-				'object:RawCSSDoc',
+				'object:CSSString',
 				'object:CSSFile',
 			)
 		);

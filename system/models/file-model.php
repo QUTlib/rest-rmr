@@ -21,7 +21,7 @@
  *
  * Everything is lazy-initialised.
  *
- * API-identical to RawDocument
+ * API-identical to StringModel
  */
 class FileModel {
 	private $filename = NULL;

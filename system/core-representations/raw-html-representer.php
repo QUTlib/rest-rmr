@@ -46,6 +46,7 @@ class RawHTMLDocRepresenter extends BasicRepresenter {
 	public function represent($m, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c);
 		$this->response_language($response, $l, FALSE);
+		$response->header('X-UA-Compatible', 'IE=edge');
 		if ($mtime = $m->mtime()) {
 			$response->last_modified($mtime);
 			$response->cache();

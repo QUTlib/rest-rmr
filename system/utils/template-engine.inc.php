@@ -303,7 +303,7 @@ class TemplateEngine {
 		# %%PROPERTY%%
 		$property_keys = array();
 		foreach ($items as $key=>$val) {
-			$property_keys[] = preg_quote($key);
+			$property_keys[] = preg_quote($key, '/');
 		}
 		$property_regexp = '%('.implode('|',$property_keys).')%';
 
@@ -543,18 +543,25 @@ else
 		$regex = '/^';
 		if (substr($page, -1) == '*') {
 			$page = substr($page, 0, -1);
-			$regex .= preg_quote($page,'/' );
+			$regex .= preg_quote($page,'/');
 			$regex .= '/';
 		} else {
 			$regex .= preg_quote($page,'/');
 			$regex .= '$/';
 		}
 
-		if (preg_match($regex, Request::get_page())) {
-			return 'selected';
-		} else {
-			return '';
+		// if the current url (minus the current BASEURL) matches $page,
+		// return "selected"
+		$url = Request::uri();
+		$base = $this->get_local($items, 'BASEURL');
+		if (empty($base) || substr($url, 0, strlen($base)) == $base) {
+			$path = substr($url, strlen($base));
+			$path = ltrim($path, '/');
+			if (preg_match($regex, $path)) {
+				return 'selected';
+			}
 		}
+		return '';
 	}
 
 	protected function t_BREADCRUMBS($items) {

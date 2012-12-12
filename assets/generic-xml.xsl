@@ -215,7 +215,7 @@ span.text{color:#000;background:#f8f8f8;outline:1px solid #ccc}
     <!-- find the smallest non-zero length var -->
     <xsl:choose>
       <!-- '&amp;' exists and is first -->
-      <xsl:when test="$has_amp and (not($has_lt) or $pos_amp &lt; $pos_lt) and (not($has_gt) or $pos_amp &gt; $pos_gt)">
+      <xsl:when test="$has_amp and not($has_lt and $pos_amp &gt; $pos_lt) and not($has_gt and $pos_amp &gt; $pos_gt)">
         <xsl:value-of select="$b4_amp"/>
         <xsl:text>&amp;amp;</xsl:text>
         <xsl:call-template name="quote-entities">
@@ -223,7 +223,7 @@ span.text{color:#000;background:#f8f8f8;outline:1px solid #ccc}
         </xsl:call-template>
       </xsl:when>
       <!-- '&lt;' exists and is first -->
-      <xsl:when test="$has_lt and (not($has_amp) or $pos_lt &gt; $pos_amp) and (not($has_gt) or $pos_lt &gt; $pos_gt)">
+      <xsl:when test="$has_lt and not($has_amp and $pos_lt &gt; $pos_amp) and not($has_gt and $pos_lt &gt; $pos_gt)">
         <xsl:value-of select="$b4_lt"/>
         <xsl:text>&amp;lt;</xsl:text>
         <xsl:call-template name="quote-entities">
@@ -231,7 +231,7 @@ span.text{color:#000;background:#f8f8f8;outline:1px solid #ccc}
         </xsl:call-template>
       </xsl:when>
       <!-- '&gt;' exists and is first -->
-      <xsl:when test="$has_gt and (not($has_amp) or $pos_gt &gt; $pos_lt) and (not($has_lt) or $pos_gt &gt; $pos_amp)">
+      <xsl:when test="$has_gt and not($has_amp and $pos_gt &gt; $pos_lt) and not($has_lt and $pos_gt &gt; $pos_amp)">
         <xsl:value-of select="$b4_gt"/>
         <xsl:text>&amp;gt;</xsl:text>
         <xsl:call-template name="quote-entities">

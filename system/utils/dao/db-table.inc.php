@@ -294,12 +294,24 @@ class DBTable {
 
 	/**
 	 * Given $values = array( 'col1'=>'val1', 'col2'=>'val2' ),
+	 * builds a query fragment: "val1, val2"
+	 */
+	public function valueFields($db, $values) {
+		$f = array();
+		foreach ($values as $column=>$value) {
+			$f[] = $this->val($db, $column, $value);
+		}
+		return implode(', ', $f);
+	}
+
+	/**
+	 * Given $values = array( 'col1'=>'val1', 'col2'=>'val2' ),
 	 * builds a query fragment: "col1 = val1, col2 = val2"
 	 */
 	public function updateFields($db, $values) {
 		$f = array();
 		foreach ($values as $column=>$value) {
-			$f[] = $this->val($db, $column, $value);
+			$f[] = $this->set($db, $column, $value);
 		}
 		return implode(', ', $f);
 	}

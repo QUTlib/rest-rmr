@@ -167,7 +167,7 @@ SQL;
 
 		$tname = $table->name();
 		$field_str = $table->parseFields(array_keys($values), TRUE);
-		$value_str = $table->updateFields($this->db(), $values);
+		$value_str = $table->valueFields($this->db(), $values);
 
 		return <<<SQL
 INSERT INTO `$tname`
@@ -190,5 +190,31 @@ SQL;
 		$result = $this->db()->insert($query);
 		return $result;
 	}
+
+	/** builds and returns an UPDATE statement */
+	protected function update_query($table, $fields, $filters) {
+		if (is_string($table)) $table = $this->table($table);
+
+		$tname = $table->name();
+		$field_str = $table->updateFields($this->db(), $fields);
+		$where   = $this->where($table, $filters);
+		$orderby = $this->orderby($table, $sort);
+
+		return <<<SQL
+UPDATE `$tname`
+SET
+  $field_str
+$where
+SQL;
+	}
+
+	/**
+	 * Does the heavy lifting of getting fields from a database table.
+	 */
+	protected function set($table, $fields, $filters) {
+		$query = $this->update_query($table, $fields, $filters);
+		return $this->db()->query($query);
+	}
+
 }
 

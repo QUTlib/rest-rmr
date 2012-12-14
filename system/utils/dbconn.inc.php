@@ -125,7 +125,11 @@ class DBConn {
 
 		$query_result = $this->link->query($sql, MYSQLI_USE_RESULT);
 		if (!$query_result) {
-			throw new Exception('Query error: ['.$this->link->errno.']'.$this->link->error);
+			if (defined('DEBUG') && DEBUG) {
+				throw new Exception('Query error: ['.$this->link->errno.']'.$this->link->error."\n\n".$sql);
+			} else {
+				throw new Exception('Query error: ['.$this->link->errno.']'.$this->link->error);
+			}
 		}
 		$affected = $this->link->affected_rows;
 		if (is_object($query_result)) {

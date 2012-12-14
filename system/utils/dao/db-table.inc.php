@@ -199,6 +199,9 @@ class DBTable {
 		case DBColumn::DATETIME:
 			$value = "'" . $db->escape($value) . "'";
 			break;
+		case DBColumn::FLOAT:
+			$db->check_float($value);
+			break;
 		default:
 			$db->check_int($value);
 			break;

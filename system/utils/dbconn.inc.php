@@ -166,6 +166,24 @@ class DBConn {
 	}
 
 	/**
+	 * Armours a float so it is safe to include in an SQL query.
+	 */
+	public function float($f)
+	{
+		return floatval($f);
+	}
+
+	/**
+	 * Asserts that the given value is a floating point number.
+	 * This also allows integers.
+	 */
+	public function check_float($f)
+	{
+		if (!(is_float($f) || is_int($f) || preg_match('/^(\d*\.)?\d+$/',$f))) throw new Exception("not a floating point number '$f'");
+		return TRUE;
+	}
+
+	/**
 	 * Converts a boolean to a bit-representation for use in an SQL query.
 	 */
 	public function bool($b)

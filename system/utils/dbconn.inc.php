@@ -161,7 +161,7 @@ class DBConn {
 	 */
 	public function check_int($i)
 	{
-		if (!(is_int($i) || preg_match('/^\d+$/',$i))) throw new Exception("not an integer '$i'");
+		if (!(is_int($i) || preg_match('/^[+-]?\d+$/',$i))) throw new Exception("not an integer '$i'");
 		return TRUE;
 	}
 
@@ -179,7 +179,7 @@ class DBConn {
 	 */
 	public function check_float($f)
 	{
-		if (!(is_float($f) || is_int($f) || preg_match('/^(\d*\.)?\d+$/',$f))) throw new Exception("not a floating point number '$f'");
+		if (!(is_float($f) || is_int($f) || preg_match('/^[+-]?(\d*\.)?\d+$/',$f))) throw new Exception("not a floating point number '$f'");
 		return TRUE;
 	}
 

@@ -198,7 +198,6 @@ SQL;
 		$tname = $table->name();
 		$field_str = $table->updateFields($this->db(), $fields);
 		$where   = $this->where($table, $filters);
-		$orderby = $this->orderby($table, $sort);
 
 		return <<<SQL
 UPDATE `$tname`

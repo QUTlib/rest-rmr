@@ -390,6 +390,22 @@ public static function dump() {
 	}
 
 	/**
+	 * Gets the names and values of all parameters that match the given
+	 * regular expression pattern.
+	 * @param int $group the matched regex group to return as the name (default = whole string)
+	 */
+	public static function query_params_like($pattern, $group=0) {
+		$results = array();
+		foreach (self::$get as $key=>$value) {
+			if (preg_match($pattern, $key, $match)) {
+				$newkey = $match[$group];
+				$results[$newkey] = $value;
+			}
+		}
+		return $results;
+	}
+
+	/**
 	 * Gets the value of the named parameter from the request entity, if any.
 	 * Returns $default (NULL) if not found.
 	 */
@@ -402,6 +418,22 @@ public static function dump() {
 	public static function entity_param($name, $default=NULL) {
 		if (isset(self::$post[$name])) return self::$post[$name];
 		return $default;
+	}
+
+	/**
+	 * Gets the names and values of all parameters that match the given
+	 * regular expression pattern.
+	 * @param int $group the matched regex group to return as the name (default = whole string)
+	 */
+	public static function entity_params_like($pattern, $group=0) {
+		$results = array();
+		foreach (self::$post as $key=>$value) {
+			if (preg_match($pattern, $key, $match)) {
+				$newkey = $match[$group];
+				$results[$newkey] = $value;
+			}
+		}
+		return $results;
 	}
 
 	/**

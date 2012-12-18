@@ -51,17 +51,15 @@ require_once(SYSDIR.'/utils/html.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. */
-	const VERSION = '20121105';
+	const VERSION = '20121218';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 
 	/* standard interfaces */
 
-	/** Public (human-readable) interface */
+	/** Public interface */
 	const IF_PUBLIC  = 'pub';
-	/** Public (machine-readable) interface. (i.e. api) */
-	const IF_MACHINE = 'api';
-	/** Authenticated (human-readable) interface. */
+	/** Authenticated interface. */
 	const IF_AUTHED  = 'auth';
 
 	/**

@@ -42,6 +42,9 @@ abstract class DAO {
 		return $this->_db;
 	}
 
+	/**
+	 * Looks up a DBTable object by name.
+	 */
 	public function table($name, $allow_null=FALSE) {
 		if (isset($this->tables[$name])) {
 			return $this->tables[$name];
@@ -52,6 +55,113 @@ abstract class DAO {
 		}
 	}
 
+	/* ----- Data access helpers - invoke methods on DBConn ------------- */
+
+	/**
+	 * Does the heavy lifting of getting fields from a database table.
+	 */
+	protected function select($table, $fields=NULL, $filters=NULL, $sort=NULL) {
+		$query = $this->select_query($table, $fields, $filters, $sort);
+		return $this->db()->select($query);
+	}
+
+	/**
+	 * Does the heavy lifting of adding a new object to the database.
+	 * @param mixed $table
+	 * @param array $values a key=>value map of fields and values for the new object
+	 * @return the value of the first AUTO_INCREMENT field in the created record
+	 */
+	protected function insert($table, $values) {
+		$query = $this->insert_query($table, $values);
+		return $this->db()->insert($query);
+	}
+
+	/**
+	 * Does the heavy lifting of setting fields in a database table.
+	 */
+	protected function update($table, $fields, $filters) {
+		$query = $this->update_query($table, $fields, $filters);
+		return $this->db()->query($query);
+	}
+
+	/**
+	 * Does the heavy lifting of removing an object from the database.
+	 */
+	protected function delete($table, $filters) {
+		$query = $this->delete_query($table, $filters);
+		return $this->db()->query($query);
+	}
+
+	/* ----- Query generators - create entire SQL query strings --------- */
+
+	/** builds and returns a SELECT statement */
+	protected function select_query($table, $fields=NULL, $filters=NULL, $sort=NULL) {
+		if (is_string($table)) $table = $this->table($table);
+
+		$tname = $table->name();
+		$field_str = $table->parseFields($fields);
+		$where   = $this->where($table, $filters);
+		$orderby = $this->orderby($table, $sort);
+
+		return <<<SQL
+SELECT
+  $field_str
+FROM `$tname`
+$where
+$orderby
+SQL;
+	}
+
+	/** builds and returns an INSERT statement */
+	protected function insert_query($table, $values) {
+		if (is_string($table)) $table = $this->table($table);
+
+		$tname = $table->name();
+		$field_str = $table->parseFields(array_keys($values), TRUE);
+		$value_str = $table->valueFields($this->db(), $values);
+
+		return <<<SQL
+INSERT INTO `$tname`
+(
+  $field_str
+)
+VALUES
+  ($value_str)
+SQL;
+	}
+
+	/** builds and returns an UPDATE statement */
+	protected function update_query($table, $fields, $filters) {
+		if (is_string($table)) $table = $this->table($table);
+
+		$tname = $table->name();
+		$field_str = $table->updateFields($this->db(), $fields);
+		$where   = $this->where($table, $filters);
+
+		return <<<SQL
+UPDATE `$tname`
+SET
+  $field_str
+$where
+SQL;
+	}
+
+	/** builds and returns a DELETE statement */
+	protected function delete_query($table, $filters) {
+		if (is_string($table)) $table = $this->table($table);
+
+		$tname = $table->name();
+		$where  = $this->where($table, $filters);
+
+		return <<<SQL
+DELETE
+FROM `$tname`
+$where
+SQL;
+	}
+
+	/* ----- Query fragment generators ---------------------------------- */
+
 	/**
 	 * clause('foo', array('bar'=>1, 'baz'=>'!=2', 'quux'=>array(7, '>10')))
 	 * => "`foo`.`bar` = 1 AND `foo`.`baz` != 2 AND (`foo`.`quux` = 7 OR `foo`.`quux` > 10)"
@@ -60,6 +170,7 @@ abstract class DAO {
 		if (is_string($table)) $table = $this->table($table);
 		return $table->filter($this->db(), $matches);
 	}
+
 	/**
 	 * where('foo', array('bar'=>1, 'baz'=>'!=2', 'quux'=>array(7, '>10')))
 	 * => "WHERE `foo`.`bar` = 1 AND `foo`.`baz` != 2 AND (`foo`.`quux` = 7 OR `foo`.`quux` > 10)"
@@ -71,6 +182,7 @@ abstract class DAO {
 			return '';
 		}
 	}
+
 	/**
 	 * orderby('foo', array('bar', 'baz'=>'DESC', 'quux'=>'ASC')
 	 * => "ORDER BY `foo`.`bar`, `foo`.`baz` DESC, `foo`.`quux` ASC"
@@ -133,86 +245,6 @@ abstract class DAO {
 			$array[] = "`$t1`.`$c` = `$t2`.`$c`";
 		}
 		return "JOIN `$t2` ON " . implode(' AND ', $array);
-	}
-
-	/** builds and returns a SELECT statement */
-	protected function get_query($table, $fields=NULL, $filters=NULL, $sort=NULL) {
-		if (is_string($table)) $table = $this->table($table);
-
-		$tname = $table->name();
-		$field_str = $table->parseFields($fields);
-		$where   = $this->where($table, $filters);
-		$orderby = $this->orderby($table, $sort);
-
-		return <<<SQL
-SELECT
-  $field_str
-FROM `$tname`
-$where
-$orderby
-SQL;
-	}
-
-	/**
-	 * Does the heavy lifting of getting fields from a database table.
-	 */
-	protected function get($table, $fields=NULL, $filters=NULL, $sort=NULL) {
-		$query = $this->get_query($table, $fields, $filters, $sort);
-		return $this->db()->select($query);
-	}
-
-	/** builds and returns an INSERT statement */
-	protected function insert_query($table, $values) {
-		if (is_string($table)) $table = $this->table($table);
-
-		$tname = $table->name();
-		$field_str = $table->parseFields(array_keys($values), TRUE);
-		$value_str = $table->valueFields($this->db(), $values);
-
-		return <<<SQL
-INSERT INTO `$tname`
-(
-  $field_str
-)
-VALUES
-  ($value_str)
-SQL;
-	}
-
-	/**
-	 * Does the heavy lifting of adding a new object to the database.
-	 * @param mixed $table
-	 * @param array $values a key=>value map of fields and values for the new object
-	 * @return the value of the first AUTO_INCREMENT field in the created record
-	 */
-	protected function create($table, $values) {
-		$query = $this->insert_query($table, $values);
-		$result = $this->db()->insert($query);
-		return $result;
-	}
-
-	/** builds and returns an UPDATE statement */
-	protected function update_query($table, $fields, $filters) {
-		if (is_string($table)) $table = $this->table($table);
-
-		$tname = $table->name();
-		$field_str = $table->updateFields($this->db(), $fields);
-		$where   = $this->where($table, $filters);
-
-		return <<<SQL
-UPDATE `$tname`
-SET
-  $field_str
-$where
-SQL;
-	}
-
-	/**
-	 * Does the heavy lifting of getting fields from a database table.
-	 */
-	protected function set($table, $fields, $filters) {
-		$query = $this->update_query($table, $fields, $filters);
-		return $this->db()->query($query);
 	}
 
 }

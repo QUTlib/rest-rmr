@@ -87,7 +87,7 @@ abstract class DAO {
 	/**
 	 * Does the heavy lifting of removing an object from the database.
 	 */
-	protected function delete($table, $filters) {
+	protected function delete($table, $filters=NULL) {
 		$query = $this->delete_query($table, $filters);
 		return $this->db()->query($query);
 	}
@@ -147,7 +147,7 @@ SQL;
 	}
 
 	/** builds and returns a DELETE statement */
-	protected function delete_query($table, $filters) {
+	protected function delete_query($table, $filters=NULL) {
 		if (is_string($table)) $table = $this->table($table);
 
 		$tname = $table->name();

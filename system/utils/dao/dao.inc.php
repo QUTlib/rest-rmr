@@ -77,6 +77,16 @@ abstract class DAO {
 	}
 
 	/**
+	 * Does the heavy lifting of adding a new object to the database.
+	 * @param mixed $table
+	 * @param array $values a list of key=>value map of fields and values for the new objects
+	 */
+	protected function insert_many($table, $values) {
+		$query = $this->multi_insert_query($table, $values);
+		return $this->db()->query($query);
+	}
+
+	/**
 	 * Does the heavy lifting of setting fields in a database table.
 	 */
 	protected function update($table, $fields, $filters) {
@@ -127,6 +137,39 @@ INSERT INTO `$tname`
 )
 VALUES
   ($value_str)
+SQL;
+	}
+
+	/** builds and returns an INSERT statement */
+	protected function insert_many_query($table, $values) {
+		if (is_string($table)) $table = $this->table($table);
+
+		// this checks that all arrays in $values have the same set of keys,
+		// and reshuffles them appropriately
+		$keys = NULL;
+		$value_array = array();
+		foreach ($values as $v) {
+			ksort($v);
+			$k = array_keys($v);
+			if (!$keys) {
+				$keys = $k;
+			} elseif ($keys != $k) {
+				throw new Exception("field names do not match");
+			}
+			$value_array[] = '  ('.$table->valueFields($this->db(), $v).')';
+		}
+
+		$tname = $table->name();
+		$field_str = $table->parseFields($keys, TRUE);
+		$value_str = join($value_array, "\n");
+
+		return <<<SQL
+INSERT INTO `$tname`
+(
+  $field_str
+)
+VALUES
+$value_str
 SQL;
 	}
 

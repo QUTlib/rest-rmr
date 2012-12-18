@@ -128,7 +128,7 @@ class TemplateEngine {
 		if (func_num_args() < 1) {
 			return $this->get('PAGETITLE');
 		} else {
-			return $this->set('DOCTITLE', $value);
+			return $this->set('PAGETITLE', $value);
 		}
 	}
 

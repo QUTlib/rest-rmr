@@ -83,6 +83,13 @@ public static function dump() {
 	public static function protocol() { return self::$protocol; }
 	public static function is_https() { return self::$https; }
 
+	public static function full_uri() {
+		$scheme = (self::$https ? 'https' : 'http');
+		$host   = SITEHOST; #self::server_var('SERVER_NAME');
+		$path   = self::$uri;
+		return "$scheme://$host$path";
+	}
+
 	/**
 	 * Gets the value of a server variable as provided by PHP/Apache.
 	 */

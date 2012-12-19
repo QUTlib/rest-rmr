@@ -185,6 +185,9 @@ class DBTable {
 	 * Casts a PHP value to match a database type.
 	 */
 	protected function _cast($value, $type, $db) {
+		if ($value === NULL || ($value === '' && $type != DBColumn::STRING)) {
+			return 'NULL';
+		}
 		switch ($type) {
 		case DBColumn::BOOLEAN:
 			switch (strtolower($value)) {

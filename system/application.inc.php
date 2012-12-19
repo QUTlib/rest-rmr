@@ -40,6 +40,7 @@ require_once('request.inc.php');
 require_once('response.inc.php');
 require_once('rate-limiter.inc.php');
 
+Autoloader::register('Splunk',         SYSDIR.'/splunk.inc.php');
 Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
 Autoloader::register('DBConn',         SYSDIR.'/utils/dbconn.inc.php');
 require_once(SYSDIR.'/utils/dao.inc.php');
@@ -61,6 +62,8 @@ class Application {
 	const IF_PUBLIC  = 'pub';
 	/** Authenticated interface. */
 	const IF_AUTHED  = 'auth';
+
+	private static $splunk = NULL;
 
 	/**
 	 * Initialises the application; loading resource request handlers, etc.
@@ -91,6 +94,25 @@ class Application {
 					}
 				}
 			}
+		}
+
+		if (defined('SPLUNK_LOG') && SPLUNK_LOG) {
+			if (is_string(SPLUNK_LOG)) {
+				self::$splunk = new Splunk(SPLUNK_LOG);
+			} else {
+				self::$splunk = new Splunk();
+			}
+		}
+	}
+
+	/**
+	 * If SPLUNK_LOG is defined (in config), adds a key:value facet to the current
+	 * log message.
+	 * @see Splunk#set($key,$value)
+	 */
+	public static function log($key, $value) {
+		if (!is_null(self::$splunk)) {
+			self::$splunk->set($key, $value);
 		}
 	}
 
@@ -137,6 +159,9 @@ class Application {
 	 */
 	public static function handle_request() {
 		Request::init();
+		self::log('REQUEST_HTTPS', Request::is_https());
+		self::log('REQUEST_METHOD', Request::method());
+		self::log('REQUEST_URI', Request::uri());
 
 		$http_method = strtoupper(Request::method());
 		if ($http_method == 'OPTIONS') {
@@ -325,11 +350,15 @@ class Application {
 
 	/**
 	 * Last ditch effort to catch otherwise uncaught errors.
+	 * While here, apply the logger.
 	 */
 	public static function shutdown_handler() {
 		$error_info = error_get_last();
 		if ($error_info !== null && ($error_info['type'] & E_ERROR)) {
 			self::error_response($error_info['type'], $error_info['message'], $error_info['file'], $error_info['line']);
+		}
+		if (self::$splunk) {
+			self::$splunk->log();
 		}
 	}
 
@@ -338,5 +367,4 @@ class Application {
 	private function __clone() {}
 	/**#@-*/
 }
-
 

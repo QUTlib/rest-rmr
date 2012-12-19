@@ -30,5 +30,9 @@ define('SITENAME', 'My Site');
 // To leave it unlimited, leave undefined.
 #define('RATELIMIT', 60);
 
+// If commented, won't write Splunk-friendly logs.
+// If set to a true non-string value, won't write to files.
+#define('SPLUNK_LOG', "/var/log/splunk/my_site.log");
+
 #define('DEBUG', 1);
 

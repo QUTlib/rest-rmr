@@ -42,13 +42,13 @@ class Request {
 			self::$uri = '/';
 		}
 
-		self::$client_ip = (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : NULL); // FIXME: http://stackoverflow.com/a/7623231/765382
-		self::$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
-		self::$method = (isset($_SERVER['REQUEST_METHOD']) ? $_SERVER['REQUEST_METHOD'] : 'GET');
+		self::$client_ip   = self::server_var('REMOTE_ADDR'); // FIXME: http://stackoverflow.com/a/7623231/765382
+		self::$protocol    = self::server_var('SERVER_PROTOCOL', 'HTTP/1.0');
+		self::$method      = self::server_var('REQUEST_METHOD', 'GET');
 		self::$headers = getallheaders();
-		self::$get  = $_GET;
-		self::$post = $_POST;
-		self::$https = (isset($_SERVER['HTTPS']) ? ($_SERVER['HTTPS'] == 'on') : FALSE);
+		self::$get   = $_GET;
+		self::$post  = $_POST;
+		self::$https = (self::server_var('HTTPS') == 'on'); // FIXME: is any non-empty value the same as 'on'?
 
 		// build a header index
 		$headers_index = array();
@@ -82,6 +82,19 @@ public static function dump() {
 	public static function uri() { return self::$uri; }
 	public static function protocol() { return self::$protocol; }
 	public static function is_https() { return self::$https; }
+
+	/**
+	 * Gets the value of a server variable as provided by PHP/Apache.
+	 */
+	public static function server_var($name, $default=NULL) {
+		if (isset($_SERVER[$name])) {
+			return $_SERVER[$name];
+		} elseif (isset($_SERVER['REDIRECT_'.$name])) {
+			return $_SERVER['REDIRECT_'.$name];
+		} else {
+			return $default;
+		}
+	}
 
 	/**
 	 * Gets the request's HTTP version, as "major.minor"

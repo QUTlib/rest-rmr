@@ -159,7 +159,7 @@ class Application {
 	 */
 	public static function handle_request() {
 		Request::init();
-		self::log('REQUEST_HTTPS', Request::is_https());
+		self::log('REQUEST_HTTPS', (int) Request::is_https());
 		self::log('REQUEST_METHOD', Request::method());
 		self::log('REQUEST_URI', Request::uri());
 

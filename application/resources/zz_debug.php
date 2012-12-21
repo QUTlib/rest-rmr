@@ -33,77 +33,6 @@ function debug_phpinfo() {
 }
 
 /**
- * Prints debug info about the current request object.
- * Always outputs as 'text/plain'.
- */
-function debug_request() {
-	$response = new Response(Request::http_version());
-	$response->content_type('text/plain; charset=iso-8859-1');
-	$response->start_recording();
-	Request::dump();
-	$response->stop_recording();
-	return $response;
-}
-
-/**
- * Prints debug info about the current response object.
- * Always outputs as 'text/plain'.
- */
-function debug_response() {
-	$response = new Response(Request::http_version());
-	$response->content_type('text/plain; charset=iso-8859-1');
-	$response->start_recording();
-	$response->dump();
-	$response->stop_recording();
-	return $response;
-}
-
-/**
- * Prints debug info about the currently-registered request handlers.
- * Always outputs as 'text/html'.
- */
-function debug_handlers() {
-	$response = new Response(Request::http_version());
-	$response->start_recording();
-	#$response->content_type('text/plain; charset=iso-8859-1');
-	#URIMap::dump();
-	$response->content_type('text/html; charset=iso-8859-1');
-	URIMap::htmldump();
-	$response->stop_recording();
-	return $response;
-}
-
-/**
- * Prints debug info about the current-registered representers.
- * Always outputs as 'text/html'.
- */
-function debug_representers() {
-	$response = new Response(Request::http_version());
-	$response->start_recording();
-	#$response->content_type('text/plain; charset=iso-8859-1');
-	#RepresentationManager::dump();
-	$response->content_type('text/html; charset=iso-8859-1');
-	RepresentationManager::htmldump();
-	$response->stop_recording();
-	return $response;
-}
-
-/**
- * Prints debug info about a single representer, by classname.
- */
-function debug_representer() {
-	$response = new Response(Request::http_version());
-	$response->start_recording();
-
-	$klass = Request::param('klass');
-	$response->content_type('text/plain; charset=iso-8859-1');
-	RepresentationManager::dumpClass($klass);
-
-	$response->stop_recording();
-	return $response;
-}
-
-/**
  * A simple listing of the various debug handlers.
  * Outputs as 'text/html'.
  */
@@ -120,10 +49,6 @@ function debug_index() {
 <h1>Debug</h1>
 <ul>
 <li><a href="/debug/phpinfo/">PHP Info</a></li>
-<li><a href="/debug/request/">Request</a></li>
-<li><a href="/debug/response/">Response</a></li>
-<li><a href="/debug/handlers/">Handlers</a></li>
-<li><a href="/debug/representers/">Representers</a></li>
 <li><a href="/debug/error-test/">Error Test</a></li>
 </ul>
 </body>
@@ -176,11 +101,6 @@ function debug_error() {
 if (defined('DEBUG') && DEBUG) {
 	URIMap::register('GET', '/debug/?', 'debug_index');
 	URIMap::register('GET', '/debug/phpinfo/?', 'debug_phpinfo');
-	URIMap::register('GET', '/debug/request/?', 'debug_request');
-	URIMap::register('GET', '/debug/response/?', 'debug_response');
-	URIMap::register('GET', '/debug/handlers/?', 'debug_handlers');
-	URIMap::register('GET', '/debug/representers/?', 'debug_representers');
-	URIMap::register('GET', '/debug/representers/:klass/?', 'debug_representer');
 	URIMap::register('GET', '/debug/error-test/?', 'debug_error');
 }
 

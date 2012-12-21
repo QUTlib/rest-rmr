@@ -58,26 +58,6 @@ class Request {
 		self::$headers_index = $headers_index;
 	}
 
-### DEBUG
-public static function dump() {
-	print(self::$method . ' ' . self::$uri . ' ' . self::$protocol . "\n");
-	foreach (self::$headers as $k=>$v) print("$k: $v\n");
-	print("\n");
-	if (self::$params) {
-		print("PARAMS:\n");
-		foreach (self::$params as $k=>$v) print("$k: $v\n");
-	}
-	if (self::$get) {
-		print("GET:\n");
-		foreach (self::$get as $k=>$v) print("$k: $v\n");
-	}
-	if (self::$post) {
-		print("POST:\n");
-		foreach (self::$post as $k=>$v) print("$k: $v\n");
-	}
-}
-### /DEBUG
-
 	public static function client_ip() { return self::$client_ip; }
 	public static function uri() { return self::$uri; }
 	public static function protocol() { return self::$protocol; }

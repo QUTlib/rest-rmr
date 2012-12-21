@@ -44,15 +44,6 @@ class Response {
 		}
 	}
 
-### DEBUG
-public function dump() {
-	print("HTTP/" . $this->version . ' ' . $this->status . ' ' . $this->status_message() . "\n");
-	foreach ($this->header as $k=>$v) print("$k: $v\n");
-	print("\n");
-	print($this->body);
-}
-### /DEBUG
-
 	/**
 	 * 0 args: gets the response's HTTP version as "major.minor"
 	 * 1 args: sets the response's HTTP version, and returns $this

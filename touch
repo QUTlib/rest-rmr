@@ -1,0 +1,18 @@
+#!/bin/bash --
+
+DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+APPFILE=$DIR/system/application.inc.php
+
+if [ -f "$APPFILE" ] ; then
+	REV=$(git log --oneline | wc -l)
+	VER=$(git describe --tags --long)
+
+	VERSION="${VER%%-*}-r$REV"
+
+	perl -pi -e "s/const VERSION = '[^']*';/const VERSION = '$VERSION';/g" "$APPFILE"
+	exit $?
+else
+	echo "Can't find '$APPFILE'"
+	exit 1
+fi
+

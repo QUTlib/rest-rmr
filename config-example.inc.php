@@ -19,8 +19,8 @@
 #date_default_timezone_set('Australia/Brisbane');
 
 // Names of special directories, relative to the document root
-define('SYS_DIR', 'system');
-define('APP_DIR', 'application');
+define('SYSTEM_DIR', 'system');
+define('APPLICATION_DIR', 'application');
 
 // Site-specific config settings
 define('SITEHOST', 'www.example.com');

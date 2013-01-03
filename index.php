@@ -20,10 +20,30 @@ $GLOBALS['__STARTUP__'] = microtime(TRUE);
 
 include_once('config.inc.php');
 
+if (defined('MAINTENANCE') && MAINTENANCE) {
+	// The site is currently down for maintenance.
+	// Fail hard, and fail fast.
+	error_log('Request rejected; site is in maintenance mode');
+	header('Content-Type: text/html;charset=iso-8859-1', TRUE, 503);
+	header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+	header('Last-Modified: '.gmdate('D, d M Y H:i:s').' GMT');
+	header('Cache-Control: no-store, no-cache, must-revalidate');
+	header('Cache-Control: post-check=0, pre-check=0', FALSE);
+	header('Pragma: no-cache');
+	echo <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head><title>503 Service Unavailable</title></head>
+<body><h1>Service Unavailable</h1><p>This server is currently offline for maintenance.</p><p>Please try again shortly.</p><hr></body>
+</html>
+HTML;
+	exit;
+}
+
 $here = dirname(__FILE__);
 if (!defined('ROOTDIR')) define('ROOTDIR',realpath($here));
-if (!defined('SYSDIR')) define('SYSDIR',realpath(defined('SYS_DIR') ? SYS_DIR : 'system'));
-if (!defined('APPDIR')) define('APPDIR',realpath(defined('APP_DIR') ? APP_DIR : 'application'));
+if (!defined('SYSDIR')) define('SYSDIR',realpath(defined('SYSTEM_DIR') ? SYSTEM_DIR : 'system'));
+if (!defined('APPDIR')) define('APPDIR',realpath(defined('APPLICATION_DIR') ? APPLICATION_DIR : 'application'));
 
 require_once(SYSDIR.'/core.inc.php');
 require_once(SYSDIR.'/application.inc.php');

@@ -34,5 +34,9 @@ define('SITENAME', 'My Site');
 // If set to a true non-string value, won't write to files.
 #define('SPLUNK_LOG', "/var/log/splunk/my_site.log");
 
+// Enables debugging features.
 #define('DEBUG', 1);
+
+// Uncomment to bring the site offline for maintenance.
+#define('MAINTENANCE', 1);
 

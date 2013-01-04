@@ -18,7 +18,14 @@ class Splunk {
 		if (!is_null($this->log_data))
 			return;
 
-		$browser = get_browser();
+		$browser = @get_browser();
+		if ($browser === FALSE) {
+			// this happens when the client doesn't supply a UA header
+			$browser = new stdClass;
+			$browser->browser = 'unspecified';
+			$browser->version = 'unspecified';
+			$browser->platform = 'unspecified';
+		}
 		$this->log_data = array(
 			'DATE' => date('Y-m-d\TH:i:sO'),
 			// user and network information

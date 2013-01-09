@@ -10,7 +10,8 @@ class Splunk {
 	private $log_location = NULL;
 	private $log_data = NULL;
 
-	public function __construct($logfilename='/tmp/splunk.log') {
+	#public function __construct($logfilename='/tmp/splunk.log') {
+	public function __construct($logfilename=NULL) {
 		$this->log_location = $logfilename;
 	}
 

@@ -225,7 +225,7 @@ class Response {
 	 * If-Modified-Since header that is less than or equal to the response's
 	 * #last_modified time.
 	 *
-	 * @return the response object if modified, or FALSE if not
+	 * @return the response object if unmodified, otherwise FALSE
 	 */
 	public function unmodified_response() {
 		if ($this->allow_not_modified && $this->status == 200 && isset($this->last_modified) && ($ims = Request::header('If-Modified-Since'))) {

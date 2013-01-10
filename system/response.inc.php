@@ -200,7 +200,7 @@ class Response {
 	 * be parsed by strtotime()) will be assigned to the property, and
 	 * the function will return this response object.
 	 *
-	 * @see #modified_response()
+	 * @see #unmodified_response()
 	 */
 	public function last_modified($value=NULL) {
 		if (func_num_args() > 0) {
@@ -227,7 +227,7 @@ class Response {
 	 *
 	 * @return the response object if modified, or FALSE if not
 	 */
-	public function modified_response() {
+	public function unmodified_response() {
 		if ($this->allow_not_modified && $this->status == 200 && isset($this->last_modified) && ($ims = Request::header('If-Modified-Since'))) {
 			// todo: should I deal with dodgy/broken headers?
 			$stamp = @strtotime($ims);
@@ -559,7 +559,7 @@ class Response {
 
 		// if the browser has a cached copy, skip some network traffic
 		// (only do it for '200 OK' responses)
-		if (! $this->modified_response()) {
+		if (! $this->unmodified_response()) {
 			$this->status = 304;
 			$this->body = '';
 		}

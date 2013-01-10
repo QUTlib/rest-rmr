@@ -51,7 +51,7 @@ class RawHTMLDocRepresenter extends BasicRepresenter {
 			$response->last_modified($mtime);
 			$response->cache();
 		}
-		if ($response->modified_response()) {
+		if ($response->unmodified_response()) {
 			$response->body( $m->doc() );
 		}
 	}

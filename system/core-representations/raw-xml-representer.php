@@ -52,7 +52,7 @@ class RawXMLDocRepresenter extends BasicRepresenter {
 			$response->last_modified($mtime);
 			$response->cache();
 		}
-		if ($response->unmodified_response()) {
+		if ($response->modified_response()) {
 			$response->body( $m->doc() );
 		}
 	}

@@ -77,7 +77,7 @@ class Response {
 	}
 
 	/**
-	 * Appends '$value' to the response header '$name'.
+	 * Appends '$value' to the response header '$name', as an array.
 	 * If the header already contains the given value, nothing changes.
 	 * @chainable
 	 */
@@ -93,6 +93,26 @@ class Response {
 				}
 			} elseif ($hval != $value) {
 				$this->header[$name] = array($hval, $value);
+			//else: do nothing, it's already set
+			}
+		}
+		return $this;
+	}
+
+	/**
+	 * Appends '$value' to the response header '$name' linearly (comma-delimited).
+	 * If $uniq is TRUE and the header already contains the given value, nothing changes.
+	 * @chainable
+	 */
+	public function append_header($name, $value, $uniq=TRUE) {
+		if (!isset($this->header[$name])) {
+			$this->header[$name] = $value;
+		} else {
+			$hval = $this->header[$name];
+			if (is_array($hval)) {
+				throw new Exception("cannot append string-header to array-header");
+			} elseif (!($uniq && preg_match('/(^|,)\s*'.preg_quote($value,'/').'\s*(,|$)/i', $hval))) {
+				$this->header[$name] .= ', '.$value;
 			//else: do nothing, it's already set
 			}
 		}
@@ -671,13 +691,7 @@ class Response {
 			$this->header('Content-Encoding', $method);
 			$this->header('Content-Length', $this->length());
 			// if there's a Vary: header, add 'Accept-Encoding' as an important thingy
-			if ($vary = $this->header('Vary')) {
-				if (! preg_match('/(^|,)\s*Accept-Encoding\s*(,|$)/i', $vary)) {
-					$this->header('Vary', $vary . ', Accept-Encoding');
-				}
-			} else {
-				$this->header('Vary', 'Accept-Encoding');
-			}
+			$this->append_header('Vary', 'Accept-Encoding');
 #			return TRUE;
 #		}
 #		return FALSE;

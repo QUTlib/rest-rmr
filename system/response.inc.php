@@ -283,7 +283,7 @@ class Response {
 	 */
 	public function nocache() {
 		$this->header['Cache-Control'] = 'no-cache';
-		$this->header['Expires'] = 'Thu, 23 Dec 1980 22:15:00 GMT';
+		$this->header['Expires'] = 'Thu, 23 Oct 1980 22:15:00 GMT';
 		$this->header['Pragma'] = 'no-cache';
 		return $this;
 	}

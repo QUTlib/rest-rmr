@@ -63,7 +63,7 @@ span.text{color:#000;background:#f8f8f8;outline:1px solid #ccc}
           <p>Styled with an XSLT Stylesheet by Matthew Kerwin and QUT Library eServices.</p>
         </div>
         <div id="content">
-          <xsl:apply-templates match="*"/>
+          <xsl:apply-templates select="*"/>
         </div>
       </body>
     </html>

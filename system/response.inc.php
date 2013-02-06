@@ -649,7 +649,20 @@ class Response {
 					$zip = gzencode($this->body, 9);
 					break;
 				case 'deflate':
-					$zip = gzcompress($this->body, 9);
+					// *** NOTE ***
+					//
+					// RFC 2616 states clearly that “Transfer-Encoding: deflate” means
+					// that the entity has been compressed according to the zlib
+					// format specified by RFC 1950. The zlib format is just a very
+					// thin wrapper around the deflate format specified by RFC 1951.
+					// The problem is that IE interprets “Transfer-Encoding: deflate”
+					// as meaning the raw RFC 1951 format rather than the wrapped
+					// RFC 1950 format stipulated by the standard.
+					//
+					// So in other words, we need to use gzdeflate (no-headers) instead
+					// of gzcompress (headers)
+					#$zip = gzcompress($this->body, 9);
+					$zip = gzdeflate($this->body, 9);
 					break;
 				case 'bzip2':
 					$zip = bzcompress($this->body, 9);
@@ -658,7 +671,8 @@ class Response {
 					$identity = TRUE;
 					#fallthrough:
 				default:
-					continue 2;
+					#continue 2;
+					continue;
 				}
 				$zipsize = strlen($zip);
 				if ($zipsize < $bestsize) {

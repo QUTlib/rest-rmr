@@ -94,6 +94,38 @@ class DBConn {
 		return $array;
 	}
 
+	public function call_and_select($call, $item) {
+		$this->__assert();
+
+		// validate the CALL query, the lazy way.
+		$stmt = $this->link->prepare($call);
+		if (!$stmt) {
+			throw new Exception('Query error: ['.$this->link->errno.']'.$this->link->error);
+		}
+		$stmt->close();
+
+		// validate the item
+		if (!preg_match('/^@[a-z_][a-z0-9_]*$/i', $item)) {
+			throw new Exception("Invalid field identifier '$item'");
+		}
+
+		// build and execute the actual queries
+		$sql = "$call; SELECT $item";
+		if ($this->link->multi_query($sql)) {
+			do {
+				if ($result = $this->link->store_result()) {
+					$array = $result->fetch_assoc();
+					if (isset($array[$item])) {
+						return $array[$item];
+					}
+				}
+			} while ($this->link->next_result());
+			return NULL;
+		} else {
+			return FALSE;
+		}
+	}
+
 	/**
 	 * Sends a one-off MySQL INSERT statement, and returns the resulting id
 	 * (if one of the fields in the table has the AUTO_INCREMENT attribute.)

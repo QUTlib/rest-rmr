@@ -77,7 +77,7 @@ class DataCache {
 		// todo: assert( loaded ) ?
 		switch ($this->method) {
 		case DataCache::CACHE_APC:
-			return apc_store($this->id, $this->cache);
+			return apc_store($this->id, $this->data);
 		case DataCache::CACHE_TMPFILE:
 			$data = serialize($this->data);
 			$result = file_put_contents($this->tmpfilename, $data);

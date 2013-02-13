@@ -301,7 +301,7 @@ class HTMLElement extends HTMLHierarchyNode {
 	 * @param array $values if array keys are integer, the value is used as both text and value, otherwise interpreted as ((string)value=>(string)content)
 	 */
 	public function add_dropdown($name, $values, $selected=NULL, $attrs=array()) {
-		if (func_num_args() == 2 && is_array($selected)) {
+		if (func_num_args() == 3 && is_array($selected)) {
 			$attrs = $selected;
 			$selected = NULL;
 		}

@@ -30,6 +30,7 @@ class RateLimiter {
 
 	/** How many seconds to wait before servicing requests from a spammer */
 	const COOLDOWN_PERIOD = 300;
+	const COOLDOWN_TEXT = '5 minutes';
 
 	/**
 	 * Terminates script execution early, if the request originated
@@ -48,6 +49,12 @@ class RateLimiter {
 			$client_ip = $_SERVER['REMOTE_ADDR'];
 		} else {
 			// argh! don't know who they are!
+			return;
+		}
+
+		// if they're whitelisted, let them straight through
+		global $RATELIMIT_WHITELIST;
+		if (isset($RATELIMIT_WHITELIST) && in_array($client_ip, $RATELIMIT_WHITELIST)) {
 			return;
 		}
 
@@ -78,7 +85,7 @@ class RateLimiter {
 				}
 				// required response entity, describing the issue
 				header('Content-Type: text/html; charset=ISO-8859-1');
-				echo '<!DOCTYPE html><html><head><title>Too Many Requests</title></head><body><h1>429 Too Many Requests</h1><p>Too many requests this minute.  Try again in 5 minutes.</p></body></html>';
+				echo '<!DOCTYPE html><html><head><title>Too Many Requests</title></head><body><h1>429 Too Many Requests</h1><p>Too many requests this minute.  Try again in '.RateLimiter::COOLDOWN_TEXT.'.</p></body></html>';
 				exit;
 			} else {
 				// They chilled out; let's let them back in.

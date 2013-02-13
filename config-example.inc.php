@@ -30,6 +30,11 @@ define('SITENAME', 'My Site');
 // To leave it unlimited, leave undefined.
 #define('RATELIMIT', 60);
 
+// If rate limiting is enabled, you can define IP
+// addresses that are not limited.
+#$RATELIMIT_WHITELIST[] = '1.2.3.4';
+#$RATELIMIT_WHITELIST[] = '34.56.78.90';
+
 // If commented, won't write Splunk-friendly logs.
 // If set to a true non-string value, won't write to files.
 #define('SPLUNK_LOG', "/var/log/splunk/my_site.log");

@@ -52,7 +52,7 @@ require_once(SYSDIR.'/utils/html.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. (see: ./touch ) */
-	const VERSION = '1.0-r203';
+	const VERSION = '1.0-r206';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 

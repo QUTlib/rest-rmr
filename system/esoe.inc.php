@@ -56,7 +56,7 @@ class ESOE {
         } elseif (array_key_exists('REDIRECT_'.$varName, $_SERVER)) {
             $varContent = $_SERVER['REDIRECT_'.$varName];
         } else {
-            error_log("Invalid session variable requested: '$varName'");
+            #error_log("Invalid session variable requested: '$varName'");
             $varContent = $fallback;
         }
         return $varContent; 

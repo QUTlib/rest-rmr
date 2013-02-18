@@ -45,7 +45,8 @@ HTML;
 //
 // If ENVIRONMENT is not defined, but DEV_SITEHOST or PRD_SITEHOST
 // are, we can intelligently guess/set ENVIRONMENT based on the
-// current SERVER_ADDR.
+// current SERVER_ADDR.  If no amount of intelligence can divine
+// the proper environment, default to production.
 //
 // The SITEHOST and SITENAME are set by, in order:
 // 1. define('SITEXXXX')
@@ -60,6 +61,8 @@ if (!defined('ENVIRONMENT')) {
 		define('ENVIRONMENT', 'TST');
 	} elseif (defined('DEV_SITEHOST') && ($dev_addrs = @gethostbynamel(DEV_SITEHOST)) && in_array($_SERVER['SERVER_ADDR'], $dev_addrs)) {
 		define('ENVIRONMENT', 'DEV');
+	} else {
+		define('ENVIRONMENT', 'PRD');
 	}
 }
 if (defined('ENVIRONMENT')) {

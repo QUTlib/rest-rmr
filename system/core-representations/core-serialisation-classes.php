@@ -293,17 +293,17 @@ class XMLRepresenter extends BasicRepresenter {
 			$string .= "$p</$type>\n";
 			return $string;
 		case 'object':
-			if ($o instanceof SimpleXMLElement) {
-				$xml = $o->asXML();
-				// strip the first xml declaration thingy
-				if (preg_match('~<\?xml([^?]|\?[^>])+\?>[\r\n]*~i', $xml, $m)) {
-					$header = $m[0];
-					$xml = substr($xml, strlen($header));
-				}
-				// fix padding
-				$xml = str_replace("\n", "\n$p");
-				return $xml;
-			}
+#			if ($o instanceof SimpleXMLElement) {
+#				$xml = $o->asXML();
+#				// strip the first xml declaration thingy
+#				if (preg_match('~<\?xml([^?]|\?[^>])+\?>[\r\n]*~i', $xml, $m)) {
+#					$header = $m[0];
+#					$xml = substr($xml, strlen($header));
+#				}
+#				// fix padding
+#				$xml = str_replace("\n", "\n$p");
+#				return $xml;
+#			}
 			// otherwise, not a SimpleXMLElement; use regular iteration
 			$c = $this->_quote(get_class($o));
 			$h = $this->_quote(spl_object_hash($o));

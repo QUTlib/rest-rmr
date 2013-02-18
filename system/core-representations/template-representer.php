@@ -49,9 +49,3 @@ class TemplateRepresenter extends BasicRepresenter {
 
 }
 
-// --- IMPORTANT: REMEMBER THIS BIT!
-
-Application::register_representer( new TemplateRepresenter() );
-
-// ----------------------------------------------------------------------
-

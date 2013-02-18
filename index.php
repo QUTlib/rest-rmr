@@ -40,6 +40,49 @@ HTML;
 	exit;
 }
 
+// If the ENVIRONMENT config is used, we might have to set up
+// the SITEHOST and SITENAME intelligently.
+//
+// If ENVIRONMENT is not defined, but DEV_SITEHOST or PRD_SITEHOST
+// are, we can intelligently guess/set ENVIRONMENT based on the
+// current SERVER_ADDR.
+//
+// The SITEHOST and SITENAME are set by, in order:
+// 1. define('SITEXXXX')
+// 2. define(ENVIRONMENT.'_SITEXXXX')
+// 3. $_SERVER['SERVER_ADDR']
+//
+$__SITEHOST = $__SITENAME = $_SERVER['SERVER_ADDR'];
+if (!defined('ENVIRONMENT')) {
+	if (defined('PRD_SITEHOST') && ($prd_addrs = @gethostbynamel(PRD_SITEHOST)) && in_array($_SERVER['SERVER_ADDR'], $prd_addrs)) {
+		define('ENVIRONMENT', 'PRD');
+	} elseif (defined('TST_SITEHOST') && ($tst_addrs = @gethostbynamel(TST_SITEHOST)) && in_array($_SERVER['SERVER_ADDR'], $tst_addrs)) {
+		define('ENVIRONMENT', 'TST');
+	} elseif (defined('DEV_SITEHOST') && ($dev_addrs = @gethostbynamel(DEV_SITEHOST)) && in_array($_SERVER['SERVER_ADDR'], $dev_addrs)) {
+		define('ENVIRONMENT', 'DEV');
+	}
+}
+if (defined('ENVIRONMENT')) {
+	switch(ENVIRONMENT) {
+	case 'PRD':
+		if (defined('PRD_SITEHOST')) $__SITEHOST = PRD_SITEHOST;
+		if (defined('PRD_SITENAME')) $__SITENAME = PRD_SITENAME;
+		break;
+	case 'TST':
+		if (defined('TST_SITEHOST')) $__SITEHOST = TST_SITEHOST;
+		if (defined('TST_SITENAME')) $__SITENAME = TST_SITENAME;
+		break;
+	case 'DEV':
+		if (defined('DEV_SITEHOST')) $__SITEHOST = DEV_SITEHOST;
+		if (defined('DEV_SITENAME')) $__SITENAME = DEV_SITENAME;
+		break;
+	default:
+		error_log('Warning: unrecognised ENVIRONMENT specified: "'.ENVIRONMENT.'"');
+	}
+}
+if (!defined('SITEHOST')) define('SITEHOST', $__SITEHOST);
+if (!defined('SITENAME')) define('SITENAME', $__SITENAME);
+
 $here = dirname(__FILE__);
 if (!defined('ROOTDIR')) define('ROOTDIR',realpath($here));
 if (!defined('SYSDIR')) define('SYSDIR',realpath(defined('SYSTEM_DIR') ? SYSTEM_DIR : 'system'));

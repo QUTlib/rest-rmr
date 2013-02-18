@@ -23,8 +23,27 @@ define('SYSTEM_DIR', 'system');
 define('APPLICATION_DIR', 'application');
 
 // Site-specific config settings
+// The simplest method is to define SITEHOST and SITENAME directly:
 define('SITEHOST', 'www.example.com');
 define('SITENAME', 'My Site');
+// To support multiple environments, you can use the DEV, TST, and
+// PRD prefixes (for development, testing, and production,
+// respectively).
+// If you specify the appropriate *_SITEHOST values, the framework
+// will be able to determine the environment one which it is
+// currently deployed, and automatically set the ENVIRONMENT
+// value appropriately.
+// (Note: it uses $_SERVER['SERVER_ADDR'] to accomplish this)
+// If not otherwise known or determinable, the ENVIRONMENT
+// default to production ('PRD').
+#define('DEV_SITEHOST', 'dev.example.com');
+#define('DEV_SITENAME', 'My {dev} Site');
+#define('PRD_SITEHOST', 'www,example.com');
+#define('PRD_SITENAME', 'My Site');
+// To override the self-detection algorithm above, you can
+// explicitly define the ENVIRONMENT.  "Valid" values are
+// 'DEV', 'TST', or 'PRD'.
+#define('ENVIRONMENT', 'DEV');
 
 // Limit number of requests per client address per minute.
 // To leave it unlimited, leave undefined.

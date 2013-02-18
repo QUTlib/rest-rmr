@@ -16,38 +16,7 @@
  * under the License.
  */
 
-/**
- * This representer specialises in pushing TemplateEngine data models
- * as 'text/html'.
- *
- * See `{SYSDIR}/utils/template-engine.inc.php`
- */
-class TemplateRepresenter extends BasicRepresenter {
-
-	public function __construct() {
-		parent::__construct(
-			array(
-				new InternetMediaType('text', 'html', 1.0, TRUE),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'text/html'),
-			),
-			array(),
-			array(),
-			array(
-				'object:TemplateEngine',
-			)
-		);
-	}
-
-	public function represent($m, $t, $c, $l, $response) {
-		$response->content_type("text/html; charset=utf-8");
-		// todo: magical translation magic? (fixme)
-		if ($lang = $m->language())
-			$response->content_language($lang);
-		$response->header('X-UA-Compatible', 'IE=edge');
-		$response->body( $m->execFile() );
-	}
-
-}
+require_once(SYSDIR.'/core-representations/template-representer.php');
 
 // --- IMPORTANT: REMEMBER THIS BIT!
 

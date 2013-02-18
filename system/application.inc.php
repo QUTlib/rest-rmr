@@ -41,6 +41,7 @@ require_once('response.inc.php');
 require_once('rate-limiter.inc.php');
 
 Autoloader::register('Splunk',         SYSDIR.'/splunk.inc.php');
+Autoloader::register('SmartyTemplate', SYSDIR.'/utils/smarty.inc.php');
 Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
 Autoloader::register('DBConn',         SYSDIR.'/utils/dbconn.inc.php');
 require_once(SYSDIR.'/utils/dao.inc.php');
@@ -52,7 +53,7 @@ require_once(SYSDIR.'/utils/html.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. (see: ./touch ) */
-	const VERSION = '1.0-r206';
+	const VERSION = '1.0-r207';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 

@@ -95,7 +95,7 @@ Irrespective of _how_ they are registered, URI patterns are tested in the order 
 #### URI Patterns ####
 URI patterns may include named parameters:
 
-* `'/hello/:name'` matches `'/hello/foo'` and `'/hello/bar'`
+* `'/hello/:name'` matches `'/hello/foo'` and `'/hello/bar'`, but not `'/hello/foo/bar'`
 * Parameter “name” is set to 'foo' or 'bar'
 
 A trailing slash can be made optional by appending a question-mark:

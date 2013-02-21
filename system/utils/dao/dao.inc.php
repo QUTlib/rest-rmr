@@ -290,5 +290,52 @@ SQL;
 		return "JOIN `$t2` ON " . implode(' AND ', $array);
 	}
 
+	/* ----- Magical Things(tm) I don't quite understand yet ------------ */
+
+	/**
+	 * Usage: $this->select('table', $fields, array('column'=>$this->not('bad-value')))
+	 */
+	protected function not($value) {
+		$obj = new stdClass;
+		$obj->value = $value;
+		$obj->op = '!=';
+		$obj->union = 'OR';
+		return $obj;
+	}
+
+	/**
+	 * Usage: $this->select('table', $fields, array('column'=>$this->one_of(1, 2, 3)))
+	 */
+	protected function one_of() {
+		$obj = new stdClass;
+		$obj->value = func_get_args();
+		$obj->op = '=';
+		$obj->union = 'OR';
+		return $obj;
+	}
+
+	/**
+	 * Usage: $this->select('table', $fields, array('column'=>$this->le(42)))
+	 */
+	protected function le($value) {
+		$obj = new stdClass;
+		$obj->value = $value;
+		$obj->op = '<=';
+		$obj->union = 'OR';
+		return $obj;
+	}
+
+	/**
+	 * Usage: $this->select('table', $fields, array('column'=>$this->ge(42)))
+	 */
+	protected function ge($value) {
+		$obj = new stdClass;
+		$obj->value = $value;
+		$obj->op = '>=';
+		$obj->union = 'OR';
+		return $obj;
+	}
+
+
 }
 

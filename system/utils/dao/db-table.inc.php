@@ -212,6 +212,25 @@ class DBTable {
 		return $value;
 	}
 
+	public function _compare($db, $tbl, $name, $type, $op, $val, $union) {
+		if (is_object($val) && $val instanceof stdClass) {
+			return $this->_compare($db, $tbl, $name, $type, $val->op, $val->value, $val->union);
+		} elseif (is_array($val)) {
+			$c = array();
+			foreach ($val as $v) {
+				$c[] = $this->_compare($db, $tbl, $name, $type, $op, $v, $union);
+			}
+			return '(' . implode(" ${union} ", $c) . ')';
+		} else {
+			if (preg_match('/^([!<>]?=|[<>])\s*(.+)/', $val, $m)) {
+				$val = $m[2];
+				$op = $m[1];
+			}
+			$val = $this->_cast($val, $type, $db);
+			return "`$tbl`.`$name` $op $val";
+		}
+	}
+
 	/**
 	 * Builds a query fragment: "$col = $val"
 	 *
@@ -226,30 +245,7 @@ class DBTable {
 		$name = $def->name();
 		$type = $def->type();
 
-		if (is_array($val)) {
-			$c = array();
-			foreach ($val as $v) {
-				if (preg_match('/^([!<>]?=|[<>])\s*(.*)/', $v, $m)) {
-					$v = $m[2];
-					$o = $m[1];
-				} else {
-					$o = '=';
-				}
-				$v = $this->_cast($v, $type, $db);
-				$c[] = "`$tbl`.`$name` $o $v";
-			}
-			$equals = '(' . implode(' OR ', $c) . ')';
-		} else {
-			if (preg_match('/^([!<>]?=|[<>])\s*(.*)/', $val, $m)) {
-				$val = $m[2];
-				$op = $m[1];
-			} else {
-				$op = '=';
-			}
-			$val = $this->_cast($val, $type, $db);
-			$equals = "`$tbl`.`$name` $op $val";
-		}
-		return $equals;
+		return $this->_compare($db, $tbl, $name, $type, '=', $val, 'OR');
 	}
 
 	/**

@@ -29,6 +29,7 @@ class TemplateEngine {
 		'CSS'        => '',
 		'JS'         => '',
 		'LANGUAGE'   => '',
+		'ENVIRONMENT'=> ENVIRONMENT,
 		# Magic:
 		'DOCTITLE'  => SITENAME,
 		'PAGETITLE' => SITENAME,

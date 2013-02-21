@@ -53,7 +53,7 @@ require_once(SYSDIR.'/utils/html.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. (see: ./touch ) */
-	const VERSION = '1.0-r221';
+	const VERSION = '1.0-r214';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 
@@ -270,7 +270,7 @@ class Application {
 			}
 
 			if (defined('DEBUG') && DEBUG)
-				$final_response = Response::generate($status, "<p>No $httpmethod <a href=\"/debug/handlers\">handler registered</a> for '<code>$uri</code>'</p>", TRUE);
+				$final_response = Response::generate($status, "<p>No $httpmethod handler registered for '<code>$uri</code>'</p>", TRUE);
 			else
 				$final_response = Response::generate($status);
 

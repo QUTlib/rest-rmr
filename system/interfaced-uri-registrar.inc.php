@@ -16,7 +16,7 @@
  * under the License.
  */
 
-require_once('uri-registrar.inc.php');
+require_once(SYSDIR.'/uri-registrar.inc.php');
 
 class InterfacedURIRegistrar extends URIRegistrar {
 	private $module = null;

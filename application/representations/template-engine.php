@@ -16,7 +16,7 @@
  * under the License.
  */
 
-require_once(SYSDIR.'/core-representations/template-representer.php');
+require_once(SYSDIR.'/std-reps/template-representer.php');
 
 // --- IMPORTANT: REMEMBER THIS BIT!
 

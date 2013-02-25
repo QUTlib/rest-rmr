@@ -24,8 +24,8 @@
  *       the letters 'aa_', to ensure it's loaded first.
  */
 
-require_once(SYSDIR.'/core-representations/raw-html-representer.php');
-require_once(SYSDIR.'/core-representations/raw-xml-representer.php');
+require_once(SYSDIR.'/std-reps/raw-html-representer.php');
+require_once(SYSDIR.'/std-reps/raw-xml-representer.php');
 
 // ----- IMPORTANT ------------------------------------------------------
 //

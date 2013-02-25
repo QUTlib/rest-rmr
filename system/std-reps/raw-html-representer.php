@@ -16,8 +16,8 @@
  * under the License.
  */
 
-Application::register_class('HTMLString', SYSDIR.'/models/html-string-model.php');
-Application::register_class('HTMLFile',   SYSDIR.'/models/html-file-model.php');
+Application::register_class('HTMLString', SYSDIR.'/std-models/html-string-model.php');
+Application::register_class('HTMLFile',   SYSDIR.'/std-models/html-file-model.php');
 
 /**
  * A basic HTML representer that displays raw HTML document models as text/html

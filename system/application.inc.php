@@ -20,17 +20,13 @@
 add_include_path(SYSDIR);
 add_include_path(APPDIR);
 
+// --- Load core classes
+
 require_once('http-exception.inc.php');
 
-require_once('autoloader.inc.php');
-
-require_once('content-negotiation/internet-media-type.inc.php');
-require_once('content-negotiation/language.inc.php');
-require_once('content-negotiation/charset.inc.php');
-
 require_once('uri-map.inc.php');
-require_once('utils/uri-registrar.inc.php');
-require_once('utils/interfaced-uri-registrar.inc.php');
+require_once('resource-reg/uri-registrar.inc.php');
+require_once('resource-reg/interfaced-uri-registrar.inc.php');
 
 require_once('representation-manager.inc.php');
 require_once('representer.inc.php');
@@ -40,12 +36,15 @@ require_once('request.inc.php');
 require_once('response.inc.php');
 require_once('rate-limiter.inc.php');
 
-Autoloader::register('Splunk',         SYSDIR.'/splunk.inc.php');
-Autoloader::register('SmartyTemplate', SYSDIR.'/utils/smarty.inc.php');
-Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
-Autoloader::register('DBConn',         SYSDIR.'/utils/dbconn.inc.php');
+// --- Set up autoloading of ancillary classes
+
 require_once(SYSDIR.'/utils/dao.inc.php');
 require_once(SYSDIR.'/utils/html.inc.php');
+Autoloader::register('DataCache',      SYSDIR.'/utils/data-cache.inc.php');
+Autoloader::register('DBConn',         SYSDIR.'/utils/dbconn.inc.php');
+Autoloader::register('SmartyTemplate', SYSDIR.'/utils/smarty.inc.php');
+Autoloader::register('Splunk',         SYSDIR.'/utils/splunk.inc.php');
+Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
 
 /**
  * Main namespace for all application-wide values and methods.
@@ -53,7 +52,7 @@ require_once(SYSDIR.'/utils/html.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. (see: ./touch ) */
-	const VERSION = '1.0-r225';
+	const VERSION = '1.0-r226';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 
@@ -138,10 +137,15 @@ class Application {
 	/**
 	 * Returns a registrar object which lets you register URI handlers.
 	 * @param String $module the name of the module
+	 * @param String $interface (optional) the initial interface to use
 	 * @return InterfacedURIRegistrar the registrar
 	 */
-	public static function interfaced_uri_registrar($module) {
-		return new InterfacedURIRegistrar($module);
+	public static function interfaced_uri_registrar($module, $interface=NULL) {
+		if (func_num_args() > 1) {
+			return new InterfacedURIRegistrar($module, $interface);
+		} else {
+			return new InterfacedURIRegistrar($module);
+		}
 	}
 
 	/**

@@ -91,7 +91,8 @@ if (!defined('ROOTDIR')) define('ROOTDIR',realpath($here));
 if (!defined('SYSDIR')) define('SYSDIR',realpath(defined('SYSTEM_DIR') ? SYSTEM_DIR : 'system'));
 if (!defined('APPDIR')) define('APPDIR',realpath(defined('APPLICATION_DIR') ? APPLICATION_DIR : 'application'));
 
-require_once(SYSDIR.'/core.inc.php');
+require_once(SYSDIR.'/php-core.inc.php');
+require_once(SYSDIR.'/autoloader.inc.php');
 require_once(SYSDIR.'/application.inc.php');
 
 Application::init();

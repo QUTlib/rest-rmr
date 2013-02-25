@@ -17,12 +17,12 @@
  */
 
 
-require_once(SYSDIR.'/models/string-model.php');
+require_once(SYSDIR.'/std-models/file-model.php');
 
 /**
- * A simple model which likes to be rendered as 'text/html'
- * by RawHTMLDocRepresenter
+ * A simple model which likes to be rendered as 'application/xml'
+ * by RawXMLDocRepresenter
  */
-class HTMLString extends StringModel {
+class XMLFile extends FileModel {
 }
 

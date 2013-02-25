@@ -16,6 +16,10 @@
  * under the License.
  */
 
+require_once('content-negotiation/internet-media-type.inc.php');
+require_once('content-negotiation/language.inc.php');
+require_once('content-negotiation/charset.inc.php');
+
 abstract class Representer {
 
 	/** should return a boolean */

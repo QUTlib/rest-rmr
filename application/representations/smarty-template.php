@@ -16,7 +16,7 @@
  * under the License.
  */
 
-require_once(SYSDIR.'/core-representations/smarty-representer.php');
+require_once(SYSDIR.'/std-reps/smarty-representer.php');
 
 // ----- IMPORTANT ------------------------------------------------------
 //

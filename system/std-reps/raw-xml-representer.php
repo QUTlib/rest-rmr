@@ -16,8 +16,8 @@
  * under the License.
  */
 
-Application::register_class('XMLString', SYSDIR.'/models/xml-string-model.php');
-Application::register_class('XMLFile',   SYSDIR.'/models/xml-file-model.php');
+Application::register_class('XMLString', SYSDIR.'/std-models/xml-string-model.php');
+Application::register_class('XMLFile',   SYSDIR.'/std-models/xml-file-model.php');
 
 /**
  * A basic XML representer that displays raw XML document models as application/xml

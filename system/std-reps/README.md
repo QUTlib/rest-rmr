@@ -4,7 +4,7 @@ Specific Representers
 Raw Documents
 -------------
 The representers defined in the `raw-FOO-representer.php` files are tightly coupled with
-the models in `{SYSDIR}/models`.
+the models in `{SYSDIR}/std-models`.
 
 See: `{APPDIR}/representations/aa_raw-doc-representations.php` for more info.
 

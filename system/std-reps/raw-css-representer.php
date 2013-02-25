@@ -16,8 +16,8 @@
  * under the License.
  */
 
-Application::register_class('CSSString', SYSDIR.'/models/css-string-model.php');
-Application::register_class('CSSFile',   SYSDIR.'/models/css-file-model.php');
+Application::register_class('CSSString', SYSDIR.'/std-models/css-string-model.php');
+Application::register_class('CSSFile',   SYSDIR.'/std-models/css-file-model.php');
 
 /**
  * A basic CSS representer that displays raw CSS document models as text/css

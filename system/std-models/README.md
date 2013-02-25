@@ -1,2 +1,2 @@
 These models are tightly coupled with representers defined in the
-`SYSDIR/core-representations/raw-FOO-representer.php` files.
+`SYSDIR/std-reps/raw-FOO-representer.php` files.

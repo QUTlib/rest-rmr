@@ -24,8 +24,8 @@ add_include_path(APPDIR);
 require_once(SYSDIR.'/http-exception.inc.php');
 
 require_once(SYSDIR.'/uri-map.inc.php');
-require_once(SYSDIR.'/resource-reg/uri-registrar.inc.php');
-require_once(SYSDIR.'/resource-reg/interfaced-uri-registrar.inc.php');
+require_once(SYSDIR.'/uri-registrar.inc.php');
+require_once(SYSDIR.'/interfaced-uri-registrar.inc.php');
 
 require_once(SYSDIR.'/representation-manager.inc.php');
 require_once(SYSDIR.'/representer.inc.php');
@@ -52,7 +52,7 @@ Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. (see: ./touch ) */
-	const VERSION = '1.0-r230';
+	const VERSION = '1.0-r231';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 

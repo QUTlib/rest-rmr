@@ -17,24 +17,23 @@
  */
 
 
-add_include_path(SYSDIR);
 add_include_path(APPDIR);
 
 // --- Load core classes
 
-require_once('http-exception.inc.php');
+require_once(SYSDIR.'/http-exception.inc.php');
 
-require_once('uri-map.inc.php');
-require_once('resource-reg/uri-registrar.inc.php');
-require_once('resource-reg/interfaced-uri-registrar.inc.php');
+require_once(SYSDIR.'/uri-map.inc.php');
+require_once(SYSDIR.'/resource-reg/uri-registrar.inc.php');
+require_once(SYSDIR.'/resource-reg/interfaced-uri-registrar.inc.php');
 
-require_once('representation-manager.inc.php');
-require_once('representer.inc.php');
-require_once('basic-representer.inc.php');
+require_once(SYSDIR.'/representation-manager.inc.php');
+require_once(SYSDIR.'/representer.inc.php');
+require_once(SYSDIR.'/basic-representer.inc.php');
 
-require_once('request.inc.php');
-require_once('response.inc.php');
-require_once('rate-limiter.inc.php');
+require_once(SYSDIR.'/request.inc.php');
+require_once(SYSDIR.'/response.inc.php');
+require_once(SYSDIR.'/rate-limiter.inc.php');
 
 // --- Set up autoloading of ancillary classes
 
@@ -42,6 +41,7 @@ require_once(SYSDIR.'/utils/dao.inc.php');
 require_once(SYSDIR.'/utils/html.inc.php');
 Autoloader::register('DataCache',      SYSDIR.'/utils/data-cache.inc.php');
 Autoloader::register('DBConn',         SYSDIR.'/utils/dbconn.inc.php');
+Autoloader::register('ESOE',           SYSDIR.'/utils/esoe.inc.php');
 Autoloader::register('SmartyTemplate', SYSDIR.'/utils/smarty.inc.php');
 Autoloader::register('Splunk',         SYSDIR.'/utils/splunk.inc.php');
 Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
@@ -52,7 +52,7 @@ Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. (see: ./touch ) */
-	const VERSION = '1.0-r227';
+	const VERSION = '1.0-r228';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 

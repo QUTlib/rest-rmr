@@ -16,22 +16,15 @@
  * under the License.
  */
 
-$dir = dirname(__FILE__).'/html/';
-function __html_load_class($c, $f) {
-	global $dir;
-	Application::register_class('HTML'.$c, $dir.$f);
-}
-
-__html_load_class('Node',             'node.inc.php');
-__html_load_class('HierarchyNode',    'hierarchynode.inc.php');
-__html_load_class('TextNode',         'text.inc.php');
-__html_load_class('CData',            'cdata.inc.php');
-__html_load_class('Comment',          'comment.inc.php');
-__html_load_class('Element',          'element.inc.php');
-__html_load_class('Head',             'head.inc.php');
-__html_load_class('Body',             'body.inc.php');
-__html_load_class('Document',         'document.inc.php');
-__html_load_class('DocumentFragment', 'docfragment.inc.php');
-
-require_once($dir.'functions.inc.php');
+Application::register_class('HTMLNode',             SYSDIR.'/html/node.inc.php');
+Application::register_class('HTMLHierarchyNode',    SYSDIR.'/html/hierarchynode.inc.php');
+Application::register_class('HTMLTextNode',         SYSDIR.'/html/text.inc.php');
+Application::register_class('HTMLCData',            SYSDIR.'/html/cdata.inc.php');
+Application::register_class('HTMLComment',          SYSDIR.'/html/comment.inc.php');
+Application::register_class('HTMLElement',          SYSDIR.'/html/element.inc.php');
+Application::register_class('HTMLHead',             SYSDIR.'/html/head.inc.php');
+Application::register_class('HTMLBody',             SYSDIR.'/html/body.inc.php');
+Application::register_class('HTMLDocument',         SYSDIR.'/html/document.inc.php');
+Application::register_class('HTMLDocumentFragment', SYSDIR.'/html/docfragment.inc.php');
+require_once(SYSDIR.'/html/functions.inc.php');
 

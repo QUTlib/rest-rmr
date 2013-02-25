@@ -16,15 +16,15 @@
  * under the License.
  */
 
-Application::register_class('HTMLNode',             SYSDIR.'/html/node.inc.php');
-Application::register_class('HTMLHierarchyNode',    SYSDIR.'/html/hierarchynode.inc.php');
-Application::register_class('HTMLTextNode',         SYSDIR.'/html/text.inc.php');
-Application::register_class('HTMLCData',            SYSDIR.'/html/cdata.inc.php');
-Application::register_class('HTMLComment',          SYSDIR.'/html/comment.inc.php');
-Application::register_class('HTMLElement',          SYSDIR.'/html/element.inc.php');
-Application::register_class('HTMLHead',             SYSDIR.'/html/head.inc.php');
-Application::register_class('HTMLBody',             SYSDIR.'/html/body.inc.php');
-Application::register_class('HTMLDocument',         SYSDIR.'/html/document.inc.php');
-Application::register_class('HTMLDocumentFragment', SYSDIR.'/html/docfragment.inc.php');
-require_once(SYSDIR.'/html/functions.inc.php');
+Application::register_class('HTMLNode',             SYSDIR.'/utils/html/node.inc.php');
+Application::register_class('HTMLHierarchyNode',    SYSDIR.'/utils/html/hierarchynode.inc.php');
+Application::register_class('HTMLTextNode',         SYSDIR.'/utils/html/text.inc.php');
+Application::register_class('HTMLCData',            SYSDIR.'/utils/html/cdata.inc.php');
+Application::register_class('HTMLComment',          SYSDIR.'/utils/html/comment.inc.php');
+Application::register_class('HTMLElement',          SYSDIR.'/utils/html/element.inc.php');
+Application::register_class('HTMLHead',             SYSDIR.'/utils/html/head.inc.php');
+Application::register_class('HTMLBody',             SYSDIR.'/utils/html/body.inc.php');
+Application::register_class('HTMLDocument',         SYSDIR.'/utils/html/document.inc.php');
+Application::register_class('HTMLDocumentFragment', SYSDIR.'/utils/html/docfragment.inc.php');
+require_once(SYSDIR.'/utils/html/functions.inc.php');
 

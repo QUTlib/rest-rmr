@@ -264,7 +264,9 @@ SQL;
 		} else {
 			$array = array();
 			foreach ($cols as $c) {
-				$array[] = "`$t1`.`$c` = `$t2`.`$c`";
+				$a = $table1->resolve($c);
+				$b = $table2->resolve($c);
+				$array[] = "`$t1`.`$a` = `$t2`.`$b`";
 			}
 			return "  JOIN `$t2` ON " . implode(' AND ', $array);
 		}
@@ -274,8 +276,8 @@ SQL;
 	 * join('foo', 'bar', 'baz')
 	 * => "JOIN `bar` ON `foo`.`baz` = `bar`.`baz`"
 	 *
-	 * join('foo', 'bar', array('baz','quux'))
-	 * => "JOIN `bar` ON `foo`.`baz` = `bar`.`baz` AND `foo`.`quux` = `bar`.`quux`"
+	 * join('foo', 'bar', array('baz','quux', 'plugh'=>'xyzzy'))
+	 * => "JOIN `bar` ON `foo`.`baz` = `bar`.`baz` AND `foo`.`quux` = `bar`.`quux` AND `foo`.`plugh` = `bar`.`xyzzy`"
 	 */
 	protected function join($table1, $table2, $keys) {
 		if (is_string($table1)) $table1 = $this->table($table1);
@@ -284,8 +286,14 @@ SQL;
 		$t1 = $table1->name();
 		$t2 = $table2->name();
 		$array = array();
-		foreach ($keys as $c) {
-			$array[] = "`$t1`.`$c` = `$t2`.`$c`";
+		foreach ($keys as $a=>$b) {
+			if (is_string($a)) {
+				$a = $table1->resolve($a);
+			} else {
+				$a = $table1->resolve($b);
+			}
+			$b = $table2->resolve($b);
+			$array[] = "`$t1`.`$a` = `$t2`.`$b`";
 		}
 		return "JOIN `$t2` ON " . implode(' AND ', $array);
 	}
@@ -315,6 +323,17 @@ SQL;
 	}
 
 	/**
+	 * Usage: $this->select('table', $fields, array('column'=>$this->lt(42)))
+	 */
+	protected function lt($value) {
+		$obj = new stdClass;
+		$obj->value = $value;
+		$obj->op = '<';
+		$obj->union = 'OR';
+		return $obj;
+	}
+
+	/**
 	 * Usage: $this->select('table', $fields, array('column'=>$this->le(42)))
 	 */
 	protected function le($value) {
@@ -332,6 +351,17 @@ SQL;
 		$obj = new stdClass;
 		$obj->value = $value;
 		$obj->op = '>=';
+		$obj->union = 'OR';
+		return $obj;
+	}
+
+	/**
+	 * Usage: $this->select('table', $fields, array('column'=>$this->gt(42)))
+	 */
+	protected function gt($value) {
+		$obj = new stdClass;
+		$obj->value = $value;
+		$obj->op = '>';
 		$obj->union = 'OR';
 		return $obj;
 	}

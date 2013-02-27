@@ -25,6 +25,32 @@
  *       See: representations/zz_core-serialisation.php
  */
 
+Application::register_class('Model',    SYSDIR.'/std-models/model.php');
+Application::register_class('Metadata', SYSDIR.'/std-models/model.php');
+
+/**
+ * Unwraps the datum from a Model.
+ * If $model is not a Model, returns it unmodified.
+ */
+function extract_model_datum($model) {
+	$class = 'Model';
+	if (is_object($model) && $model instanceof $class) {
+		return $model->datum();
+	}
+	return $model;
+}
+
+/**
+ * Extracts a Metadata object from a Model.
+ */
+function extract_model_metadata($model) {
+	$class = 'Model';
+	if (is_object($model) && $model instanceof $class) {
+		return $model->metadata();
+	}
+	return new Metadata();
+}
+
 /**
  * A generic representer which will represent any Object or Array
  * as a JSON document.
@@ -54,6 +80,8 @@ class JSONRepresenter extends BasicRepresenter {
 	public function represent($m, $t, $c, $l, $response) {
 		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE); // override charset because I control it in the encoding process
 		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
+
+		$m = extract_model_datum($m);
 		$response->body( json_encode($m) );
 	}
 }
@@ -92,6 +120,7 @@ class YAMLRepresenter extends BasicRepresenter {
 	public function represent($m, $t, $c, $l, $response) {
 		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE); // override charset because I control it in the encoding process
 		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
+		$m = extract_model_datum($m);
 		$response
 			->body("%YAML 1.2\n---\n")
 			->append( $this->_yaml_encode($m, '', '', '', false, false) );
@@ -212,6 +241,8 @@ class XMLRepresenter extends BasicRepresenter {
 		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE); // override charset because I control it in the encoding process
 		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
 
+		$metadata = extract_model_metadata($m);
+		$m = extract_model_datum($m);
 		if (is_object($m) && ($m instanceof SimpleXMLElement)) {
 			$response->body( $m->asXML() );
 		} elseif (is_object($m) && ($m instanceof DOMDocument)) {
@@ -221,7 +252,8 @@ class XMLRepresenter extends BasicRepresenter {
 				->body( '' )
 				->append_line( '<?xml version="1.0" encoding="ISO-8859-1"?>' )
 				->append_line( '<?xml-stylesheet href="/assets/generic-xml.xsl" type="text/xsl"?>' )
-				->append_line( '<document xmlns="http://api.library.qut.edu.au/xml-data/1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.library.qut.edu.au/xml-data/1.0 /xml-data/1.0">' )
+				->append_line( '<document xmlns="http://api.library.qut.edu.au/xml-data/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.library.qut.edu.au/xml-data/1.1 /xml-data/1.1">' )
+				->append_line( $metadata->dublincore()->xml_fragment(Request::full_uri()) )
 				->append( $this->_xml_encode($m) )
 				->append_line( '</document>' )
 			;
@@ -306,6 +338,16 @@ class XMLRepresenter extends BasicRepresenter {
 				return $xml;
 			}
 */
+			if ($o instanceof HTMLDocument) {
+				$xml = $o->xml();
+				if (preg_match('~^<\?xml([^?]|\?[^>])+\?>[\r\n]*~i', $xml, $m)) {
+					$xml = substr($xml, strlen($m[0]));
+				}
+				if (preg_match('~^<\!DOCTYPE([^>])+>[\r\n]*~i', $xml, $m)) {
+					$xml = substr($xml, strlen($m[0]));
+				}
+				return "$p$xml\n";
+			}
 			// otherwise, not a SimpleXMLElement; use regular iteration
 			$c = $this->_quote(get_class($o));
 			$h = $this->_quote(spl_object_hash($o));

@@ -52,7 +52,7 @@ Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. (see: ./touch ) */
-	const VERSION = '1.0-r235';
+	const VERSION = '1.0-r237';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 

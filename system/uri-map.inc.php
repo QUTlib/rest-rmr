@@ -193,7 +193,7 @@ class URIMap {
 			} else {
 				throw new Exception("invalid handler (expects 1 or 2 elements in array, found $n)");
 			}
-		} elseif (preg_match('/([a-z_][a-z0-9_]*)(->|::)([a-z_][a-z0-9_]*)/i', $handler, $match)) {
+		} elseif (preg_match('/((?:\\\\?[a-z_][a-z0-9_]*)+)(->|::)([a-z_][a-z0-9_]*)/i', $handler, $match)) {
 			$o = $match[1];
 			$m = $match[3];
 			$static = $match[2] == '::';

@@ -92,6 +92,7 @@ if (!defined('SYSDIR')) define('SYSDIR',realpath(defined('SYSTEM_DIR') ? SYSTEM_
 if (!defined('APPDIR')) define('APPDIR',realpath(defined('APPLICATION_DIR') ? APPLICATION_DIR : 'application'));
 
 require_once(SYSDIR.'/functions.inc.php');
+require_once(SYSDIR.'/password.inc.php');
 require_once(SYSDIR.'/autoloader.inc.php');
 require_once(SYSDIR.'/application.inc.php');
 

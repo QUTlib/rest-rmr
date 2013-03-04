@@ -16,35 +16,33 @@
  * under the License.
  */
 
-$dir = dirname(__FILE__).'/html/';
-function __html_load_class($c, $f) {
-	global $dir;
-	require_once($f);
-}
+$dir = dirname(__FILE__);
+chdir($dir);
 
-__html_load_class('Node',             'node.inc.php');
-__html_load_class('HierarchyNode',    'hierarchynode.inc.php');
-__html_load_class('TextNode',         'text.inc.php');
-__html_load_class('CData',            'cdata.inc.php');
-__html_load_class('Comment',          'comment.inc.php');
-__html_load_class('Element',          'element.inc.php');
-__html_load_class('Head',             'head.inc.php');
-__html_load_class('Body',             'body.inc.php');
-__html_load_class('Document',         'document.inc.php');
-__html_load_class('DocumentFragment', 'docfragment.inc.php');
+require_once('node.inc.php');
+require_once('hierarchynode.inc.php');
+require_once('text.inc.php');
+require_once('cdata.inc.php');
+require_once('comment.inc.php');
+require_once('element.inc.php');
+require_once('head.inc.php');
+require_once('body.inc.php');
+require_once('document.inc.php');
+require_once('docfragment.inc.php');
 
 require_once('functions.inc.php');
 
 /* ------------------------------------------------------------------- */
 
-$tmp = file_get_contents('../../../php.application/default-template.thtml');
-$b = 1;
-#$tmp = '<html><head><title>Foo</title></head><body><a> </a><b> b b </b><p>    p    p    </p></body></html>';
-#foreach (array(1,0) as $b) {
-	$dom = parse_html($tmp, $b);
-	echo "===== HTML [$b] =====\n";
+$tmp = file_get_contents('../../../application/default-template.thtml');
+foreach (array(true,false) as $trim) {
+	$dom = parse_html($tmp, $trim);
+	$trim = $trim ? 'true' : 'false';
+	echo "===== HTML [$trim] =====\n";
 	echo $dom->html();
-	#echo $dom->flurb();
 	echo "\n";
-#}
+	echo "===== XML [$trim] =====\n";
+	echo $dom->xml();
+	echo "\n";
+}
 

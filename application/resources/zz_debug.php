@@ -98,9 +98,21 @@ function debug_error() {
 	}
 }
 
+function debug_test() {
+	$html = HTMLDocument::create('Test');
+	$html->body()->add('h1', 'Test');
+	$html->body()->add('p', 'This is a test.');
+
+	$model = new Model($html);
+	$model->metadata()->nocache()->dublincore()->creator('Matty K')->date('2013-02-27T10:03:00+1000');
+
+	return $model;
+}
+
 if (defined('DEBUG') && DEBUG) {
 	URIMap::register('GET', '/debug/?', 'debug_index');
 	URIMap::register('GET', '/debug/phpinfo/?', 'debug_phpinfo');
 	URIMap::register('GET', '/debug/error-test/?', 'debug_error');
+	URIMap::register('GET', '/debug/test/?', 'debug_test');
 }
 

@@ -220,7 +220,7 @@ class Response {
 	 * be parsed by strtotime()) will be assigned to the property, and
 	 * the function will return this response object.
 	 *
-	 * @see #modified_response()
+	 * @see #is_modified()
 	 */
 	public function last_modified($value=NULL) {
 		if (func_num_args() > 0) {
@@ -240,22 +240,47 @@ class Response {
 	/**
 	 * Tests the response to see if it has been modified.
 	 *
-	 * A response is considered unmodified if it has a #last_modified time, a
-	 * status of '200 OK', and the current Request included a valid
-	 * If-Modified-Since header that is less than or equal to the response's
-	 * #last_modified time.
+	 * A response is considered unmodified if it has a status of '200 OK', and
+	 * - has a #last_modified time, and
+	 * - the current Request included a valid If-Modified-Since header that
+	 *   is less than the response's #last_modified time.
 	 *
-	 * @return the response object if modified, otherwise FALSE
+	 * @return boolean
 	 */
-	public function modified_response() {
-		if ($this->allow_not_modified && $this->status == 200 && isset($this->last_modified) && ($ims = Request::header('If-Modified-Since'))) {
-			// todo: should I deal with dodgy/broken headers?
-			$stamp = @strtotime($ims);
-			if (!empty($stamp) && $stamp >= $this->last_modified) {
-				return FALSE;
+	public function is_modified() {
+		if ($this->allow_not_modified && $this->status == 200) {
+			if (isset($this->last_modified) && ($ims = Request::header('If-Modified-Since'))) {
+				$stamp = @strtotime($ims); // todo: parse this better
+				if (!empty($stamp) && $stamp >= $this->last_modified) {
+					return FALSE;
+				}
 			}
 		}
-		return $this;
+		return TRUE;
+	}
+
+	/**
+	 * Tests the response to see if its preconditions have passed.
+	 *
+	 * A response is considered to have passed if it has a status not '200 OK', or
+	 * - has a #last_modified time, and
+	 * - the current Request included a valid If-Unmodified-Since header that
+	 *   is less than or equal to the response's #last_modified time.
+	 *
+	 * @return the response object if everything passed, otherwise FALSE
+	 */
+	public function preconditions_passed() {
+		if ($this->status == 200) {
+			if ($ius = Request::header('If-Unmodified-Since')) {
+			$stamp = @strtotime($ius); // todo: parse this better
+				if (!empty($stamp)) {
+					if (!isset($this->last_modified) || $stamp > $this->last_modified) {
+						return FALSE;
+					}
+				}
+			}
+		}
+		return TRUE;
 	}
 
 	/**
@@ -579,7 +604,7 @@ class Response {
 
 		// if the browser has a cached copy, skip some network traffic
 		// (only do it for '200 OK' responses)
-		if (! $this->modified_response()) {
+		if (! $this->is_modified()) {
 			$this->status = 304;
 			$this->body = '';
 		}

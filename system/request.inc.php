@@ -143,6 +143,54 @@ class Request {
 	}
 
 	/**
+	 * Gets the precondition headers from the client.
+	 *
+	 * These are the headers that can possibly result in a '412 Precondition
+	 * Failed' response.
+	 *
+	 * Result is an array of the form:
+	 *
+	 *     array(
+	 *         header => timestamp, # for date-type precondition
+	 *         header => '*',       # for ETag-type precondition
+	 *         header => array(etag,..),
+	 *                              # for ETag-type precondition
+	 *     )
+	 *
+	 * Currently inspected headers are:
+	 *  - If-Modified-Since (date-type)
+	 *  - If-Unmodified-Since (date-type)
+	 *  - If-None-Match (ETag-type)
+	 *  - If-Match (ETag-type)
+	 *  - If-Range (either type)
+	 *
+	 * @return array
+	 */
+	public static function preconditions() {
+		$precon = array();
+
+		// Date-type preconditions
+		foreach (array('If-Modified-Since', 'If-Unmodified-Since', 'If-Range') as $key) {
+			if ($val = self::header($key) && ($stamp = @strtotime($val))) {
+				$precon[$key] = $stamp;
+			}
+		}
+
+		// ETag-type preconditions
+		foreach (array('If-None-Match', 'If-Match', 'If-Range') as $key) {
+			if ($val = self::header($key)) {
+				if ($val == '*') {
+					$precon[$key] = $val;
+				} elseif (preg_match_all('~(?:^|\s)((W/)?"(\\\\"|[^"])+")(?:\s|$)~', $val, $etags, PREG_PATTERN_ORDER)) {
+					$precon[$key] = $etags[1];
+				}
+			}
+		}
+
+		return $precon;
+	}
+
+	/**
 	 * Gets the preferred content type from the client.
 	 *
 	 * You may provide a list of preferred content types from this end; if so,

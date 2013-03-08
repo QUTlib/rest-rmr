@@ -36,7 +36,6 @@ class Response {
 		if (func_num_args() > 0 && $http_version) $this->version = $http_version;
 		if (func_num_args() > 1) $this->status($status); // including validation
 		// Set the default headers
-		$this->nocache();
 		foreach (headers_list() as $header) {
 			$parts = explode(': ', $header, 2);
 			if (count($parts) == 2)
@@ -238,12 +237,50 @@ class Response {
 	}
 
 	/**
+	 * Without parameters, this method returns the currently-assigned
+	 * etag of the response object.
+	 *
+	 * If given, the $value (an entity-tag as defined in RFC2616, S14.19)
+	 * will be assigned to the property, and the function will return
+	 * this response object.
+	 *
+	 * @see #is_modified()
+	 */
+	public function etag($value=NULL) {
+		if (func_num_args() > 0) {
+			if (preg_match('~^(W/)?"(\\\\"|[^"])*"$~', $value)) {
+				$this->header['ETag'] = $value;
+			} else {
+				$this->header['ETag'] = '"'.str_replace('"','\\"',$value).'"';
+			}
+			return $this;
+		} else {
+			return $this->header['ETag'];
+		}
+	}
+
+	/**
+	 * Generates a strong ETag based on the current response's body.
+	 * This calls #etag()
+	 */
+	public function generate_strong_etag() {
+		return $this->etag('"'.sprintf('%08x', crc32($this->body)).md5($this->body).'"');
+	}
+
+	/**
 	 * Tests the response to see if it has been modified.
 	 *
 	 * A response is considered unmodified if it has a status of '200 OK', and
 	 * - has a #last_modified time, and
 	 * - the current Request included a valid If-Modified-Since header that
-	 *   is less than the response's #last_modified time.
+	 *   is less than the response's #last_modified time,
+	 * OR
+	 * - has an #etag , and
+	 * - the current Request included a valid If-None-Match header that does
+	 *   not include the response's #etag
+	 * OR
+	 * - does not have an #etag , and
+	 * - the current Request included an If-None-Match header "*"
 	 *
 	 * @return boolean
 	 */
@@ -252,7 +289,18 @@ class Response {
 			if (isset($this->last_modified) && ($ims = Request::header('If-Modified-Since'))) {
 				$stamp = @strtotime($ims); // todo: parse this better
 				if (!empty($stamp) && $stamp >= $this->last_modified) {
-					return FALSE;
+					return FALSE; #=> 304
+				}
+			}
+			if ($inm = Request::header('If-None-Match')) {
+				if ($inm == '*') {
+					if (isset($this->header['ETag'])) return FALSE; #=> 304
+				// FIXME: deal with borken headers
+				} elseif (isset($this->header['ETag']) && preg_match_all('~(?:^|\s)((W/)?"(\\\\"|[^"])+")(?:\s|$)~', $inm, $etags, PREG_PATTERN_ORDER)) {
+					$t_et = $this->header['ETag'];
+					foreach ($etags[1] as $r_et) {
+						if ($t_et == $r_et) return FALSE; #=> 304
+					}
 				}
 			}
 		}

@@ -276,10 +276,12 @@ class Response {
 	 *   is less than the response's #last_modified time,
 	 * OR
 	 * - has an #etag , and
+	 * - the current Request used the GET or HEAD methods, and
 	 * - the current Request included a valid If-None-Match header that does
 	 *   not include the response's #etag
 	 * OR
 	 * - does not have an #etag , and
+	 * - the current Request used the GET or HEAD methods, and
 	 * - the current Request included an If-None-Match header "*"
 	 *
 	 * @return boolean
@@ -292,7 +294,7 @@ class Response {
 					return FALSE; #=> 304
 				}
 			}
-			if ($inm = Request::header('If-None-Match')) {
+			if ($inm = Request::header('If-None-Match') && Request::is_get_or_head()) {
 				if ($inm == '*') {
 					if (isset($this->header['ETag'])) return FALSE; #=> 304
 				// FIXME: deal with borken headers

@@ -135,6 +135,14 @@ class Request {
 	}
 
 	/**
+	 * Simple helper that returns TRUE if the request method was GET or HEAD.
+	 * @return boolean
+	 */
+	public static function is_get_or_head() {
+		return (self::$method == 'GET' || self::$method == 'HEAD');
+	}
+
+	/**
 	 * Gets the preferred content type from the client.
 	 *
 	 * You may provide a list of preferred content types from this end; if so,

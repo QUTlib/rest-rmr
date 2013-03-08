@@ -297,7 +297,7 @@ class Response {
 			if ($inm = Request::header('If-None-Match') && Request::is_get_or_head()) {
 				if ($inm == '*') {
 					if (isset($this->header['ETag'])) return FALSE; #=> 304
-				// FIXME: deal with borken headers
+				// FIXME: deal with borken headers -- RFC2616 says ignore the whole thing
 				} elseif (isset($this->header['ETag']) && preg_match_all('~(?:^|\s)((W/)?"(\\\\"|[^"])+")(?:\s|$)~', $inm, $etags, PREG_PATTERN_ORDER)) {
 					$t_et = $this->header['ETag'];
 					foreach ($etags[1] as $r_et) {

@@ -585,8 +585,10 @@ else
 
 	// implements Serializable
 	public function serialize() {
+		$i = $this->items;
+		ksort($i);
 		$keydata = array(
-			'items' => $this->items,
+			'items' => $i,
 			'default_filename' => $this->default_filename,
 		);
 		// these values don't affect serialization, but they

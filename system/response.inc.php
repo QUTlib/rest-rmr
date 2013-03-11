@@ -315,9 +315,8 @@ class Response {
 					}
 				}
 			}
-			if (isset($this->last_modified) && ($ims = Request::header('If-Modified-Since'))) {
-				$stamp = @strtotime($ims); // todo: parse this better
-				if (!empty($stamp) && $stamp >= $this->last_modified) {
+			if (isset($this->last_modified) && is_int($ims = Request::preconditions('If-Modified-Since'))) {
+				if ($ims >= $this->last_modified) {
 					return FALSE; #=> 304
 				}
 			}

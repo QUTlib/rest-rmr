@@ -109,10 +109,57 @@ function debug_test() {
 	return $model;
 }
 
+function debug_headers() {
+	$html = HTMLDocument::create('Headers');
+	$html->body()->add('h1', 'Headers');
+
+	$html->body()->add('h2', 'Preconditional');
+	$any = false;
+	foreach (Request::preconditions() as $header=>$val) {
+		$html->body()->add('h3', $header);
+		$ul = $html->body()->add('ul');
+		if (is_array($val)) {
+			foreach ($val as $etag) {
+				$ul->add('li')->add('tt', $etag);
+			}
+		} elseif (is_int($val)) {
+			$ul->add('li', date('r', $val));
+		} else {
+			$ul->add('li')->add('tt', $val);
+		}
+		$any = true;
+	}
+	if (!$any) $html->body()->add('p', '(None)', array('style'=>'font-style:italic'));
+
+	// hax
+	$html->body()->add('h2', 'Misc.');
+	$ul = $html->body()->add('ul');
+	foreach ($_SERVER as $k=>$v) {
+		if (preg_match('/^(REDIRECT_)?HTTP_([A-Z_]+)$/', $k, $m)) {
+			$bits = explode('_', $m[2]);
+			$bits = array_map('strtolower', $bits);
+			$bits = array_map('ucfirst', $bits);
+			$bits = implode('-', $bits);
+			$li = $ul->add('li');
+			$li->add('b', $bits);
+			$li->add_text(': ');
+			$li->add('tt', $v);
+		}
+	}
+
+	$response = new Response();
+	$response->content_type('text/html');
+	$response->body($html->html());
+	$response->generate_strong_etag();
+	$response->allow_not_modified = FALSE;
+	return $response;
+}
+
 if (defined('DEBUG') && DEBUG) {
 	URIMap::register('GET', '/debug/?', 'debug_index');
 	URIMap::register('GET', '/debug/phpinfo/?', 'debug_phpinfo');
 	URIMap::register('GET', '/debug/error-test/?', 'debug_error');
 	URIMap::register('GET', '/debug/test/?', 'debug_test');
+	URIMap::register('GET', '/debug/headers/?', 'debug_headers');
 }
 

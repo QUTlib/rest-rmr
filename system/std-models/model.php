@@ -22,7 +22,7 @@
  * Contains a datum, without any restriction on type or nature,
  * and a collection of metadata describing that datum.
  */
-class Model {
+class Model implements Serializable {
 	protected $datum;
 	protected $metadata;
 	public function __construct($datum) {
@@ -40,6 +40,20 @@ class Model {
 	public function metadata() {
 		return $this->metadata;
 	}
+	function serialize() {
+		$array = array(
+			'datum' => $this->datum,
+			'metadata' => $this->metadata,
+		);
+		return serialize($array);
+	}
+	function unserialize($serialized) {
+		$array = unserialize($serialized);
+		$datum = $array['datum'];
+		$metadata = $array['metadata'];
+		$this->datum = $datum;
+		$this->metadata = $metadata;
+	}
 }
 
 /**
@@ -47,7 +61,7 @@ class Model {
  *
  * This implementation defines a semi-restrictive set of metadata.
  */
-class Metadata {
+class Metadata implements Serializable {
 	protected $fields;
 	private $dcwrapper = NULL;
 	public function __construct() {
@@ -129,6 +143,15 @@ class Metadata {
 			$this->dcwrapper = new DCMetadata($this);
 		}
 		return $this->dcwrapper;
+	}
+
+	public function serialize() {
+		$f = $this->fields;
+		ksort($f);
+		return serialize($f);
+	}
+	public function unserialize($serialized) {
+		$this->fields = unserialize($serialized);
 	}
 }
 

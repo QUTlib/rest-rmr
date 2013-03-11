@@ -612,6 +612,8 @@ else
 		// go
 		$this->items = $items;
 		$this->default_filename = $keydata['default_filename'];
+		if (is_null(TemplateEngine::$fallback_filename))
+			TemplateEngine::$fallback_filename = APPDIR.'/default-template.thtml';
 	}
 }
 

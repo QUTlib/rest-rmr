@@ -33,6 +33,7 @@ class Request {
 	private static $post = NULL;
 	private static $params = NULL;
 	private static $entity_body = NULL;
+	private static $preconditions = NULL;
 
 	public static function init() {
 		if (isset($_GET['path']) && ($path = $_GET['path'])) {
@@ -164,30 +165,49 @@ class Request {
 	 *  - If-Match (ETag-type)
 	 *  - If-Range (either type)
 	 *
+	 * @param array $header if given, only check that header. Like ::preconditions()[$header]
 	 * @return array
 	 */
-	public static function preconditions() {
-		$precon = array();
-
-		// Date-type preconditions
-		foreach (array('If-Modified-Since', 'If-Unmodified-Since', 'If-Range') as $key) {
-			if ($val = self::header($key) && ($stamp = @strtotime($val))) {
-				$precon[$key] = $stamp;
-			}
-		}
-
-		// ETag-type preconditions
-		foreach (array('If-None-Match', 'If-Match', 'If-Range') as $key) {
-			if ($val = self::header($key)) {
-				if ($val == '*') {
-					$precon[$key] = $val;
-				} elseif (preg_match_all('~(?:^|\s)((W/)?"(\\\\"|[^"])+")(?:\s|$)~', $val, $etags, PREG_PATTERN_ORDER)) {
-					$precon[$key] = $etags[1];
+	public static function preconditions($header=NULL) {
+		if (is_null(self::$preconditions)) {
+			$precon = array();
+			// Date-type preconditions
+			foreach (array('If-Modified-Since', 'If-Unmodified-Since', 'If-Range') as $key) {
+				if ($val = self::header($key) && ($stamp = @strtotime($val))) {
+					$precon[$key] = $stamp;
 				}
 			}
+			// ETag-type preconditions
+			foreach (array('If-None-Match', 'If-Match', 'If-Range') as $key) {
+				if (($val = self::header($key)) && ($etag = self::parse_etag_header($val))) {
+					$precon[$key] = $etag;
+				}
+			}
+			self::$preconditions = $precon;
 		}
+		if (is_null($header)) {
+			return self::$preconditions;
+		} elseif (isset(self::$preconditions[$header])) {
+			return self::$preconditions[$header];
+		} else {
+			return NULL;
+		}
+	}
 
-		return $precon;
+	static function parse_etag_header($raw) {
+		$raw = trim($raw);
+		if ($raw == '*') {
+			return $raw;
+		}
+		if (preg_match_all('~(?P<etag>(?:W/)?"(?:\\\\"|[^"])+")(?:\s+|$)|(?P<err>.+)~', $raw, $matches, PREG_PATTERN_ORDER)) {
+			$err = implode('', $matches['err']);
+			if (!empty($err)) {
+				error_log("Warning: bad ETag header: '$raw'");
+			} else {
+				return $matches['etag'];
+			}
+		}
+		return NULL;
 	}
 
 	/**

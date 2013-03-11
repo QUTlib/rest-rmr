@@ -16,7 +16,7 @@
  * under the License.
  */
 
-class TemplateEngine {
+class TemplateEngine implements Serializable {
 
 	/** Items that can be replaced using %%ITEM%% patterns. */
 	private $items = array(
@@ -583,5 +583,35 @@ else
 		return $s;
 	}
 
+	// implements Serializable
+	public function serialize() {
+		$keydata = array(
+			'items' => $this->items,
+			'default_filename' => $this->default_filename,
+		);
+		// these values don't affect serialization, but they
+		// do help TemplateRepresenter generate correct ETags
+		try {
+			if ($fn = $this->resolve_filename(NULL)) {
+				$stat = stat($fn);
+				$keydata['file_mtime'] = $stat['mtime'];
+				$keydata['file_size' ] = $stat['size'];
+			}
+		} catch (Exception $e) {
+		}
+		return serialize($keydata);
+	}
+
+	// implements Serializable
+	public function unserialize($serialized) {
+		// unpack data
+		$keydata = unserialize($serialized);
+		// make sure all relevant fields are present
+		$items = $keydata['items'];
+		$default_filename = $keydata['default_filename'];
+		// go
+		$this->items = $items;
+		$this->default_filename = $keydata['default_filename'];
+	}
 }
 

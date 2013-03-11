@@ -45,6 +45,12 @@ class TemplateRepresenter extends BasicRepresenter {
 			$response->content_language($lang);
 		$response->header('X-UA-Compatible', 'IE=edge');
 		$response->body( $m->execFile() );
+		// Allow auto-etag generation based on the template.
+		// This works because TemplateEngine objects serialize
+		// themselves with enough data to generate a weak ETag.
+		if ($response->allow_auto_etag && !$response->etag()) {
+			$response->generate_weak_etag( $m );
+		}
 	}
 
 }

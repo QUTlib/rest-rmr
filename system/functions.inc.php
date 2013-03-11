@@ -75,3 +75,17 @@ function httpdate($timestamp=NULL) {
 	}
 }
 
+/**
+ * Gets the last modified timestamp of all included source files.
+ * If $datamtime is given, it is taken into account as well.
+ */
+function calculate_last_modified($datamtime=NULL) {
+	$incls = get_included_files();
+	$incls = array_filter($incls, 'is_file');
+	$mod_times = array_map('filemtime', $incls);
+	if (func_num_args() > 0) {
+		$mod_times[] = $datamtime;
+	}
+	return max($mod_times);
+}
+

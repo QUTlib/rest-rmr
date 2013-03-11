@@ -28,6 +28,7 @@ class Response {
 
 	public $allow_compression = true;
 	public $allow_not_modified = true;
+	public $allow_auto_etag = true;
 
 	private $committed = false;
 	private $recording = false;
@@ -254,17 +255,31 @@ class Response {
 				$this->header['ETag'] = '"'.str_replace('"','\\"',$value).'"';
 			}
 			return $this;
-		} else {
+		} elseif (isset($this->header['ETag'])) {
 			return $this->header['ETag'];
+		} else {
+			return NULL;
 		}
 	}
 
 	/**
-	 * Generates a strong ETag based on the current response's body.
+	 * Generates a strong ETag based on $from (or the current response's body.)
 	 * This calls #etag()
 	 */
-	public function generate_strong_etag() {
-		return $this->etag('"'.sprintf('%08x', crc32($this->body)).md5($this->body).'"');
+	public function generate_strong_etag($from=NULL) {
+		if (empty($from)) $from = $this->body;
+		if (!is_string($from)) $from = serialize($from);
+		return $this->etag(sprintf('"%08x%s"', crc32($from), md5($from)));
+	}
+
+	/**
+	 * Generates a weak ETag based on $from (or the current response's body.)
+	 * This calls #etag()
+	 */
+	public function generate_weak_etag($from=NULL) {
+		if (empty($from)) $from = $this->body;
+		if (!is_string($from)) $from = serialize($from);
+		return $this->etag(sprintf('W/"%08x%s"', crc32($from), md5($from)));
 	}
 
 	/**
@@ -288,21 +303,22 @@ class Response {
 	 */
 	public function is_modified() {
 		if ($this->allow_not_modified && $this->status == 200) {
+			if (!isset($this->header['ETag']) && $this->allow_auto_etag) {
+				$this->generate_strong_etag();
+			}
+			if (($inm = Request::preconditions('If-None-Match')) && Request::is_get_or_head()) {
+				if ($inm == '*') {
+					if (isset($this->header['ETag'])) return FALSE; #=> 304
+				} else {
+					if (isset($this->header['ETag']) && in_array($this->header['ETag'], $inm)) {
+						return FALSE; #=> 304
+					}
+				}
+			}
 			if (isset($this->last_modified) && ($ims = Request::header('If-Modified-Since'))) {
 				$stamp = @strtotime($ims); // todo: parse this better
 				if (!empty($stamp) && $stamp >= $this->last_modified) {
 					return FALSE; #=> 304
-				}
-			}
-			if ($inm = Request::header('If-None-Match') && Request::is_get_or_head()) {
-				if ($inm == '*') {
-					if (isset($this->header['ETag'])) return FALSE; #=> 304
-				// FIXME: deal with borken headers -- RFC2616 says ignore the whole thing
-				} elseif (isset($this->header['ETag']) && preg_match_all('~(?:^|\s)((W/)?"(\\\\"|[^"])+")(?:\s|$)~', $inm, $etags, PREG_PATTERN_ORDER)) {
-					$t_et = $this->header['ETag'];
-					foreach ($etags[1] as $r_et) {
-						if ($t_et == $r_et) return FALSE; #=> 304
-					}
 				}
 			}
 		}

@@ -85,38 +85,20 @@ class DBConn {
 	public function select($sql)
 	{
 		$this->__assert();
-
-		$stmt = $this->link->prepare($sql);
-		if (!$stmt) {
+		$query_result = $this->link->query($sql);
+		if (!$query_result) {
 			throw new Exception('Query error: ['.$this->link->errno.']'.$this->link->error);
+		} elseif (!is_object($query_result)) {
+			// if query_result is not an object (i.e. it's TRUE) then the
+			// user didn't send a SELECT-type query, so they can suck it up
+			throw new Exception('query result is not an object (try using ::query() ?)');
 		}
-
-		$stmt->execute();
-
-		// NOTE: everything from this point down would be infinitely cleaner
-		// if my sysadmins would upgrade PHP from 5.2.6 and I could use
-		// something nice like: $stmt->get_result()
-		$names = array();
-		$params = array();
-		$meta = $stmt->result_metadata();
-		while ($field = $meta->fetch_field()) {
-			$var = $field->name;
-			$$var = null;
-			$names[] = $var;
-			$params[] = &$$var;
-		}
-		call_user_func_array(array($stmt,'bind_result'), $params);
-
+		#$array = $query_result->fetch_all(MYSQLI_ASSOC);
 		$array = array();
-		while ($stmt->fetch()) {
-			$row = array();
-			foreach ($names as $i=>$n) {
-				$row[$n] = $params[$i];
-			}
+		while (!is_null($row = $query_result->fetch_assoc())) {
 			$array[] = $row;
 		}
-
-		$stmt->close();
+		$query_result->free();
 		return $array;
 	}
 
@@ -142,6 +124,7 @@ class DBConn {
 				if ($result = $this->link->store_result()) {
 					$array = $result->fetch_assoc();
 					if (isset($array[$item])) {
+						$result->free();
 						return $array[$item];
 					}
 				}
@@ -161,7 +144,7 @@ class DBConn {
 	{
 		$this->__assert();
 
-		$query_result = $this->link->query($sql, MYSQLI_USE_RESULT);
+		$query_result = $this->link->query($sql);
 		if (!$query_result) {
 			throw new Exception('Query error: ['.$this->link->errno.']'.$this->link->error);
 		}
@@ -181,7 +164,7 @@ class DBConn {
 	{
 		$this->__assert();
 
-		$query_result = $this->link->query($sql, MYSQLI_USE_RESULT);
+		$query_result = $this->link->query($sql);
 		if (!$query_result) {
 			if (defined('DEBUG') && DEBUG) {
 				throw new Exception('Query error: ['.$this->link->errno.']'.$this->link->error."\n\n".$sql);

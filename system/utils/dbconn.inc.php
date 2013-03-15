@@ -49,8 +49,9 @@ class DBConn {
 	 */
 	public function __construct($server, $user, $pass, $dbname)
 	{
-		$this->key = "$user:$pass@$server/$dbname";
-		$this->link = self::create_link($this->key, $server, $user, $pass, $dbname);
+#		$this->key = "$user:$pass@$server/$dbname";
+#		$this->link = self::create_link($this->key, $server, $user, $pass, $dbname);
+		$this->link = new mysqli($server, $user, $pass, $dbname);
 		if ($this->link->connect_error) {
 			throw new Exception('Could not connect to database: ['.$this->link->connect_errno.']'.$this->link->connect_error);
 		}
@@ -59,7 +60,8 @@ class DBConn {
 	public function __destruct()
 	{
 		if ($this->link) {
-			self::drop_link($this->key);
+#			self::drop_link($this->key);
+			$this->link->close();
 			$this->link = NULL;
 		}
 	}

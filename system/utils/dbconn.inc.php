@@ -18,7 +18,30 @@
 
 
 class DBConn {
-	protected $link = NULL;
+	private $link = NULL;
+	private $key = NULL;
+	private static $links = array();
+
+	static function create_link($key, $server, $user, $pass, $dbname) {
+		if (isset(self::$links[$key])) {
+			self::$links[$key]['count'] ++;
+		} else {
+			self::$links[$key] = array(
+				'link' => new mysqli($server, $user, $pass, $dbname),
+				'count' => 1,
+			);
+		}
+		return self::$links[$key]['link'];
+	}
+
+	static function drop_link($key) {
+		if (self::$links[$key]['count'] < 2) {
+			self::$links[$key]['link']->close();
+			unset(self::$links[$key]);
+		} else {
+			self::$links[$key]['count'] --;
+		}
+	}
 
 	/**
 	 * Creates the DBConn object, and establishes a connection to the DB server.
@@ -26,7 +49,8 @@ class DBConn {
 	 */
 	public function __construct($server, $user, $pass, $dbname)
 	{
-		$this->link = new mysqli($server, $user, $pass, $dbname);
+		$this->key = "$user:$pass@$server/$dbname";
+		$this->link = self::create_link($this->key, $server, $user, $pass, $dbname);
 		if ($this->link->connect_error) {
 			throw new Exception('Could not connect to database: ['.$this->link->connect_errno.']'.$this->link->connect_error);
 		}
@@ -35,7 +59,7 @@ class DBConn {
 	public function __destruct()
 	{
 		if ($this->link) {
-			$this->link->close();
+			self::drop_link($this->key);
 			$this->link = NULL;
 		}
 	}

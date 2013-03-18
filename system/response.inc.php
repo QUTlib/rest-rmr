@@ -946,7 +946,7 @@ class Response {
 		}
 
 		$response->allow_not_modified = FALSE;
-		$response->no_cache();
+		$response->nocache();
 
 		return $response
 			->content_type('text/html; charset=iso-8859-1')
@@ -960,7 +960,7 @@ class Response {
 	public static function generate_redirect($url, $permanent=false) {
 		$response = new Response();
 		$response->allow_not_modified = FALSE;
-		$response->no_cache();
+		$response->nocache();
 		return $response
 			->redirect($url, $permanent)
 			->body( self::generate_html('Moved', '<p>The document you requested has moved to <a href="'.$url.'">'.$url.'</a>.</p>', TRUE) );

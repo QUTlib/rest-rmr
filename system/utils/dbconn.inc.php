@@ -85,20 +85,38 @@ class DBConn {
 	public function select($sql)
 	{
 		$this->__assert();
-		$query_result = $this->link->query($sql);
-		if (!$query_result) {
+
+		$stmt = $this->link->prepare($sql);
+		if (!$stmt) {
 			throw new Exception('Query error: ['.$this->link->errno.']'.$this->link->error);
-		} elseif (!is_object($query_result)) {
-			// if query_result is not an object (i.e. it's TRUE) then the
-			// user didn't send a SELECT-type query, so they can suck it up
-			throw new Exception('query result is not an object (try using ::query() ?)');
 		}
-		#$array = $query_result->fetch_all(MYSQLI_ASSOC);
+
+		$stmt->execute();
+
+		// NOTE: everything from this point down would be infinitely cleaner
+		// if my sysadmins would upgrade PHP from 5.2.6 and I could use
+		// something nice like: $stmt->get_result()
+		$names = array();
+		$params = array();
+		$meta = $stmt->result_metadata();
+		while ($field = $meta->fetch_field()) {
+			$var = $field->name;
+			$$var = null;
+			$names[] = $var;
+			$params[] = &$$var;
+		}
+		call_user_func_array(array($stmt,'bind_result'), $params);
+
 		$array = array();
-		while (!is_null($row = $query_result->fetch_assoc())) {
+		while ($stmt->fetch()) {
+			$row = array();
+			foreach ($names as $i=>$n) {
+				$row[$n] = $params[$i];
+			}
 			$array[] = $row;
 		}
-		$query_result->free();
+
+		$stmt->close();
 		return $array;
 	}
 

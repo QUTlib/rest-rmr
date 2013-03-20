@@ -250,10 +250,10 @@ class XMLRepresenter extends BasicRepresenter {
 		} else {
 			$response
 				->body( '' )
-				->append_line( '<?xml version="1.0" encoding="ISO-8859-1"?>' )
-				->append_line( '<?xml-stylesheet href="/assets/generic-xml.xsl" type="text/xsl"?>' )
+				->append_line( '<?xml version="1.0" encoding="ISO-8859-1"?'.'>' )
+				#->append_line( '<?xml-stylesheet href="/assets/generic-xml.xsl" type="text/xsl"?'.'>' )
 				->append_line( '<document xmlns="http://api.library.qut.edu.au/xml-data/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.library.qut.edu.au/xml-data/1.1 /xml-data/1.1">' )
-				->append_line( $metadata->dublincore()->xml_fragment(Request::full_uri()) )
+				->append( $metadata->dublincore()->xml_fragment(Request::full_uri()) )
 				->append( $this->_xml_encode($m) )
 				->append_line( '</document>' )
 			;

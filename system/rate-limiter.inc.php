@@ -44,13 +44,7 @@ class RateLimiter {
 		}
 
 		// who they are
-		// FIXME: http://stackoverflow.com/a/7623231/765382
-		if (isset($_SERVER['REMOTE_ADDR'])) {
-			$client_ip = $_SERVER['REMOTE_ADDR'];
-		} else {
-			// argh! don't know who they are!
-			return;
-		}
+		$client_ip = Request::get_client_ip();
 
 		// if they're whitelisted, let them straight through
 		global $RATELIMIT_WHITELIST;

@@ -43,23 +43,13 @@ class Request {
 			self::$uri = '/';
 		}
 
-		// best effort at finding the remote IP
-		global $TRUSTED_PROXIES;
-		$rad = self::server_var('REMOTE_ADDR');
-		$is_trusted = ($rad && isset($TRUSTED_PROXIES) && in_array($rad, $TRUSTED_PROXIES));
-		if ($is_trusted && ($list = self::server_var('HTTP_X_FORWARDED_FOR')) || ($list = self::server_var('HTTP_CLIENT_IP'))) {
-			$bits = explode(',', $list, 2);
-			self::$client_ip = $bits[0];
-		} else {
-			self::$client_ip = $rad;
-		}
-
+		self::$client_ip   = self::get_client_ip();
 		self::$protocol    = self::server_var('SERVER_PROTOCOL', 'HTTP/1.0');
 		self::$method      = self::server_var('REQUEST_METHOD', 'GET');
 		self::$headers = getallheaders();
 		self::$get   = $_GET;
 		self::$post  = $_POST;
-		self::$https = !empty(self::server_var('HTTPS')) && (self::server_var('HTTPS') != 'off');
+		self::$https = (($https = self::server_var('HTTPS')) && ($https != 'off'));
 
 		// build a header index
 		$headers_index = array();
@@ -79,6 +69,27 @@ class Request {
 		$host   = SITEHOST; #self::server_var('SERVER_NAME');
 		$path   = self::$uri;
 		return "$scheme://$host$path";
+	}
+
+	/**
+	 * Best effort attempt to resolve the remote IP address.
+	 * Uses $TRUSTED_PROXIES config setting.
+	 *
+	 * WARNING: it is more efficient to use Request::client_ip()
+	 */
+	public static function get_client_ip() {
+		if (isset(self::$client_ip)) {
+			return self::$client_ip;
+		}
+		global $TRUSTED_PROXIES;
+		$rad = self::server_var('REMOTE_ADDR');
+		$is_trusted = ($rad && isset($TRUSTED_PROXIES) && in_array($rad, $TRUSTED_PROXIES));
+		if ($is_trusted && ($list = self::server_var('HTTP_X_FORWARDED_FOR')) || ($list = self::server_var('HTTP_CLIENT_IP'))) {
+			$bits = explode(',', $list, 2);
+			return $bits[0];
+		} else {
+			return $rad;
+		}
 	}
 
 	/**

@@ -192,13 +192,14 @@ abstract class BasicRepresenter extends Representer {
 		$c = strtolower($_c);
 		if (isset($this->types[$t])) {
 			$mime = $this->types[$t];
-			while (($mapto = $mime->mapto()) && isset($this->types[strtolower($mapto)])) {
-				// FIXME: if there's a mapto, but it's invalid, the following
-				// charset thing will have no effect.
-				$mime = $this->types[strtolower($mapto)];
+			while ($mapto = $mime->mapto()) {
+				if (isset($this->types[strtolower($mapto)])) {
+					$mime = $this->types[strtolower($mapto)];
+				} else {
+					throw new Exception($mime->full_mime()." maps to invalid type '$mapto'");
+				}
 			}
 			// if we have a matching character set, poke it onto the MIME type
-			// FIXME: is this the right thing to do?
 			if (isset($this->charsets[$c])) {
 				$mime = clone $mime;
 				$mime->set_param('charset', $this->charsets[$c]->charset());

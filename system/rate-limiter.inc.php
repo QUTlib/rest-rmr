@@ -36,7 +36,7 @@ class RateLimiter {
 	 * Terminates script execution early, if the request originated
 	 * from a spammy DOSser.
 	 *
-	 * FIXME: this is not thread (or process) safe!
+	 * WARNING: this is not thread (or process) safe!
 	 */
 	public static function maybe_throttle() {
 		if (!defined('RATELIMIT') || RATELIMIT <= 0) {

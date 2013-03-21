@@ -269,7 +269,7 @@ class Response {
 	public function generate_strong_etag($from=NULL) {
 		if (empty($from)) $from = $this->body;
 		if (!is_string($from)) $from = serialize($from);
-		return $this->etag(sprintf('"%08x%s"', crc32($from), md5($from)));
+		return $this->etag(sprintf('"%08x:%s"', crc32($from), md5($from)));
 	}
 
 	/**
@@ -279,7 +279,7 @@ class Response {
 	public function generate_weak_etag($from=NULL) {
 		if (empty($from)) $from = $this->body;
 		if (!is_string($from)) $from = serialize($from);
-		return $this->etag(sprintf('W/"%08x%s"', crc32($from), md5($from)));
+		return $this->etag(sprintf('W/"%08x:%s"', crc32($from), md5($from)));
 	}
 
 	/**
@@ -682,8 +682,14 @@ class Response {
 
 		// mandatory header #2
 		// note: _after_ compression stuff, because compression can change the length
-		if (!$this->header('Content-Length')) {
+		if (! $this->header('Content-Length')) {
 			$this->header('Content-Length', $this->length());
+		}
+
+		// optional, but cool, header
+		// ditto compression
+		if (! $this->header('Content-MD5') && $this->length()) {
+			$this->header('Content-MD5', base64_encode( pack('H*',md5($this->body)) ));
 		}
 
 		// secret magic
@@ -794,6 +800,7 @@ class Response {
 			// update appropriate 'simple' headers (encoding, length)
 			$this->header('Content-Encoding', $method);
 			$this->header('Content-Length', $this->length());
+			$this->header('Content-MD5', base64_encode( pack('H*',md5($body)) ));
 			// if there's a Vary: header, add 'Accept-Encoding' as an important thingy
 			$this->append_header('Vary', 'Accept-Encoding');
 #			return TRUE;
@@ -946,6 +953,7 @@ class Response {
 		}
 
 		$response->allow_not_modified = FALSE;
+		$response->allow_auto_etag = FALSE;
 		$response->nocache();
 
 		return $response
@@ -960,6 +968,7 @@ class Response {
 	public static function generate_redirect($url, $permanent=false) {
 		$response = new Response();
 		$response->allow_not_modified = FALSE;
+		$response->allow_auto_etag = FALSE;
 		$response->nocache();
 		return $response
 			->redirect($url, $permanent)
@@ -1003,6 +1012,7 @@ class Response {
 		#echo self::generate_html($title, $message.$code);
 
 		$r = new Response(NULL, 500);
+		$r->allow_auto_etag = FALSE;
 		$r->content_type('text/html; charset=iso-8859-1');
 		$r->body( self::generate_html($title, $message.$code) );
 		$r->commit();

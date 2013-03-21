@@ -36,6 +36,7 @@ class TemplateEngine implements Serializable {
 	);
 
 	private $default_filename = NULL;
+	private $actual_filename = NULL;
 
 	private static $fallback_filename = NULL;
 
@@ -327,6 +328,7 @@ class TemplateEngine implements Serializable {
 
 		foreach ($files as $fullname) {
 			if (file_exists($fullname)) {
+				$this->actual_filename = $fullname;
 				return file_get_contents($fullname);
 			}
 		}
@@ -505,7 +507,6 @@ else
 	 *   COMMAND:param
 	 *   COMMAND:param1:param2:...
 	 *
-	 * FIXME !!?
 	 */
 	public function invoke($command, $items=NULL) {
 		if (is_null($items)) $items = $this->items;
@@ -515,9 +516,15 @@ else
 		return call_user_func_array( array($this, $cmd), $args );
 	}
 
-	// FIXME ??
+	// last-modified-time of current template file
+	// also includes modification time of all included (PHP) source files
 	protected function t_LASTMODIFIED($items) {
-		return date('M j, Y');
+		if (file_exists($this->actual_filename)) {
+			$lmt = calculate_last_modified( filemtime($this->actual_filename) );
+		} else {
+			$lmt = calculate_last_modified();
+		}
+		return date('M j, Y', $lmt);
 	}
 
 	// prints the current date

@@ -531,6 +531,9 @@ class Request {
 	 *
 	 * FIXME: clarify if this is the entity-body or message-body
 	 * (do clients ever use a Transfer-Encoding like gzip?)
+	 *
+	 * TODO: add Content-MD5 header support here
+	 *
 	 */
 	public static function entity_body() {
 		if (is_null(self::$entity_body)) {
@@ -540,6 +543,7 @@ class Request {
 	}
 
 	// FIXME: use Content-Length as trigger for there being an entity..?
+	// FIXME: can I put Content-MD5 header support here?
 	public static function entity() {
 		$type = self::header('Content-Type');
 		if (strtoupper(self::$method) == 'POST') {

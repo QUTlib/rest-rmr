@@ -258,7 +258,7 @@ class TemplateEngine implements Serializable {
 	public function exec($string, $items=NULL) {
 		// first extract page-local variables
 		if (is_null($items)) $items = $this->items;
-		$pattern = '/^\s*%set ([^=]+)=(.*)(\r\n|\r|\n)+/';
+		$pattern = '/^\s*%set ([^=]+)=(.*)(\r|\n)+/';
 		while ($string && preg_match($pattern, $string, $m)) {
 			$var = $m[1];
 			$val = $m[2];
@@ -285,9 +285,6 @@ class TemplateEngine implements Serializable {
 				$result .= $this->execFile($file, $items);
 			} elseif ($method = $m[4]) {
 				$result .= $this->invoke($method, $items);
-#			} else {
-#				// FIXME
-#				$result .= '<i>'.$m[5].'</i>';
 			}
 			$string = substr($string, strlen($m[0]));
 		}
@@ -314,7 +311,6 @@ class TemplateEngine implements Serializable {
 		# %?METHOD:param:param?%
 		$method_regexp = '\?([^?]+)\?';
 
-#		return "/^(.*)%(?:$property_regexp|$file_regexp|$method_regexp|%([^%]+)%)%/Us";
 		return "/^(.*)%(?:$property_regexp|$file_regexp|$method_regexp)%/Us";
 	}
 

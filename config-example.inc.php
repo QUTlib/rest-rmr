@@ -54,6 +54,12 @@ define('SITENAME', 'My Site');
 #$RATELIMIT_WHITELIST[] = '1.2.3.4';
 #$RATELIMIT_WHITELIST[] = '34.56.78.90';
 
+// List of trusted proxies.  These are IP addresses of
+// proxy servers that you trust to provide valid and
+// correct X-Forwarded-For and Client-IP headers.
+#$TRUSTED_PROXIES[] = '1.2.3.4';
+#$TRUSTED_PROXIES[] = '34.56.78.90';
+
 // If commented, won't write Splunk-friendly logs.
 // If set to a true non-string value, won't write to files.
 #define('SPLUNK_LOG', "/var/log/splunk/my_site.log");

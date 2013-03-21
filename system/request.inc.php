@@ -43,13 +43,23 @@ class Request {
 			self::$uri = '/';
 		}
 
-		self::$client_ip   = self::server_var('REMOTE_ADDR'); // FIXME: http://stackoverflow.com/a/7623231/765382
+		// best effort at finding the remote IP
+		global $TRUSTED_PROXIES;
+		$rad = self::server_var('REMOTE_ADDR');
+		$is_trusted = ($rad && isset($TRUSTED_PROXIES) && in_array($rad, $TRUSTED_PROXIES));
+		if ($is_trusted && ($list = self::server_var('HTTP_X_FORWARDED_FOR')) || ($list = self::server_var('HTTP_CLIENT_IP'))) {
+			$bits = explode(',', $list, 2);
+			self::$client_ip = $bits[0];
+		} else {
+			self::$client_ip = $rad;
+		}
+
 		self::$protocol    = self::server_var('SERVER_PROTOCOL', 'HTTP/1.0');
 		self::$method      = self::server_var('REQUEST_METHOD', 'GET');
 		self::$headers = getallheaders();
 		self::$get   = $_GET;
 		self::$post  = $_POST;
-		self::$https = (self::server_var('HTTPS') == 'on'); // FIXME: is any non-empty value the same as 'on'?
+		self::$https = !empty(self::server_var('HTTPS')) && (self::server_var('HTTPS') != 'off');
 
 		// build a header index
 		$headers_index = array();

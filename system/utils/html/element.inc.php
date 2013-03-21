@@ -37,7 +37,6 @@ class HTMLElementHolder {
 	// ...
 	public function release() { return $this->obj; }
 
-	// Erk
 	public function hold() { return $this; }
 }
 
@@ -63,7 +62,6 @@ class HTMLElement extends HTMLHierarchyNode {
 		}
 		return $this->holder;
 	}
-	// FIXME: should this just error?
 	public function release() { return $this; }
 
 	public function tagname() { return $this->tag; }

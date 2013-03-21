@@ -689,7 +689,7 @@ class Response {
 		// optional, but cool, header
 		// ditto compression
 		if (! $this->header('Content-MD5') && $this->length()) {
-			$this->header('Content-MD5', base64_encode( pack('H*',md5($this->body)) ));
+			$this->header('Content-MD5', base64_encode( md5($this->body, TRUE) ));
 		}
 
 		// secret magic

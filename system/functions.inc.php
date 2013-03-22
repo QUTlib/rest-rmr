@@ -89,3 +89,13 @@ function calculate_last_modified($datamtime=NULL) {
 	return max($mod_times);
 }
 
+/**
+ * Presents a readable version of a value.
+ * Equivalent to Ruby's Object#inspect
+ */
+function inspect($v) {
+	$str = var_export($v, TRUE);
+	$str = preg_replace('/\s+/', '', $str);
+	return $str;
+}
+

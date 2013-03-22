@@ -99,12 +99,17 @@ function debug_error() {
 }
 
 function debug_test() {
-	$html = HTMLDocument::create('Test');
-	$html->body()->add('h1', 'Test');
-	$html->body()->add('p', 'This is a test.');
+	$array = array();
+	$array[] = 'This is a string';
+	$array[] = rand();
+	$array['tau'] = (M_PI * 2.0);
+	$array[] = array(1,2,"banana");
+	$array['kid'] = new stdClass;
+	$array['kid']->foo = 'foo';
+	$array['kid']->bar = 'baz';
 
-	$model = new Model($html);
-	$model->metadata()->nocache()->dublincore()->creator('Matty K')->date('2013-02-27T10:03:00+1000');
+	$model = new Model($array);
+	$model->metadata()->nocache()->dublincore()->creator('Matty K')->date('2013-03-22T11:12:00+1000');
 
 	return $model;
 }

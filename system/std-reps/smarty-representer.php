@@ -42,7 +42,7 @@ class SmartyRepresenter extends BasicRepresenter {
 		);
 	}
 
-	public function represent($m, $t, $c, $l, $response) {
+	public function rep($m, $d, $t, $c, $l, $response) {
 		// At this point Smarty completely takes over, and sends it own headers
 		// and completely does its own thing.
 		//

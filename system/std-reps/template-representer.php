@@ -38,7 +38,7 @@ class TemplateRepresenter extends BasicRepresenter {
 		);
 	}
 
-	public function represent($m, $t, $c, $l, $response) {
+	public function rep($m, $d, $t, $c, $l, $response) {
 		$response->content_type("text/html; charset=utf-8");
 		// todo: magical translation magic? (fixme)
 		if ($lang = $m->language())

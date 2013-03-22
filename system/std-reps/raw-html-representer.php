@@ -43,7 +43,7 @@ class RawHTMLDocRepresenter extends BasicRepresenter {
 		);
 	}
 
-	public function represent($m, $t, $c, $l, $response) {
+	public function rep($m, $d, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c);
 		$this->response_language($response, $l, FALSE);
 		$response->header('X-UA-Compatible', 'IE=edge');

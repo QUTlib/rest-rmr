@@ -16,6 +16,10 @@
  * under the License.
  */
 
+Application::register_class('Model',    SYSDIR.'/std-models/model.php');
+Application::register_class('Metadata', SYSDIR.'/std-models/model.php');
+
+
 /**
  * Provides simple mechanisms for registering internet media types and
  * representing PHP values / objects.
@@ -131,6 +135,7 @@ abstract class BasicRepresenter extends Representer {
 	public function can_do_model($model) {
 		if ($this->all_models) return TRUE;
 
+		$model = $this->extract_model_datum($model);
 		$modeltype = gettype($model);
 		if (isset($this->model_types[$modeltype])) {
 			return TRUE;
@@ -170,6 +175,16 @@ abstract class BasicRepresenter extends Representer {
 		}
 		return 0.0;
 	}
+
+	public function represent($m, $t, $c, $l, $response) {
+		return $this->rep(
+			$this->extract_model_datum($m),
+			$this->extract_model_metadata($m),
+			$t, $c, $l, $response
+		);
+	}
+
+	abstract public function rep($model, $metadata, $type, $charset, $language, $response);
 
 	/**
 	 * Sets the response Content-Type string ($t), with optional charset ($c).
@@ -241,6 +256,29 @@ abstract class BasicRepresenter extends Representer {
 		} elseif ($force) {
 			$response->content_language( $_l );
 		}
+	}
+
+	/**
+	 * Unwraps the datum from a Model.
+	 * If $model is not a Model, returns it unmodified.
+	 */
+	public function extract_model_datum($model) {
+		$class = 'Model';
+		if (is_object($model) && $model instanceof $class) {
+			return $model->datum();
+		}
+		return $model;
+	}
+
+	/**
+	 * Extracts a Metadata object from a Model.
+	 */
+	public function extract_model_metadata($model) {
+		$class = 'Model';
+		if (is_object($model) && $model instanceof $class) {
+			return $model->metadata();
+		}
+		return new Metadata();
 	}
 
 }

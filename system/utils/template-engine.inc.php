@@ -28,6 +28,7 @@ class TemplateEngine implements Serializable {
 		'CONTENT'    => '',
 		'CSS'        => '',
 		'JS'         => '',
+		'HEADERS'    => '',
 		'LANGUAGE'   => '',
 		'ENVIRONMENT'=> ENVIRONMENT,
 		# Magic:
@@ -199,6 +200,25 @@ class TemplateEngine implements Serializable {
 	 */
 	public function append_js($js) {
 		$this->items['JS'] .= $js;
+		return $this;
+	}
+
+	/**
+	 * Get or set custom html headers.
+	 */
+	public function headers($value=NULL) {
+		if (func_num_args() < 1) {
+			return $this->get('HEADERS');
+		} else {
+			return $this->set('HEADERS', $value);
+		}
+	}
+
+	/**
+	 * Append some html headers to the page's HEAD.
+	 */
+	public function append_headers($headers) {
+		$this->items['HEADERS'] .= $headers;
 		return $this;
 	}
 

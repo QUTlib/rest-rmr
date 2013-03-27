@@ -37,7 +37,7 @@ class ESOE {
 		$te->set('esoe.email',     self::email());
 		$te->set('esoe.surname',   self::surname());
 		$te->set('esoe.givenname', self::givenName());
-		$te->set('esoe.name',      self::surname().', '.self::givenName());
+		$te->set('esoe.name',      self::cn());
 		return $te;
 	}
 
@@ -286,7 +286,7 @@ class ESOE {
      * @return string CN of current user.
      */
     static function cn($fallback=NULL) {
-        return self::getServerVar('SPEP_ATTR_CN', $fallback);
+        return self::getServerVar('SPEP_ATTR_cn', $fallback);
     }
 
 }

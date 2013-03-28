@@ -973,6 +973,7 @@ class Response {
 		$response->nocache();
 		return $response
 			->redirect($url, $permanent)
+			->content_type('text/html; charset=iso-8859-1')
 			->body( self::generate_html('Moved', '<p>The document you requested has moved to <a href="'.$url.'">'.$url.'</a>.</p>', TRUE) );
 	}
 

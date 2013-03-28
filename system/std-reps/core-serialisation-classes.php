@@ -82,7 +82,8 @@ class YAMLRepresenter extends BasicRepresenter {
 				new InternetMediaType('application', 'x-yaml', 1.0, TRUE),
 				new InternetMediaType('text',        'x-yaml', 0.9),
 				new InternetMediaType('application', 'yaml',   0.9),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'text/yaml'),
+				new InternetMediaType('*', '*', 0.001, FALSE), // handled explicitly in rep
+				new InternetMediaType('text','plain',0,FALSE), // placeholder, to allow */* to be servered as text/plain to IE
 			),
 			array(),
 			array(),
@@ -91,6 +92,13 @@ class YAMLRepresenter extends BasicRepresenter {
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
+		if ($t == '*/*') {
+			if (($ua=Request::header('User-Agent')) && preg_match('/MSIE/',$ua)) {
+				$t = 'text/plain';
+			} else {
+				$t = 'text/yaml';
+			}
+		}
 		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE); // override charset because I control it in the encoding process
 		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
 		$response

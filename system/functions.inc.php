@@ -57,11 +57,17 @@ function remove_include_path($path) {
 }
 
 /**
- * How long has elapsed since the original index.php file was loaded,
- * in seconds.
+ * How long has elapsed since the request started, in seconds.
  */
 function elapsed() {
-	return microtime(TRUE) - $GLOBALS['__STARTUP__'];
+	return microtime(TRUE) - $_SERVER['REQUEST_TIME_FLOAT'];
+}
+
+/**
+ * How long has elapsed since the request started, in whole-number seconds.
+ */
+function elapsed_grainy() {
+	return time() - $_SERVER['REQUEST_TIME'];
 }
 
 /**

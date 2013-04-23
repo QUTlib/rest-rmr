@@ -16,7 +16,10 @@
  * under the License.
  */
 
-$GLOBALS['__STARTUP__'] = microtime(TRUE);
+if (!array_key_exists('REQUEST_TIME_FLOAT',$_SERVER))
+	$_SERVER['REQUEST_TIME_FLOAT'] = microtime(TRUE);
+if (!array_key_exists('REQUEST_TIME',$_SERVER))
+	$_SERVER['REQUEST_TIME'] = (int)($_SERVER['REQUEST_TIME_FLOAT']);
 
 include_once('config.inc.php');
 

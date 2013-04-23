@@ -133,7 +133,7 @@ class URIMap {
 	 * char = (? URL character ?) - ( "?" | "#" | "/" );
 	 */
 	protected static function parse_uri_pattern($pattern) {
-		if (substr($pattern,0,1) != '/')
+		if ($pattern{0} != '/')
 			throw new Exception("invalid pattern '$pattern': no leading slash");
 		if ($pattern == '/?')
 			throw new Exception("invalid pattern '$pattern': leading slash cannot be optional");
@@ -193,10 +193,17 @@ class URIMap {
 			} else {
 				throw new Exception("invalid handler (expects 1 or 2 elements in array, found $n)");
 			}
-		} elseif (preg_match('/((?:\\\\?[a-z_][a-z0-9_]*)+)(->|::)([a-z_][a-z0-9_]*)/i', $handler, $match)) {
-			$o = $match[1];
-			$m = $match[3];
-			$static = $match[2] == '::';
+		} elseif (($i = strpos($handler, ':')) !== FALSE) {
+			$o = substr($handler,0,$i);
+			if (strpos($handler, ':', $i+1) == $i+1) {
+				$m = substr($handler,$i+2);
+				$static = true;
+			} else {
+				$m = substr($handler,$i+1);
+			}
+		} elseif (($i = strpos($handler, '->')) !== FALSE) {
+			$o = substr($handler,0,$i);
+			$m = substr($handler,$i+2);
 		} else {
 			$m = $handler;
 		}

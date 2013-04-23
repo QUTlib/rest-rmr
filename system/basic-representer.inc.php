@@ -89,15 +89,24 @@ abstract class BasicRepresenter extends Representer {
 			$classnames = array();
 			if (!is_array($models)) $models = array($models);
 			foreach ($models as $m) {
-				if (preg_match('/^(?:(integer|double|boolean|NULL|string|array|object|resource)|object:(\S+))$/', $m, $x)) {
-					if ($x[1]) {
-						$datatypes[$x[1]] = TRUE;
+				switch ($m) {
+				case 'integer':
+				case 'double':
+				case 'boolean':
+				case 'NULL':
+				case 'string':
+				case 'array':
+				case 'object':
+				case 'resource':
+					$datatypes[$m] = TRUE;
+					break;
+				default:
+					if (strpos($m, 'object:') === 0) {
+						$classnames[] = substr($m,7);
 					} else {
-						$classnames[] = $x[2];
+						// assume it's a classname
+						$classnames[] = $m;
 					}
-				} else {
-					// assume it's a classname
-					$classnames[] = $m;
 				}
 			}
 			$this->model_types = $datatypes;

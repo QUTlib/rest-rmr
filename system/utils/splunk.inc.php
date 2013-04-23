@@ -19,23 +19,23 @@ class Splunk {
 		if (!is_null($this->log_data))
 			return;
 
-		$browser = @get_browser();
-		if ($browser === FALSE) {
-			// this happens when the client doesn't supply a UA header
-			$browser = new stdClass;
-			$browser->browser = 'unspecified';
-			$browser->version = 'unspecified';
-			$browser->platform = 'unspecified';
-		}
+#		$browser = @get_browser();
+#		if ($browser === FALSE) {
+#			// this happens when the client doesn't supply a UA header
+#			$browser = new stdClass;
+#			$browser->browser = 'unspecified';
+#			$browser->version = 'unspecified';
+#			$browser->platform = 'unspecified';
+#		}
 		$this->log_data = array(
 			'DATE' => date('Y-m-d\TH:i:sO'),
 			// user and network information
 			'IP'   => Request::client_ip(),
 			'USER' => Request::server_var('REMOTE_USER', '-'),
 			// browser and os information
-			'BROWSER'       => $browser->browser,
-			'BROWSERVER'    => $browser->version,
-			'OS'            => $browser->platform,
+#			'BROWSER'       => $browser->browser,
+#			'BROWSERVER'    => $browser->version,
+#			'OS'            => $browser->platform,
 			'ROLE'          => ESOE::roles('-'),
 			'SERVICES'      => ESOE::services('-'),
 			'CLIENTID'      => ESOE::clientid('-'),
@@ -116,6 +116,8 @@ class Splunk {
 			// add to list
 			$elements[] = sprintf('%s%s%s', $key, Splunk::LOG_DELIMITER, $val);
 		}
+		// virtual element
+		$elements[] = sprintf('ELAPSED%s%0.6f', Splunk::LOG_DELIMITER, elapsed());
 		return implode(Splunk::LOG_SPACER, $elements);
 	}
 

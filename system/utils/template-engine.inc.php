@@ -536,6 +536,10 @@ else
 		return call_user_func_array( array($this, $cmd), $args );
 	}
 
+	protected function t_ESOELOGOUT() {
+		return '';
+	}
+
 	// last-modified-time of current template file
 	// also includes modification time of all included (PHP) source files
 	protected function t_LASTMODIFIED($items) {

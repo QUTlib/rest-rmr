@@ -32,7 +32,7 @@ class ESOE {
 	 *   %%esoe.name%%
 	 */
 	public static function template($filename=NULL) {
-		$te = new TemplateEngine($filename);
+		$te = new ESOETemplateEngine($filename);
 		$te->set('esoe.username',  self::username());
 		$te->set('esoe.email',     self::email());
 		$te->set('esoe.surname',   self::surname());
@@ -289,5 +289,19 @@ class ESOE {
         return self::getServerVar('SPEP_ATTR_cn', $fallback);
     }
 
+}
+
+class ESOETemplateEngine extends TemplateEngine {
+	protected function t_ESOELOGOUT() {
+		if (ESOE::username()) {
+			return '<a class="menu-link" href="https://esoe.qut.edu.au/web/logout.htm" accesskey="6" title="Logout"><span>'
+				.ESOE::cn()
+				.' <small>('
+				.ESOE::email()
+				.')</small></span></a>';
+		} else {
+			return '';
+		}
+	}
 }
 

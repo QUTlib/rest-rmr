@@ -50,7 +50,7 @@ require_once(SYSDIR.'/std-reps/core-serialisation-classes.php');
 //
 Application::register_representer( new HTMLRepresenter() );
 Application::register_representer( new XHTMLRepresenter() );
-Application::register_representer( new XMLRepresenter() );
+#Application::register_representer( new XMLRepresenter() );
 Application::register_representer( new JSONRepresenter() );
 Application::register_representer( new YAMLRepresenter() );
 //

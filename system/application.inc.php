@@ -34,6 +34,7 @@ require_once(SYSDIR.'/basic-representer.inc.php');
 require_once(SYSDIR.'/request.inc.php');
 require_once(SYSDIR.'/response.inc.php');
 require_once(SYSDIR.'/rate-limiter.inc.php');
+require_once(SYSDIR.'/problem.inc.php');
 
 // --- Set up autoloading of ancillary classes
 
@@ -52,7 +53,7 @@ Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. (see: ./touch ) */
-	const VERSION = '1.0-r293';
+	const VERSION = '1.0-r297';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 

@@ -46,7 +46,7 @@ class InternetMediaType {
 		$this->mapto = $mapto;
 	}
 
-	public function set_param($name, $value) { $this->params[$name] = $value; }
+	public function set_param($name, $value) { if ($value === null) $this->rm_param($name); else $this->params[$name] = $value; }
 	public function get_param($name) { if (isset($this->params[$name])) return $this->params[$name]; return NULL; }
 	public function rm_param($name) { if (isset($this->params[$name])) unset($this->params[$name]); }
 

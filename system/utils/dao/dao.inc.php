@@ -51,7 +51,7 @@ abstract class DAO {
 		} elseif ($allow_null) {
 			return NULL;
 		} else {
-			throw new Exception("no table '$name'");
+			throw new SchemaError("no table '$name'");
 		}
 	}
 
@@ -63,6 +63,22 @@ abstract class DAO {
 	protected function select($table, $fields=NULL, $filters=NULL, $sort=NULL) {
 		$query = $this->select_query($table, $fields, $filters, $sort);
 		return $this->db()->select($query);
+	}
+
+	/**
+	 * Does the heavy lifting of getting fields from a database table.
+	 * @throws TooManyRowsException if there are too many rows
+	 * @throws SchemaError for other reasons
+	 */
+	protected function select_limited($limit, $table, $fields=NULL, $filters=NULL, $sort=NULL) {
+		$query1 = $this->select_count_query($table, $filters);
+		$result1 = $this->db()->select($query1);
+		if ($result1 && array_key_exists('count', $result1[0])) {
+			if ($result1[0]['count'] > $limit) {
+				throw new TooManyRowsException("too many results");
+			}
+		}
+		return $this->select($table, $fields, $filters, $sort);
 	}
 
 	/**
@@ -122,6 +138,21 @@ $orderby
 SQL;
 	}
 
+	/** builds and returns a SELECT COUNT(...) statement */
+	protected function select_count_query($table, $filters=NULL) {
+		if (is_string($table)) $table = $this->table($table);
+
+		$tname = $table->name();
+		$where   = $this->where($table, $filters);
+
+		return <<<SQL
+SELECT
+  COUNT(*) AS count
+FROM `$tname`
+$where
+SQL;
+	}
+
 	/** builds and returns an INSERT statement */
 	protected function insert_query($table, $values) {
 		if (is_string($table)) $table = $this->table($table);
@@ -154,7 +185,7 @@ SQL;
 			if (!$keys) {
 				$keys = $k;
 			} elseif ($keys != $k) {
-				throw new Exception("field names do not match");
+				throw new SchemaError("field names do not match");
 			}
 			$value_array[] = '  ('.$table->valueFields($this->db(), $v).')';
 		}
@@ -260,7 +291,7 @@ SQL;
 		$t1 = $table1->name();
 		$t2 = $table2->name();
 		if (!$cols) {
-			throw new Exception("no natural join between table $t1 and $t2");
+			throw new SchemaError("no natural join between table $t1 and $t2");
 		} else {
 			$array = array();
 			foreach ($cols as $c) {
@@ -366,6 +397,10 @@ SQL;
 		return $obj;
 	}
 
-
 }
 
+/** Thrown when schema-related something goes wrong. */
+class SchemaError extends Exception {}
+
+/** Thrown when there are too many rows. */
+class TooManyRowsException extends Exception {}

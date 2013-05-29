@@ -39,12 +39,12 @@ class ProblemRepresenter extends BasicRepresenter {
 			array(
 				new InternetMediaType('application', 'api-problem+json',   1.0, TRUE),
 				new InternetMediaType('application', 'api-problem+xml',    1.0, TRUE),
-				new InternetMediaType('application', 'json',   1.0),
-				new InternetMediaType('application', 'xml',    1.0),
-				new InternetMediaType('text',        'json',   0.9),
-				new InternetMediaType('text',        'x-json', 0.9),
-				new InternetMediaType('text',        'xml',    0.9),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'application/api-problem+json'),
+				new InternetMediaType('application', 'json',   0.5), # note: these are relatively low because they also represent
+				new InternetMediaType('application', 'xml',    0.5), # hopefully-200OK responses, and I really want to lean towards
+				new InternetMediaType('text',        'json',   0.4), # different content-types for Ok vs Problem responses
+				new InternetMediaType('text',        'x-json', 0.4),
+				new InternetMediaType('text',        'xml',    0.4),
+				new InternetMediaType('*', '*', 1.0, FALSE, 'application/api-problem+json'),
 			),
 			array(),
 			array(),
@@ -53,8 +53,17 @@ class ProblemRepresenter extends BasicRepresenter {
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
+		// web browser hack because argh!
+		if ($t == '*/*' && ($ua=Request::header('User-Agent')) && strpos($ua,'curl')===false) {
+			$t = 'text/xml';
+		}
+
+		$response->allow_not_modified = false;
+		$response->allow_auto_etag = false;
+		$response->nocache();
+
 		$response->status( $m->httpStatus() );
-		$this->response_type($response, $t, 'Windows-1252', TRUE, TRUE); // override charset because I control it in the encoding process
+		$this->response_type($response, $t, NULL, TRUE, TRUE); // NULL charset because blarflrf
 		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
 
 		switch (strtolower($t)) {
@@ -62,6 +71,7 @@ class ProblemRepresenter extends BasicRepresenter {
 		case 'application/json':
 		case 'text/json':
 		case 'text/x-json':
+		case '*/*':
 			$response->body( json_encode($m->to_array()) );
 			break;
 		case 'application/api-problem+xml':

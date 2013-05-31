@@ -1,8 +1,10 @@
 rest-rmr
 ========
 
-A modular RESTful RMR framework, designed at the Queensland University of
+A modular RESTful [RMR][] framework, designed at the Queensland University of
 Technology Library.
+
+[rmr]: http://www.peej.co.uk/articles/rmr-architecture.html
 
 Project goal:
 ------------
@@ -42,12 +44,12 @@ The framework is designed to be modular, and to provide a uniform interface to e
 
 A **module** is a collection of expertise related to a single data model, project, or service.  This definition is intentionally vague in order to allow the greatest flexibility in defining the scope of future projects and services.
 
-An **interface** is a standardised mechanism for accessing a resource.  The framework will provide definitions and support for three (or four) interfaces:
+An **interface** is a standardised mechanism for accessing a resource.  The framework will provide definitions and support for four interfaces:
 
-* Publicly accessible, human-readable (`pub`)
-* Publicly accessible, machine-readable (`api`)
+* Publicly accessible, human-readable (`www`?)
+* Publicly accessible, machine-readable (`pub`)
 * Authenticated, human-readable (`auth`)
-* Authenticated, machine-readable?
+* Authenticated, machine-readable (`mma`?)
 
 By convention, URIs will be of the form:
 
@@ -163,3 +165,9 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 
+References
+----------
+
+* RMR: 
+  - http://www.peej.co.uk/articles/rmr-architecture.html
+  - http://blog.iandavis.com/2008/12/06/the-web-is-rmr-not-mvc/

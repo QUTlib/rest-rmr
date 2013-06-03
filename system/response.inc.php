@@ -37,7 +37,10 @@ class Response {
 		if (func_num_args() > 0 && $http_version) $this->version = $http_version;
 		if (func_num_args() > 1) $this->status($status); // including validation
 		// Set the default headers
-		$this->add_header('X-UA-Compatible', 'IE=edge');
+		if (($ua=Request::header('User-Agent')) && preg_match('/MSIE/',$ua)) { 
+			$this->add_header('X-UA-Compatible', 'IE=edge');
+			$this->add_header('X-Content-Type-Options', 'nosniff');
+		}
 		foreach (headers_list() as $header) {
 			$parts = explode(': ', $header, 2);
 			if (count($parts) == 2)

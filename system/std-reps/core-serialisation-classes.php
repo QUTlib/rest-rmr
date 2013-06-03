@@ -382,7 +382,10 @@ class XHTMLRepresenter extends BasicRepresenter {
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
-		$response->header('X-UA-Compatible', 'IE=edge');
+		if (($ua=Request::header('User-Agent')) && preg_match('/MSIE/',$ua)) { 
+			$response->add_header('X-UA-Compatible', 'IE=edge');
+			$response->add_header('X-Content-Type-Options', 'nosniff');
+		}
 		if ($m instanceof HTMLDocument) {
 			if ($x = $m->encoding()) $this->response_type($response, $t, $x, TRUE, TRUE); // strict type, force charset
 			else $this->response_type($response, $t, $c); // strict type, only set charset if recognised (i.e. never?)
@@ -437,7 +440,10 @@ class HTMLRepresenter extends BasicRepresenter {
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
-		$response->header('X-UA-Compatible', 'IE=edge');
+		if (($ua=Request::header('User-Agent')) && preg_match('/MSIE/',$ua)) { 
+			$response->add_header('X-UA-Compatible', 'IE=edge');
+			$response->add_header('X-Content-Type-Options', 'nosniff');
+		}
 
 		if ($x = $m->encoding()) $this->response_type($response, $t, $x, TRUE, TRUE); // strict type, force charset
 		else $this->response_type($response, $t, $c); // strict type, only set charset if recognised (i.e. never?)

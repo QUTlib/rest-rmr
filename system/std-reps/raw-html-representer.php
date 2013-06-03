@@ -46,7 +46,10 @@ class RawHTMLDocRepresenter extends BasicRepresenter {
 	public function rep($m, $d, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c);
 		$this->response_language($response, $l, FALSE);
-		$response->header('X-UA-Compatible', 'IE=edge');
+		if (($ua=Request::header('User-Agent')) && preg_match('/MSIE/',$ua)) { 
+			$response->add_header('X-UA-Compatible', 'IE=edge');
+			$response->add_header('X-Content-Type-Options', 'nosniff');
+		}
 		if ($mtime = $m->mtime()) {
 			$response->last_modified($mtime);
 			$response->cache();

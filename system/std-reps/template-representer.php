@@ -43,7 +43,10 @@ class TemplateRepresenter extends BasicRepresenter {
 		// todo: magical translation magic? (fixme)
 		if ($lang = $m->language())
 			$response->content_language($lang);
-		$response->header('X-UA-Compatible', 'IE=edge');
+		if (($ua=Request::header('User-Agent')) && preg_match('/MSIE/',$ua)) { 
+			$response->add_header('X-UA-Compatible', 'IE=edge');
+			$response->add_header('X-Content-Type-Options', 'nosniff');
+		}
 		$response->body( $m->execFile() );
 		// Allow auto-etag generation based on the template.
 		// This works because TemplateEngine objects serialize

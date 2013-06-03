@@ -16,8 +16,10 @@
  * under the License.
  */
 
-// FIXME: this precludes the use of non-bundled Smarty lib
-require_once(SYSDIR.'/utils/smarty/Smarty.class.php');
+// Note: to use a non-bundled Smarty lib, include your library first!
+if (!class_exists('Smarty', false)) {
+	require_once(SYSDIR.'/utils/smarty/Smarty.class.php');
+}
 
 /**
  * A Smarty template class.

@@ -552,19 +552,21 @@ class Request {
 	 *
 	 * FIXME: clarify if this is the entity-body or message-body
 	 * (do clients ever use a Transfer-Encoding like gzip?)
-	 *
-	 * TODO: add Content-MD5 header support here
-	 *
 	 */
 	public static function entity_body() {
 		if (is_null(self::$entity_body)) {
 			self::$entity_body = file_get_contents('php://input');
+			if ($md5 = self::header('Content-MD5')) {
+				$cksum = base64_encode( md5(self::$entity_body, TRUE) );
+				if ($md5 != $cksum) {
+					throw new BadRequestException("Supplied Content-MD5 did not match entity body");
+				}
+			}
 		}
 		return self::$entity_body;
 	}
 
 	// FIXME: use Content-Length as trigger for there being an entity..?
-	// FIXME: can I put Content-MD5 header support here?
 	public static function entity() {
 		$type = self::header('Content-Type');
 		if (strtoupper(self::$method) == 'POST') {

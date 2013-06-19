@@ -93,7 +93,7 @@ class YAMLRepresenter extends BasicRepresenter {
 
 	public function rep($m, $d, $t, $c, $l, $response) {
 		if ($t == '*/*') {
-			if (($ua=Request::header('User-Agent')) && preg_match('/MSIE/',$ua)) {
+			if (($ua=Request::header('User-Agent')) /*&& preg_match('/MSIE/',$ua)*/) {
 				$t = 'text/plain';
 			} else {
 				$t = 'text/yaml';

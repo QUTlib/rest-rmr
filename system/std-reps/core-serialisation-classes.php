@@ -82,8 +82,8 @@ class YAMLRepresenter extends BasicRepresenter {
 				new InternetMediaType('application', 'x-yaml', 1.0, TRUE),
 				new InternetMediaType('text',        'x-yaml', 0.9),
 				new InternetMediaType('application', 'yaml',   0.9),
-				new InternetMediaType('*', '*', 0.001, FALSE), // handled explicitly in rep
-				new InternetMediaType('text','plain',0,FALSE), // placeholder, to allow */* to be served as text/plain to IE
+				new InternetMediaType('*', '*', 0.002, FALSE), // handled explicitly in rep
+				new InternetMediaType('text','plain',0,FALSE), // placeholder, to allow */* to be served as text/plain to UAs
 			),
 			array(),
 			array(),

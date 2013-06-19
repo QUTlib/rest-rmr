@@ -35,7 +35,7 @@ class RepresentationManager {
 			// to assume they will accept everything.
 			$accepted_types = array(
 				1000 => array(
-					array('option'=>'*/*','raw'=>'*/*' ),
+					array('option'=>'*/*','parameters'=>array(),'accept-params'=>array(),'raw'=>'*/*'),
 				)
 			);
 		}

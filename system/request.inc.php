@@ -308,7 +308,7 @@ class Request {
 		elseif (isset($_SERVER['HTTP_ACCEPT']) && ($accept = $_SERVER['HTTP_ACCEPT'])) { }
 		else return FALSE;
 
-		return self::parse_qvalues($accept);
+		return self::parse_accept($accept);
 	}
 
 	/**
@@ -390,13 +390,13 @@ class Request {
 
 	/**
 	 * Gets a nice prioritised list of options from an "Accept"-type HTTP
-	 * request header.
+	 * request header (but not Accept itself; see #parse_accept).
 	 *
 	 * Note: RFC 2616 limits the precision of the qvalue to 3 decimal places,
 	 * as such the priorities returned by this method will actually be the
 	 * specified value * 1000.
 	 *
-	 * This method parses qvalues according to RFC 2616, so invalid values
+	 * This method parses qvalues according to RFC 2616, so invalid qvalues
 	 * will be ignored (defaulting to 1).
 	 *
 	 * The result array is of the form:
@@ -434,6 +434,143 @@ class Request {
 		krsort($result);
 		return $result;
 	}
+
+	/**
+	 * Gets a nice prioritised list of options from an "Accept" HTTP request
+	 * header.
+	 *
+	 * Note: RFC 2616 limits the precision of the qvalue to 3 decimal places,
+	 * as such the priorities returned by this method will actually be the
+	 * specified value * 1000.
+	 *
+	 * This method parses qvalues according to RFC 2616, so invalid qvalues
+	 * will be ignored (defaulting to 1).  Accept-params with no '=' part
+	 * are inserted into the array as {"param" => true}.
+	 * Invalid media-parameters or accept-params are inserted into the array
+	 * as {"invalid-param" => false}
+	 *
+	 * The result array is of the form:
+	 *
+	 *   // a/b;foo=bar;q=0.9;x=yz;baz,c/d;q=0.45
+	 *   array(
+	 *      900 => array(
+	 *        array(
+	 *          'option' => "a/b",
+	 *          'parameters' => array(
+	 *            'foo' => "bar",
+	 *          ),
+	 *          'accept-params' => array(
+	 *            'q' => "0.9",
+	 *            'x' => "yz",
+	 *            'baz' => true,
+	 *          ),
+	 *          'raw' => "a/b;foo=bar;q=0.9;x=yz;baz",,
+	 *        ),
+	 *      ),
+	 *      450 => array(
+	 *        array(
+	 *          'option' => "c/d",
+	 *          'parameters' => array(),
+	 *          'accept-params' => array(
+	 *            'q' => "0.45",
+	 *          ),
+	 *          'raw' => "c/d;q=0.45",
+	 *        ),
+	 *      ),
+	 *   )
+	 *
+	 * Within a single qvalue, options will be in the order they were
+	 * specified in the header.
+	 *
+	 * @param String $raw_header the header from the client, e.g. $_SERVER['HTTP_ACCEPT']
+	 * @return accepted content types, or FALSE
+	 */
+	public static function parse_accept($raw_header) {
+/*
+    From RFC 2616:
+
+       OCTET          = <any 8-bit sequence of data>
+       CHAR           = <any US-ASCII character (octets 0 - 127)>
+       UPALPHA        = <any US-ASCII uppercase letter "A".."Z">
+       LOALPHA        = <any US-ASCII lowercase letter "a".."z">
+       ALPHA          = UPALPHA | LOALPHA
+       DIGIT          = <any US-ASCII digit "0".."9">
+       CTL            = <any US-ASCII control character
+                        (octets 0 - 31) and DEL (127)>
+       CR             = <US-ASCII CR, carriage return (13)>
+       LF             = <US-ASCII LF, linefeed (10)>
+       SP             = <US-ASCII SP, space (32)>
+       HT             = <US-ASCII HT, horizontal-tab (9)>
+       <">            = <US-ASCII double-quote mark (34)>
+
+       CRLF           = CR LF
+
+       LWS            = [CRLF] 1*( SP | HT )
+
+       TEXT           = <any OCTET except CTLs,
+                        but including LWS>
+
+       HEX            = "A" | "B" | "C" | "D" | "E" | "F"
+                      | "a" | "b" | "c" | "d" | "e" | "f" | DIGIT
+
+       token          = 1*<any CHAR except CTLs or separators>
+       separators     = "(" | ")" | "<" | ">" | "@"
+                      | "," | ";" | ":" | "\" | <">
+                      | "/" | "[" | "]" | "?" | "="
+                      | "{" | "}" | SP | HT
+
+       comment        = "(" *( ctext | quoted-pair | comment ) ")"
+       ctext          = <any TEXT excluding "(" and ")">
+
+       quoted-string  = ( <"> *(qdtext | quoted-pair ) <"> )
+       qdtext         = <any TEXT except <">>
+
+       quoted-pair    = "\" CHAR
+ */
+		//         ! # $ % & ' *   +   -   . 0-9A-Z  ^ _ `  a-z  |   ~
+		$p_token = '[!\x23-\x27\x2A\x2B\x2D\x2E0-9A-Z\x5E-\x60a-z\x7C\x7E]+';
+		//                "( "\" CHAR      |  <TEXT - ">                +|          LWS              )*"
+		$p_quoted_string = '"(?:\\[\x00-\x7F]|[\x20\x21\x23-\x7E\x80-\xFF]+|(?:\x0D\x0A)?(?:\x20|\x09)+)*"';
+		$p_parameter = "(${p_token})=(${p_token}|${p_quoted_string})";
+		$p_extension = "(${p_token})(?:=(${p_token}|${p_quoted_string}))?";
+
+		$result = array();
+		$options = preg_split('/\s*,\s*/', $raw_header);
+		foreach ($options as $raw_option) {
+			$parts = preg_split('/\s*;\s*/', $raw_option);
+			$option = array_shift($parts);
+			$qvalue = 1000;
+			$got_qvalue = false;
+			$params = array();
+			$extensions = array();
+			foreach ($parts as $part) {
+				if (preg_match('/^q=(0(\.\d{0,3})?|1(\.0{0,3})?)$/', $part, $m)) {
+					$extensions['q'] = $m[1];
+					$qvalue = floor(floatval($m[1]) * 1000);
+					$got_qvalue = true;
+				} elseif ($got_qvalue) {
+					if (preg_match("/^${p_extension}\$/", $part, $m)) {
+						$params[$m[1]] = (empty($m[2]) ? true : $m[2]);
+					} else {
+						// FIXME: fail??
+						$extensions[$part] = false;
+					}
+				} else {
+					if (preg_match("/^${p_parameter}\$/", $part, $m)) {
+						$params[$m[1]] = $m[2];
+					} else {
+						// FIXME: fail??
+						$params[$part] = false;
+					}
+				}
+			}
+			if (!isset($result[$qvalue])) $result[$qvalue] = array();
+			$result[$qvalue][] = array('option'=>$option, 'parameters'=>$params, 'accept-params'=>$extensions, 'raw'=>$raw_option);
+		}
+		krsort($result);
+		return $result;
+	}
+
 
 
 	public static function _set_params($params) {

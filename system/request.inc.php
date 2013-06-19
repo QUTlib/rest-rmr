@@ -264,30 +264,52 @@ class Request {
 			// Now go through the server-supplied types, mapping them to the
 			// client weightings.  Only record the best type/weight.
 			$best_type = FALSE;
-			$best_weight = 0;
+			$best_weight = -1;
+			$best_spec = -1; # specificity (0=*/*, 1=foo/*, 2=foo/bar, 3=foo/bar;abc..)
 			foreach (func_get_args() as $range) {
 				if (isset($subtype_weights[$range])) {
 					$weight = $subtype_weights[$range];
+					$spec = 2;
 				} else {
 					$parts = explode('/', $range);
 					$type = reset($parts);
 					if (isset($type_weights[$type])) {
 						$weight = $type_weights[$type];
+						$spec = 1;
 					} else {
 						$weight = $default_weight;
+						$spec = 0;
 					}
 				}
-				if ($weight > $best_weight) {
+				if (($weight > $best_weight) || ($weight == $best_weight && $spec > $best_spec)) {
 					$best_type = $range;
 					$best_weight = $weight;
+					$best_spec = $spec;
 				}
 			}
 			return $best_type;
 		} else {
 			if ($client_types) {
 				$best_types = reset($client_types);
-				$first_type = reset($best_types);
-				return $first_type['option'];
+				#$first_type = reset($best_types);
+				#return $first_type['option'];
+				$best_type = FALSE;
+				$best_spec = -1;
+				foreach ($best_types as $type) {
+					$range = $type['option'];
+					if ($range == '*/*') {
+						$spec = 0;
+					} elseif (substr($range,-2) == '/*') {
+						$spec = 1;
+					} else {
+						$spec = 2;
+					}
+					if ($spec > $best_spec) {
+						$best_type = $range;
+						$best_spec = $spec;
+					}
+				}
+				return $best_type;
 			} else {
 				return FALSE;
 			}

@@ -325,7 +325,7 @@ class Request {
 	 */
 	public static function content_types() {
 		if ($accept = self::header('Accept')) {}
-		elseif (isset($_SERVER['HTTP_ACCEPT']) && ($accept = $_SERVER['HTTP_ACCEPT'])) { }
+		elseif (isset($_SERVER['HTTP_ACCEPT'])) { $accept = $_SERVER['HTTP_ACCEPT']; }
 		else return FALSE;
 
 		return RFC2616\parse_Accept($accept);
@@ -343,7 +343,7 @@ class Request {
 	 */
 	public static function charsets() {
 		if ($charset = self::header('Accept-Charset')) {}
-		elseif (isset($_SERVER['HTTP_ACCEPT_CHARSET']) && ($charset = $_SERVER['HTTP_ACCEPT_CHARSET'])) { }
+		elseif (isset($_SERVER['HTTP_ACCEPT_CHARSET'])) { $charset = $_SERVER['HTTP_ACCEPT_CHARSET']; }
 		else return FALSE;
 
 		return RFC2616\parse_Accept_Charset($accept);
@@ -358,7 +358,7 @@ class Request {
 	 */
 	public static function encodings() {
 		if ($accept = self::header('Accept-Encoding')) {}
-		elseif (isset($_SERVER['HTTP_ACCEPT_ENCODING']) && ($accept = $_SERVER['HTTP_ACCEPT_ENCODING'])) { }
+		elseif (isset($_SERVER['HTTP_ACCEPT_ENCODING'])) { $accept = $_SERVER['HTTP_ACCEPT_ENCODING']; }
 		else return FALSE;
 
 		return RFC2616\parse_Accept_Encoding($accept);
@@ -373,7 +373,7 @@ class Request {
 	 */
 	public static function languages() {
 		if ($accept = self::header('Accept-Language')) {}
-		elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && ($accept = $_SERVER['HTTP_ACCEPT_LANGUAGE'])) { }
+		elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) { $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE']; }
 		else return FALSE;
 
 		return RFC2616\parse_Accept_Language($accept);
@@ -384,7 +384,7 @@ class Request {
 	 *
 	 * @see <http://tools.ietf.org/html/draft-snell-http-prefer-18>
 	 *
-	 * If the client didn't supply any preferences, returns an empty array.
+	 * If the client didn't supply any preferences, returns FALSE.
 	 *
 	 * Example:
 	 *    Prefer: a,b=1,c;x=2,d=3;y=4
@@ -396,39 +396,14 @@ class Request {
 	 *        'd' => array('d'=>3, 'y'=>4),
 	 *    )
 	 *
-	 * @return array of {preference=>value+parameters} pairs
+	 * @return array of {preference=>value+parameters} pairs, or FALSE
 	 */
 	public static function preferences() {
 		if ($prefer = self::header('Prefer', '')) {}
-		elseif (isset($_SERVER['HTTP_PREFER'])) $prefer = $_SERVER['HTTP_PREFER'];
+		elseif (isset($_SERVER['HTTP_PREFER'])) { $prefer = $_SERVER['HTTP_PREFER']; }
+		else return FALSE;
 
-		// see #parse_accept for the derivation of these regexen
-		$p_token = '[!\x23-\x27\x2A\x2B\x2D\x2E0-9A-Z\x5E-\x60a-z\x7C\x7E]+';
-		$p_quoted_string = '"(?:\\[\x00-\x7F]|[\x20\x21\x23-\x7E\x80-\xFF]+|(?:\x0D\x0A)?(?:\x20|\x09)+)*"';
-		$p_parameter = "(${p_token})(?:\s*=\s*(${p_token}|${p_quoted_string}))?";
-
-		$result= array();
-		$raw_prefs = preg_split('/\s*,\s*/', $prefer);
-		foreach ($raw_prefs as $raw_pref) {
-			if ($raw_pref) {
-				$parts = preg_split('/\s*;\s*/', $raw_pref);
-				$name = NULL;
-				$parameters = array();
-				foreach ($parts as $part) {
-					if (preg_match("/^${p_parameter}\$/", $part, $m)) {
-						if ($name === NULL) {
-							$name = $m[1];
-						}
-						$parameters[$m[1]] = (empty($m[2]) ? true : $m[2]);
-					} else {
-						// FIXME: fail??
-						$parameters[$part] = false;
-					}
-				}
-			}
-			$result[$name] = $parameters;
-		}
-		return $result;
+		return ID_snell_http_prefer\parse_Prefer($prefer);
 	}
 
 	public static function _set_params($params) {

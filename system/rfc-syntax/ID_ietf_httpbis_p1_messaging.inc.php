@@ -129,3 +129,78 @@ define('ID_ietf_httpbis_p1_messaging\token', tchar.'+');
 define('ID_ietf_httpbis_p1_messaging\word', '(?:'.token.'|'.quoted_string.')');
 define('ID_ietf_httpbis_p1_messaging\value', word);
 
+
+#########################################################################
+## I-D.snell-http-prefer
+#
+# Derives from ID.ietf-httpbis-p1-messaging
+#
+#########################################################################
+
+namespace ID_snell_http_prefer;
+
+define('ID_snell_http_prefer\token', \ID_ietf_httpbis_p1_messaging\token);
+define('ID_snell_http_prefer\word',  \ID_ietf_httpbis_p1_messaging\word);
+
+define('ID_snell_http_prefer\preference_parameter', '/^('.token.')(?:\s*=\s*('.word.'))?$/');
+
+/**
+ * Parses a Prefer header.
+ *
+ * Example:
+ *
+ * <pre>
+ * "Prefer: a,b=1,c;x=2,d=3;y=4"
+ * #=>
+ * ---
+ * a:
+ *   a: true
+ * b:
+ *   b: 1
+ * c:
+ *   c: true
+ *   x: 2
+ * d:
+ *   d: 3
+ *   y: 4
+ * </pre>
+ */
+function parse_Prefer($header) {
+	$result = array();
+	$list = preg_split('/\s*,\s*/', $header);
+	foreach ($list as $item) {
+		if (!$item) continue; // #list ABNF allows " , , " for legacy reasons
+		$parts = preg_split('/\s*;\s*/', $item); // include OWS
+
+		$name = NULL;
+		$params = array();
+		foreach ($parts as $part) {
+			if (preg_match(preference_parameter, $part, $m)) {
+				if ($name === NULL) $name = $m[1];
+				if (isset($m[2])) {
+					if ($m[2]{0} == '"') {
+						// quoted-string
+						$value = str_replace('\\', '', substr($m[2],1,-1));
+					} else {
+						// token
+						$value = $m[2];
+					}
+				} else {
+					// no value, set to true
+					$value = TRUE;
+				}
+				$params[$m[1]] = $value;
+			} else {
+				throw new \BadRequestException('invalid parameter in Prefer header: "'.$part.'"');
+			}
+		}
+		if (array_key_exists($name, $result)) {
+			throw new \BadRequestException('duplicate "'.$name.'" in Prefer header');
+		} else {
+			$result[$name] = $params;
+		}
+	}
+	return $result;
+
+}
+

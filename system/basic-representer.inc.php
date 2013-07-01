@@ -158,29 +158,94 @@ abstract class BasicRepresenter extends Representer {
 		}
 	}
 
-	public function preference_for_type($t) {
+	/** Gets the first one I define that isn't in $all */
+	protected function first_language_excluding($all) {
+		foreach ($this->languages as $l) {
+			if (!array_key_exists($l->language(), $all)) {
+				return $l;
+			}
+		}
+		return FALSE;
+	}
+
+	/** Gets the first one I define that isn't in $all */
+	protected function first_charset_excluding($all) {
+		foreach ($this->charsets as $c) {
+			if (!array_key_exists($c->charset(), $all)) {
+				return $c;
+			}
+		}
+		return FALSE;
+	}
+
+	/** Gets the first one I define that isn't in $all */
+	protected function first_type_excluding($all) {
+		foreach ($this->types as $t) {
+			if (!array_key_exists($t->full_mime(), $all)) {
+				return $l;
+			}
+		}
+		return FALSE;
+	}
+
+	public function preference_for_type($t, $all) {
 		if (count($this->types) == 0) return 1.0;
-		$t = strtolower($t);
-		if (isset($this->types[$t])) {
-			return $this->types[$t]->qvalue();
+		$tt = array(
+			strtolower($t['media-range']),               // a/b;p=q
+			strtolower($t['media-type']['full-type']),   // a/b
+			strtolower($t['media-type']['type']) . '/*', // a/*
+			'*/*',                                       // */*
+		);
+		foreach ($tt as $t) {
+			if (isset($this->types[$t])) {
+				return $this->types[$t]->qvalue();
+			}
 		}
 		return 0.0;
 	}
 
-	public function preference_for_charset($c) {
+	public function preference_for_charset($c, $all) {
 		if (count($this->charsets) == 0) return 1.0;
 		$c = strtolower($c);
 		if (isset($this->charsets[$c])) {
 			return $this->charsets[$c]->qvalue();
 		}
+		// The special value "*" ... matches every character set
+		// which is not mentioned elsewhere in the field.
+		if ($c == '*' && ($chst = $this->first_charset_excluding($all))) {
+			return $chst->qvalue();
+		}
+		if (isset($this->charsets['*'])) {
+			return $this->charsets['*']->qvalue();
+		}
 		return 0.0;
 	}
 
-	public function preference_for_language($l) {
+	public function preference_for_language($l, $all) {
 		if (count($this->languages) == 0) return 1.0;
-		$l = strtolower($l);
+		$l = strtolower($l['language-range']);
+		// A language-range ($l) matches a language-tag ($this->languages)
+		// if it exactly equals the tag...
 		if (isset($this->languages[$l])) {
 			return $this->languages[$l]->qvalue();
+		}
+		// ... or if it exactly equals a prefix of the tag such that the
+		// first tag character following the prefix is "-".
+		$p = $l.'-';
+		$n = strlen($p);
+		foreach ($this->languages as $tag=>$obj) {
+			if (substr($tag, 0, $n) == $p) {
+				return $obj->qvalue();
+			}
+		}
+		// The special range "*" ... matches every tag not matched by any
+		// other range present in the Accept-Language field.
+		if ($l == '*' && ($lang = $this->first_language_excluding($all))) {
+			return $lang->qvalue();
+		}
+		// <Also, we can specify "*" as a catch-all from the server end.>
+		if (isset($this->languages['*'])) {
+			return $this->languages['*']->qvalue();
 		}
 		return 0.0;
 	}
@@ -212,7 +277,7 @@ abstract class BasicRepresenter extends Representer {
 	 * @param boolean $force if given and TRUE sets the content-type and/or charset even if unknown
 	 */
 	protected function response_type($response, $_t, $_c, $strict=TRUE, $force=FALSE) {
-		$t = strtolower($_t);
+		$t = strtolower($_t['media-range']);
 		$c = strtolower($_c);
 		if (isset($this->types[$t])) {
 			$mime = $this->types[$t];
@@ -254,7 +319,7 @@ abstract class BasicRepresenter extends Representer {
 	 * @param boolean $force if given and TRUE sets the language even if unknown (only has effect if $strict is FALSE)
 	 */
 	protected function response_language($response, $_l, $strict=TRUE, $force=FALSE) {
-		$l = strtolower($_l);
+		$l = strtolower($_l['language-range']);
 		if (isset($this->languages[$l])) {
 			$lang = $this->languages[$l];
 			$response->content_language( $lang->language() );

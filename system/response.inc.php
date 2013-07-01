@@ -741,8 +741,7 @@ class Response {
 			$bestmethod = FALSE;
 			$bestdata = $data;
 			$bestsize = $size;
-			foreach ($meths as $comp) {
-				$method = $comp['option'];
+			foreach ($meths as $method) {
 				switch ($method) {
 				case 'x-gzip':
 				case 'gzip':

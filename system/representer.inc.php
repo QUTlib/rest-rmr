@@ -31,7 +31,7 @@ abstract class Representer {
 	 * Should return a number from 0.000 to 1.000, inclusive.
 	 * (1 = I'd love to; 0 = dunno how)
 	 */
-	abstract public function preference_for_type($type);
+	abstract public function preference_for_type($type, $all);
 
 	/**
 	 * Advertise types we want to represent, in the form:
@@ -45,7 +45,7 @@ abstract class Representer {
 	 * Should return a number from 0.000 to 1.000, inclusive.
 	 * (1 = I'd love to; 0 = dunno how)
 	 */
-	abstract public function preference_for_charset($charset);
+	abstract public function preference_for_charset($charset, $all);
 
 	/**
 	 * Advertise types we want to represent, in the form:
@@ -59,7 +59,7 @@ abstract class Representer {
 	 * Should return a number from 0.000 to 1.000, inclusive.
 	 * (1 = I'd love to; 0 = dunno how)
 	 */
-	abstract public function preference_for_language($lang);
+	abstract public function preference_for_language($lang, $all);
 
 	/**
 	 * Advertise types we want to represent, in the form:
@@ -72,15 +72,42 @@ abstract class Representer {
 	 * wants (qvalue) and what this representer can represent.
 	 */
 	protected function pick_best_of($name, $list) {
+		$all = array();
+		switch ($name) {
+		case 'type':
+			foreach ($list as $qt=>$array) {
+				foreach ($array as $x) {
+					$all[$x['media-range']] = TRUE;
+				}
+			}
+			break;
+		case 'charset':
+			foreach ($list as $qt=>$array) {
+				foreach ($array as $x) {
+					$all[$x] = TRUE;
+				}
+			}
+			break;
+		case 'language':
+			foreach ($list as $qt=>$array) {
+				foreach ($array as $x) {
+					$all[$x['language-range']] = TRUE;
+				}
+			}
+			break;
+		default:
+			throw new Exception("unrecognised list name '$name' (expected type,charset,language)");
+		}
+
 		$best = NULL;
 		$best_weight = 0;
 		foreach ($list as $qt => $array) {
 			foreach ($array as $item) {
-				$w = call_user_func(array($this,"preference_for_$name"), $item['option']); // float from 0.000 to 1.000
+				$w = call_user_func(array($this,"preference_for_$name"), $item, $all); // float from 0.000 to 1.000
 				$w = $qt * $w; // qt is int from 0 to 1000
 				$w = intval($w * 100); // final w is int from 0 to 100000 (5 precision, as per RFC2295/6)
 				if ($w > $best_weight) {
-					$best = $item['option'];
+					$best = $item;
 					$best_weight = $w;
 				}
 			}

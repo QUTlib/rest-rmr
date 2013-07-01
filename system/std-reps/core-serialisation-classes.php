@@ -92,11 +92,11 @@ class YAMLRepresenter extends BasicRepresenter {
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
-		if ($t == '*/*') {
-			if (($ua=Request::header('User-Agent')) /*&& preg_match('/MSIE/',$ua)*/) {
-				$t = 'text/plain';
+		if ($t['media-range'] == '*/*') {
+			if (($ua=Request::header('User-Agent')) /*&& preg_match('/MSIE/',$ua)*/ && strpos($ua, 'curl') === FALSE) {
+				$t['media-range']  = 'text/plain';
 			} else {
-				$t = 'text/yaml';
+				$t['media-range']  = 'text/yaml';
 			}
 		}
 		$this->response_type($response, $t, 'Windows-1252', TRUE, TRUE); // override charset because I control it in the encoding process

@@ -35,7 +35,16 @@ class RepresentationManager {
 			// to assume they will accept everything.
 			$accepted_types = array(
 				1000 => array(
-					array('option'=>'*/*','parameters'=>array(),'accept-params'=>array(),'raw'=>'*/*'),
+					array(
+						'media-range' => '*/*',
+						'media-type' => array(
+							'full-type' => '*/*',
+							'type' => '*',
+							'subtype' => '*',
+							'parameters' => array(),
+						),
+						'accept-params' => array(),
+					),
 				)
 			);
 		}
@@ -45,7 +54,15 @@ class RepresentationManager {
 		}
 		$accepted_languages = Request::languages();
 		if (!$accepted_languages) {
-			$accepted_languages = array( 1000 => array('*') );
+			$accepted_languages = array(
+				1000 => array(
+					array(
+						'language-range' => '*',
+						'primary-tag' => '*',
+						'subtags' => array(),
+					),
+				)
+			);
 		}
 
 		$candidate_reps = array();

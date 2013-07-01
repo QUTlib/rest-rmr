@@ -36,6 +36,8 @@ require_once(SYSDIR.'/response.inc.php');
 require_once(SYSDIR.'/rate-limiter.inc.php');
 require_once(SYSDIR.'/problem.inc.php');
 
+require_once(SYSDIR.'/rfc-syntax.inc.php');
+
 // --- Set up autoloading of ancillary classes
 
 require_once(SYSDIR.'/utils/dao.inc.php');

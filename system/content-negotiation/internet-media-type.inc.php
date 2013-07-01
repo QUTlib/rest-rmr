@@ -75,11 +75,11 @@ class InternetMediaType {
 	 */
 	public function full_mime($include_qvalue=FALSE) {
 		$params = '';
-		if ($include_qvalue || (is_null($include_qvalue) && $this->qvalue != 1000)) {
-			$params .= ';q='.$this->qvalue();
-		}
 		foreach ($this->params as $k=>$v) {
 			$params .= ';'.$k.'='.$v;
+		}
+		if ($include_qvalue || (is_null($include_qvalue) && $this->qvalue != 1000)) {
+			$params .= ';q='.$this->qvalue();
 		}
 		return $this->type . '/' . $this->subtype . $params;
 	}

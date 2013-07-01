@@ -54,8 +54,8 @@ class ProblemRepresenter extends BasicRepresenter {
 
 	public function rep($m, $d, $t, $c, $l, $response) {
 		// web browser hack because argh!
-		if ($t == '*/*' && ($ua=Request::header('User-Agent')) && strpos($ua,'curl')===false) {
-			$t = 'text/xml';
+		if ($t['media-range']  == '*/*' && ($ua=Request::header('User-Agent')) && strpos($ua,'curl')===false) {
+			$t['media-range']  = 'text/xml';
 		}
 
 		$response->allow_not_modified = false;

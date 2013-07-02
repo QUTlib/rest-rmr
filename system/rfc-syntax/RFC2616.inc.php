@@ -65,6 +65,20 @@ function parse_quoted_string($quoted_string) {
 	return str_replace('\\', '', substr($quoted_string,1,-1));
 }
 
+/**
+ * Wraps $str in quoted-string syntax, if required.
+ */
+function token_or_quoted_string($str) {
+	if (preg_match(token, $str)) return $str;
+	$q_str = '';
+	preg_match_all('/('.qdtext.'+)|(.+?)/', $str, $mm, PREG_SET_ORDER);
+	foreach ($mm as $m) {
+		if ($m[1]) $q_str .= $m[1];
+		else       $q_str .= '\\'.$m[2];
+	}
+	return '"'.$q_str.'"';
+}
+
 /*
  * 14.1 Accept
  *   Accept           = "Accept" ":" #( media-range [ accept-params ] )
@@ -174,7 +188,6 @@ function parse_Accept($header) {
 		}
 
 		$qvalue = 1000;           // default, if not overridden
-		$media_type['parameters'] = array(); // part of the media-range rule
 		$accept_params = array(); // including qvalue
 
 		$got_qvalue = FALSE;
@@ -222,8 +235,9 @@ function parse_Accept($header) {
 						$media_range .= ';' . $m[2];
 					}
 				} else {
-					//warn("Invalid accept-extension in Accept header");
-					$media_type['parameters'][$part] = FALSE;
+					#//warn("Invalid accept-extension in Accept header");
+					#$media_type['parameters'][$part] = FALSE;
+					throw new \BadRequestException('invalid media-type parameter "'.$part.'" for media-range "'.$media_range.';..." in Accept header');
 				}
 			}
 		}

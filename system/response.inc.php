@@ -804,6 +804,8 @@ class Response {
 			$this->header('Content-Encoding', $method);
 			$this->header('Content-Length', $this->length());
 			$this->header('Content-MD5', base64_encode( pack('H*',md5($body)) ));
+			// scrap the ETag header, since the old one (if any) no longer applies
+			unset($this->header['ETag']);
 			// if there's a Vary: header, add 'Accept-Encoding' as an important thingy
 			$this->append_header('Vary', 'Accept-Encoding');
 #			return TRUE;

@@ -422,6 +422,64 @@ function parse_Accept_Language($header) {
 	return $result;
 }
 
+/*
+ * 14.39 TE
+ *   TE              = "TE" ":" #( t-codings )
+ *   t-codings       = "trailers" | ( transfer-extension [ accept-params ] )
+ *
+ * 3.6 Transfer Codings
+ *   content-coding  = token
+ *   transfer-coding = "chunked" | transfer-extension
+ *   transfer-extension = token *( ";" parameter )
+ *
+ *   parameter       = attribute "=" value
+ *   attribute       = token
+ *   value           = token | quoted-string
+ */
+
+/**
+ * @see #parse_qvalued_list()
+ * @fixme this currently only supports accept-params with "q" attributes
+ * @fixme are t-codings meant to be case-sensitive?
+ */
+function parse_TE($header) {
+	// Note: this doesn't strictly enforce that "trailers" has no parameters.
+	// And do you know what?  I'm cool with that.
+	$qlist = parse_qvalued_list($header, 'TE');
+	if (!$qlist) {
+		// if empty, only the "chunked" encoding is acceptable
+		return array(
+			1000 => array('chunked'),
+		);
+	}
+
+	$result = array();
+	$trailers = FALSE;
+	foreach ($qlist as $qvalue=>$t_codings) {
+		foreach ($t_codings as $t_coding) {
+			if ($t_coding == 'chunked') {
+				// ignore; handle later
+			} elseif ($t_coding == 'trailers') {
+				$trailers = TRUE;
+			} elseif (preg_match('/^'.token.'$/', $t_coding)) {
+				if (! \array_key_exists($qvalue, $result))
+					$result[$qvalue] = array();
+				$result[$qvalue][] = $t_coding;
+			} else {
+				throw new \BadRequestException('invalid t_coding "'.$t_coding.'" in TE header');
+			}
+		}
+	}
+	// ensure that "chunked" coding is present, with qvalue=1
+	if (!array_key_exists(1000, $result))
+		$result[1000] = array();
+	$result[1000][] = 'chunked';
+	// re-insert "trailers" coding, if required
+	if ($trailers)
+		$result[1000][] = 'trailers';
+	return $qlist;
+}
+
 /**
  * Parses a HTTP header whose value is a list of THINGS which may have qvalues.
  * This _does not_ do any parsing or validation of the things themselves, except

@@ -365,6 +365,21 @@ class Request {
 	}
 
 	/**
+	 * Gets a nice prioritised list of the preferred encodings.
+	 *
+	 * If the client didn't supply any accepted encodings, returns FALSE.
+	 *
+	 * @return accepted encodings, or FALSE
+	 */
+	public static function transfer_encodings() {
+		if ($accept = self::header('TE')) {}
+		elseif (isset($_SERVER['HTTP_TE'])) { $accept = $_SERVER['HTTP_TE']; }
+		else return FALSE;
+
+		return RFC2616\parse_TE($accept);
+	}
+
+	/**
 	 * Gets a nice prioritised list of the preferred languages.
 	 *
 	 * If the client didn't supply any accepted languages, returns FALSE.

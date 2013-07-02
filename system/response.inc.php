@@ -662,6 +662,11 @@ class Response {
 		}
 		$this->committed = TRUE;
 
+		// disable the PHP compression magic; apparently it doesn't play
+		// nice with our Content-Length header anyway
+		if (ini_get('zlib.output_compression'))
+			ini_set('zlib.output_compression', 'Off');
+
 		// get any response body that was printed, rather than appended
 		if ($this->recording) {
 			$this->stop_recording();
@@ -679,16 +684,24 @@ class Response {
 			$this->body = '';
 		}
 
-		// if the browser wants encoded (read: compressed) data, we should
-		// try to accommodate it.
-		if ($this->allow_compression && $this->length() && !$this->header('Content-Encoding') && ($accepted_encodings = Request::encodings())) {
-			$this->attempt_compression($accepted_encodings);
-		}
-
 		// mandatory header #2
-		// note: _after_ compression stuff, because compression can change the length
+		// note: _after_ compression stuff, because transfer compression can
+		// change the length of the message, but does not change the length of
+		// the response entity. attempt_compression() calls _apply_compression()
+		// which overrides Content-Length anyway, if required.
 		if (! $this->header('Content-Length')) {
 			$this->header('Content-Length', $this->length());
+		}
+
+		// if the browser wants encoded (read: compressed) data, we should
+		// try to accommodate it.
+		if ($this->allow_compression && $this->length()) {
+			if (!$this->header('Transfer-Encoding') && ($accepted_encodings = Request::transfer_encodings())) {
+				$this->attempt_compression($accepted_encodings, FALSE);
+			}
+			if (!$this->header('Content-Encoding') && ($accepted_encodings = Request::encodings())) {
+				$this->attempt_compression($accepted_encodings, TRUE);
+			}
 		}
 
 		// optional, but cool, header
@@ -729,12 +742,7 @@ class Response {
 	/**
 	 * Manually applies compression, if possible/requested.
 	 */
-	protected function attempt_compression($methods) {
-		// disable the PHP magic; apparently it doesn't play
-		// nice with our Content-Length header anyway
-		if (ini_get('zlib.output_compression'))
-			ini_set('zlib.output_compression', 'Off');
-
+	protected function attempt_compression($methods, $in_content) {
 		$data = $this->body;
 		$size = $this->length();
 		foreach ($methods as $qvalue => $meths) {
@@ -771,7 +779,7 @@ class Response {
 					$identity = TRUE;
 					#fallthrough:
 				default:
-					#continue 2;
+					$zip = $this->body;
 					continue;
 				}
 				$zipsize = strlen($zip);
@@ -783,7 +791,7 @@ class Response {
 			}
 			if ($bestmethod) {
 				// apply the most-compact encoding at this qvalue-level
-				$this->_apply_compression($bestdata, $bestmethod);
+				$this->_apply_compression($bestdata, $bestmethod, $in_content);
 				return;
 			} elseif ($identity) {
 				// if none of the other encodings at this qvalue-level was
@@ -795,26 +803,31 @@ class Response {
 			}
 		}
 	}
-	protected function _apply_compression($body, $method) {
+	protected function _apply_compression($body, $method, $in_content) {
 #		// we can still bail out here if there's not enough of an
 #		// improvement (currently 'enough' means 'any')
 #		if (strlen($body) < $this->length()) {
 			// update the response body
 			$this->body( $body );
-			// update appropriate 'simple' headers (encoding, length)
-			$this->header('Content-Encoding', $method);
-			$this->header('Content-Length', $this->length());
-			$this->header('Content-MD5', base64_encode( pack('H*',md5($body)) ));
-			// scrap the ETag header, since the old one (if any) no longer applies
-			if ($etag = $this->header['ETag']) {
-				if ($this->allow_compression_etag && $etag{0} == '"') {
-					$this->header('ETag', '"'.$method.':'.substr($etag,1));
-				} else {
-					unset($this->header['ETag']);
+			if ($in_content) {
+				// update appropriate 'simple' headers (encoding, length)
+				$this->header('Content-Encoding', $method);
+				$this->header('Content-Length', $this->length());
+				$this->header('Content-MD5', base64_encode( pack('H*',md5($body)) ));
+				// scrap the ETag header, since the old one (if any) no longer applies
+				if ($etag = $this->header['ETag']) {
+					if ($this->allow_compression_etag && $etag{0} == '"') {
+						$this->header('ETag', '"'.$method.':'.substr($etag,1));
+					} else {
+						unset($this->header['ETag']);
+					}
 				}
+				// if there's a Vary: header, add 'Accept-Encoding' as an important thingy
+				$this->append_header('Vary', 'Accept-Encoding');
+			} else {
+				// update the transport header
+				$this->header('Transfer-Encoding', $method);
 			}
-			// if there's a Vary: header, add 'Accept-Encoding' as an important thingy
-			$this->append_header('Vary', 'Accept-Encoding');
 #			return TRUE;
 #		}
 #		return FALSE;

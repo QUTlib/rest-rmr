@@ -182,7 +182,15 @@ abstract class BasicRepresenter extends Representer {
 	protected function first_type_excluding($all) {
 		foreach ($this->types as $t) {
 			if (!array_key_exists($t->full_mime(), $all)) {
-				return $l;
+				return $t;
+			}
+		}
+		return FALSE;
+	}
+	protected function first_subtype_excluding($all, $type) {
+		foreach ($this->types as $t) {
+			if ($t['type'] == $type && !array_key_exists($t->full_mime(), $all)) {
+				return $t;
 			}
 		}
 		return FALSE;
@@ -191,14 +199,35 @@ abstract class BasicRepresenter extends Representer {
 	public function preference_for_type($t, $all) {
 		if (count($this->types) == 0) return 1.0;
 		$tt = array(
-			strtolower($t['media-range']),               // a/b;p=q
-			strtolower($t['media-type']['full-type']),   // a/b
-			strtolower($t['media-type']['type']) . '/*', // a/*
-			'*/*',                                       // */*
+			strtolower($t['media-range']),          // a/b;p=q
+		);
+		if ($t['media-type']['parameters']) {       // a/b
+			$tt[] =	strtolower($t['media-type']['full-type']);
+		}
+		if ($t['media-type']['subtype'] != '*') {   // a/*
+			$tt[] = strtolower($t['media-type']['type']) . '/*';
+		}
+		if ($t['media-type']['type'] != '*') {      // */*
+			$tt[] = '*/*';
 		);
 		foreach ($tt as $t) {
 			if (isset($this->types[$t])) {
 				return $this->types[$t]->qvalue();
+			}
+		}
+		if ($t['media-type']['subtype'] == '*') {
+			if (($type = $t['media-type']['type']) == '*') {
+				// Client accepts anything. Give them
+				// a good one.
+				if ($first_type = $this->first_type_excluding($all)) {
+					return $first_type->qvalue();
+				}
+			} else {
+				// Client accepts any subtype. Give them
+				// a good one.
+				if ($first_type = $this->first_subtype_excluding($all, $type)) {
+					return $first_type->qvalue();
+				}
 			}
 		}
 		return 0.0;

@@ -209,7 +209,7 @@ abstract class BasicRepresenter extends Representer {
 		}
 		if ($t['media-type']['type'] != '*') {      // */*
 			$tt[] = '*/*';
-		);
+		};
 		foreach ($tt as $t) {
 			if (isset($this->types[$t])) {
 				return $this->types[$t]->qvalue();

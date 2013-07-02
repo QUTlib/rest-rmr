@@ -29,6 +29,7 @@ class Response {
 	public $allow_compression = true;
 	public $allow_not_modified = true;
 	public $allow_auto_etag = true;
+	public $allow_compression_etag = true;
 
 	private $committed = false;
 	private $recording = false;
@@ -805,7 +806,13 @@ class Response {
 			$this->header('Content-Length', $this->length());
 			$this->header('Content-MD5', base64_encode( pack('H*',md5($body)) ));
 			// scrap the ETag header, since the old one (if any) no longer applies
-			unset($this->header['ETag']);
+			if ($etag = $this->header['ETag']) {
+				if ($this->allow_compression_etag && $etag{0} == '"') {
+					$this->header('ETag', '"'.$method.':'.substr($etag,1));
+				} else {
+					unset($this->header['ETag']);
+				}
+			}
 			// if there's a Vary: header, add 'Accept-Encoding' as an important thingy
 			$this->append_header('Vary', 'Accept-Encoding');
 #			return TRUE;

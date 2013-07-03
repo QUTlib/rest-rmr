@@ -15,6 +15,12 @@
 # under the License.
 #
 
+DirectoryIndex index.jsp index.php index.html
+
+SetEnvIf Range ^(.+)$ range_header=$1
+RequestHeader set X-Range "%{range_header}e" env=range_header
+RequestHeader unset Range env=range_header
+
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /
@@ -30,10 +36,18 @@
 
     # rewrite any /a/b/c to index.php?path=/a/b/c
     RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
+    #RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^(.*)$ index.php?path=/$1 [L,QSA]
 </IfModule>
 
-# Hide PHP Library files from indices
-IndexIgnore *.inc.php
+<IfModule mod_expires.c>
+    ExpiresActive On
+    <FilesMatch "\.(ico|jpg|gif|js|css)$">
+        ExpiresDefault "access plus 1 year"
+    </FilesMatch>
+</IfModule>
+
+# Make sure Apache serves these with the 'right' Content-Type
+AddType application/xml .xsd .xml
+AddType text/xsl .xsl
 

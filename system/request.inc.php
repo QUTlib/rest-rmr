@@ -324,7 +324,7 @@ class Request {
 	 * @return accepted content types, or FALSE
 	 */
 	public static function content_types() {
-		if ($accept = self::header('Accept')) {}
+		if (($accept = self::header('Accept')) !== NULL) {}
 		elseif (isset($_SERVER['HTTP_ACCEPT'])) { $accept = $_SERVER['HTTP_ACCEPT']; }
 		else return FALSE;
 
@@ -342,7 +342,7 @@ class Request {
 	 * @return accepted charsets, or FALSE
 	 */
 	public static function charsets() {
-		if ($charset = self::header('Accept-Charset')) {}
+		if (($charset = self::header('Accept-Charset')) !== NULL) {}
 		elseif (isset($_SERVER['HTTP_ACCEPT_CHARSET'])) { $charset = $_SERVER['HTTP_ACCEPT_CHARSET']; }
 		else return FALSE;
 
@@ -357,7 +357,7 @@ class Request {
 	 * @return accepted encodings, or FALSE
 	 */
 	public static function encodings() {
-		if ($accept = self::header('Accept-Encoding')) {}
+		if (($accept = self::header('Accept-Encoding')) !== NULL) {}
 		elseif (isset($_SERVER['HTTP_ACCEPT_ENCODING'])) { $accept = $_SERVER['HTTP_ACCEPT_ENCODING']; }
 		else return FALSE;
 
@@ -372,7 +372,7 @@ class Request {
 	 * @return accepted encodings, or FALSE
 	 */
 	public static function transfer_encodings() {
-		if ($accept = self::header('TE')) {}
+		if (($accept = self::header('TE')) !== NULL) {}
 		elseif (isset($_SERVER['HTTP_TE'])) { $accept = $_SERVER['HTTP_TE']; }
 		else return FALSE;
 
@@ -387,7 +387,7 @@ class Request {
 	 * @return accepted languages, or FALSE
 	 */
 	public static function languages() {
-		if ($accept = self::header('Accept-Language')) {}
+		if (($accept = self::header('Accept-Language')) !== NULL) {}
 		elseif (isset($_SERVER['HTTP_ACCEPT_LANGUAGE'])) { $accept = $_SERVER['HTTP_ACCEPT_LANGUAGE']; }
 		else return FALSE;
 
@@ -414,11 +414,47 @@ class Request {
 	 * @return array of {preference=>value+parameters} pairs, or FALSE
 	 */
 	public static function preferences() {
-		if ($prefer = self::header('Prefer', '')) {}
+		if (($prefer = self::header('Prefer')) !== NULL) {}
 		elseif (isset($_SERVER['HTTP_PREFER'])) { $prefer = $_SERVER['HTTP_PREFER']; }
 		else return FALSE;
 
 		return ID_snell_http_prefer\parse_Prefer($prefer);
+	}
+
+	/**
+	 * Gets a list of "Range" byte-ranges.
+	 *
+	 * If the client didn't request any ranges, returns FALSE.
+	 *
+	 * Example:
+	 *    Range: 0-0,5-10,20-
+	 * =>
+	 *    array(
+	 *        'ranges' => array(
+	 *             array(0, 0),
+	 *             array(5, 10),
+	 *        ),
+	 *        'open-range' => 20,
+	 *        'suffix' => -1,
+	 *    )
+	 *
+	 * Example:
+	 *    Range: 0-10,5-15,-20
+	 * =>
+	 *    array(
+	 *        'ranges' => array(
+	 *             array(0, 15),
+	 *        ),
+	 *        'open-range' => -1,
+	 *        'suffix' => 20,
+	 *    )
+	 */
+	public static function ranges() {
+		if (($range = self::header('X-Range')) !== NULL) {}
+		elseif (isset($_SERVER['HTTP_X_RANGE'])) { $range = $_SERVER['HTTP_X_RANGE']; }
+		else return FALSE;
+
+		return RFC2616\parse_Range($range);
 	}
 
 	public static function _set_params($params) {

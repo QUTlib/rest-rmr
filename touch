@@ -4,11 +4,9 @@ DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 APPFILE=$DIR/system/application.inc.php
 
 if [ -f "$APPFILE" ] ; then
-	REV=$(git log --oneline | wc -l)
 	VER=$(git describe --tags --long)
-
-	REV=$(expr $REV - 1)
-	VERSION="${VER%%-*}-r$REV"
+	REV="${VER#*-}"
+	VERSION="${VER%%-*}-r${REV%%-*}"
 
 	perl -pi -e "s/const VERSION = '[^']*';/const VERSION = '$VERSION';/g" "$APPFILE"
 	exit $?

@@ -584,7 +584,7 @@ class Response {
 	 * @chainable
 	 */
 	public function append_line($string) {
-		$this->body .= $string . "\n";
+		$this->body .= $string . "\r\n";
 		return $this;
 	}
 
@@ -679,7 +679,7 @@ class Response {
 
 		// if the browser has a cached copy, skip some network traffic
 		// (only do it for '200 OK' responses)
-		if (! $this->is_modified()) {
+		if (!$this->is_modified()) {
 			$this->status = 304;
 			$this->body = '';
 		}
@@ -690,13 +690,13 @@ class Response {
 		//   the response entity.
 		// Note 2: attempt_compression() calls _apply_compression()
 		//   which overrides Content-Length and Content-MD5 anyway, if required.
-		if (! $this->header('Content-Length')) {
+		if (!$this->header('Content-Length')) {
 			$this->header('Content-Length', $this->length());
 		}
 
 		// optional, but cool, header
 		// ditto compression
-		if (! $this->header('Content-MD5') && $this->length()) {
+		if (!$this->header('Content-MD5') && $this->length()) {
 			$this->header('Content-MD5', base64_encode( md5($this->body, TRUE) ));
 		}
 
@@ -706,6 +706,17 @@ class Response {
 			if (!$this->header('Content-Encoding') && ($accepted_encodings = Request::encodings())) {
 				$this->attempt_compression($accepted_encodings, TRUE);
 			}
+		}
+
+		// if the browser requests a specific byte range, let's optimise that shii
+		// note: only if status is '200 Ok'
+		if ($this->status == 200 && $this->length()) {
+			if (!$this->header('Content-Range') && ($ranges = Request::ranges())) {
+				$this->attempt_slices($ranges);
+			}
+		}
+
+		if ($this->allow_compression && $this->length()) {
 			if (!$this->header('Transfer-Encoding') && ($accepted_encodings = Request::transfer_encodings())) {
 				$this->attempt_compression($accepted_encodings, FALSE);
 			}
@@ -713,6 +724,10 @@ class Response {
 
 		// secret magic
 		$this->add_header('X-Powered-By', strip_tags(Application::TITLE.'/'.Application::VERSION));
+
+		if ($this->status == 200) {
+			$this->add_header('Accept-Ranges', 'bytes');
+		}
 
 		// ------- NO OUTPUT ABOVE THIS LINE ----------------------------
 
@@ -805,9 +820,17 @@ class Response {
 		}
 	}
 	protected function _apply_compression($body, $method, $in_content) {
-#		// we can still bail out here if there's not enough of an
-#		// improvement (currently 'enough' means 'any')
-#		if (strlen($body) < $this->length()) {
+		// approximate the header overhead (extra bytes sent in HTTP headers
+		// that would otherwise not be included)
+		if ($in_content) {
+			// assumes: no previous Vary: header, and update to existing ETag header
+			$overhead = strlen("Content-Encoding: $method\r\nVary: Accept-Encoding\r\n$method:");
+		} else {
+			$overhead = strlen("Transfer-Encoding: $method\r\n");
+		}
+		// we can still bail out here if there's not enough of an
+		// improvement (currently 'enough' means 'any')
+		if (strlen($body)+$overhead < $this->length()) {
 			// update the response body
 			$this->body( $body );
 			if ($in_content) {
@@ -816,9 +839,13 @@ class Response {
 				$this->header('Content-Length', $this->length());
 				$this->header('Content-MD5', base64_encode( pack('H*',md5($body)) ));
 				// scrap the ETag header, since the old one (if any) no longer applies
-				if ($etag = $this->header['ETag']) {
-					if ($this->allow_compression_etag && $etag{0} == '"') {
-						$this->header('ETag', '"'.$method.':'.substr($etag,1));
+				if ($etag = $this->header('ETag')) {
+					if ($this->allow_compression_etag) {
+						// Note: if the ETag is already weak, it's already weak. Whatever.
+						if ($etag{0} == '"')
+							$this->header('ETag', '"'.$method.':'.substr($etag,1));
+						#else
+						#	$this->header('ETag', 'W/"'.$method.':'.substr($etag,3));
 					} else {
 						unset($this->header['ETag']);
 					}
@@ -829,9 +856,78 @@ class Response {
 				// update the transport header
 				$this->header('Transfer-Encoding', $method);
 			}
-#			return TRUE;
-#		}
-#		return FALSE;
+			return TRUE;
+		}
+		return FALSE;
+	}
+
+	/**
+	 * Manually slices a response into sub-ranges, if possible/requested.
+	 */
+	protected function attempt_slices($ranges) {
+		$data = $this->body;
+		$size = $this->length();
+		$slices = array();
+		foreach ($ranges['ranges'] as $r) {
+			if ($r[0] < $size) {
+				$x = min($r[1], $size-1);
+				$n = $x - $r[0] + 1;
+				$slices[] = array($r[0], $x, substr($data, $r[0], $n), $size);
+			}
+		}
+		if ($ranges['open-range'] >= 0) {
+			$r = $ranges['open-range'];
+			if ($r < $size) {
+				$x = $size - 1;
+				$slices[] = array($r, $x, substr($data, $r), $size);
+			}
+		}
+		if ($ranges['suffix'] > 0) {
+			$r = $ranges['suffix'];
+			$x = $size - 1;
+			$y = max($size - $r, 0);
+			$slices[] = array($y, $x, substr($data, $y), $size);
+		}
+
+		$n = count($slices);
+		if ($n == 0) {
+			// This is very late in the game to be barfing; we're backing out of all
+			// the content-encoding stuff.  We should probably re-commit at this point.
+			$total = $this->length();
+			$title = self::statusName(416, TRUE);
+			$message = '<p class="mesg">' . htmlspecialchars( self::statusMessage(416, TRUE) ).'</p>';
+			$this->status(416)
+			     ->content_type('text/html; charset=iso-8859-1')
+			     ->body( self::generate_html($title, $message) );
+			$this->header('Content-Range', "bytes */$total");
+			$this->header('Content-Length', $this->length());
+			$this->header('Content-MD5', base64_encode( md5($this->body, TRUE) ));
+			unset($this->header['Content-Encoding']);
+			unset($this->header['ETag']);
+		} elseif ($n == 1) {
+			list($start, $end, $body, $total) = $slices[0];
+			$this->body($body);
+			$this->header('Content-Range', "bytes $start-$end/$total");
+			$this->header('Content-Length', $this->length());
+			$this->header('Content-MD5', base64_encode( md5($this->body, TRUE) ));
+			unset($this->header['ETag']);
+		} else {
+			$ct = $this->header('Content-Type');
+			$this->header('Content-Type', "multipart/byteranges; boundary=BYTERANGE_BOUNDARY");
+			$this->body('');
+			foreach ($slices as $slice) {
+				list($start, $end, $body, $total) = $slice;
+				$this->append_line("--BYTERANGE_BOUNDARY");
+				$this->append_line("Content-Type: $ct");
+				$this->append_line("Content-Range: bytes $start-$end/$total");
+				$this->append_line("");
+				$this->append_line($body);
+			}
+			$this->append_line("--BYTERANGE_BOUNDARY");
+			$this->header('Content-Length', $this->length());
+			$this->header('Content-MD5', base64_encode( md5($this->body, TRUE) ));
+			unset($this->header['ETag']);
+		}
 	}
 
 	public static function statusName($code, $allow_unknown=false) {

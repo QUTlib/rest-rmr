@@ -911,17 +911,37 @@ class Response {
 			unset($this->header['ETag']);
 		} else {
 			$ct = $this->header('Content-Type');
-			$this->header('Content-Type', "multipart/byteranges; boundary=BYTERANGE_BOUNDARY");
+
+			// pick a boundary that is not present in the parts
+			$boundary = 'BYTERANGE';
+			$all_tested = FALSE;
+			while (!$all_tested) {
+				$all_tested = TRUE;
+				$test = "\r\n--$boundary\r\n";
+				foreach ($slices as $slice) {
+					if (strpos($slice[2], $test)) {
+						$all_tested = FALSE;
+						break;
+					}
+				}
+				if (!$all_tested) {
+					// add a digit, and see if this one is present
+					$boundary .= rand(0,9);
+				}
+			}
+			// </overkill>
+
+			$this->header('Content-Type', "multipart/byteranges; boundary=$boundary");
 			$this->body('');
 			foreach ($slices as $slice) {
 				list($start, $end, $body, $total) = $slice;
-				$this->append_line("--BYTERANGE_BOUNDARY");
+				$this->append_line("--$boundary");
 				$this->append_line("Content-Type: $ct");
 				$this->append_line("Content-Range: bytes $start-$end/$total");
 				$this->append_line("");
 				$this->append_line($body);
 			}
-			$this->append_line("--BYTERANGE_BOUNDARY");
+			$this->append_line("--$boundary");
 			$this->header('Content-Length', $this->length());
 			$this->header('Content-MD5', base64_encode( md5($this->body, TRUE) ));
 			unset($this->header['ETag']);

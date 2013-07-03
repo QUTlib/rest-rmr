@@ -685,29 +685,30 @@ class Response {
 		}
 
 		// mandatory header #2
-		// note: _after_ compression stuff, because transfer compression can
-		// change the length of the message, but does not change the length of
-		// the response entity. attempt_compression() calls _apply_compression()
-		// which overrides Content-Length anyway, if required.
+		// Note: _before_ compression stuff, because transfer compression can
+		//   change the length of the message, but does not change the length of
+		//   the response entity.
+		// Note 2: attempt_compression() calls _apply_compression()
+		//   which overrides Content-Length and Content-MD5 anyway, if required.
 		if (! $this->header('Content-Length')) {
 			$this->header('Content-Length', $this->length());
-		}
-
-		// if the browser wants encoded (read: compressed) data, we should
-		// try to accommodate it.
-		if ($this->allow_compression && $this->length()) {
-			if (!$this->header('Transfer-Encoding') && ($accepted_encodings = Request::transfer_encodings())) {
-				$this->attempt_compression($accepted_encodings, FALSE);
-			}
-			if (!$this->header('Content-Encoding') && ($accepted_encodings = Request::encodings())) {
-				$this->attempt_compression($accepted_encodings, TRUE);
-			}
 		}
 
 		// optional, but cool, header
 		// ditto compression
 		if (! $this->header('Content-MD5') && $this->length()) {
 			$this->header('Content-MD5', base64_encode( md5($this->body, TRUE) ));
+		}
+
+		// if the browser wants encoded (read: compressed) data, we should
+		// try to accommodate it.
+		if ($this->allow_compression && $this->length()) {
+			if (!$this->header('Content-Encoding') && ($accepted_encodings = Request::encodings())) {
+				$this->attempt_compression($accepted_encodings, TRUE);
+			}
+			if (!$this->header('Transfer-Encoding') && ($accepted_encodings = Request::transfer_encodings())) {
+				$this->attempt_compression($accepted_encodings, FALSE);
+			}
 		}
 
 		// secret magic

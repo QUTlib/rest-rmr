@@ -685,10 +685,7 @@ class Response {
 		}
 
 		// mandatory header #2
-		// Note: _before_ compression stuff, because transfer compression can
-		//   change the length of the message, but does not change the length of
-		//   the response entity.
-		// Note 2: attempt_compression() calls _apply_compression()
+		// Note: attempt_compression() calls _apply_compression()
 		//   which overrides Content-Length and Content-MD5 anyway, if required.
 		if (!$this->header('Content-Length')) {
 			$this->header('Content-Length', $this->length());
@@ -853,8 +850,9 @@ class Response {
 				// if there's a Vary: header, add 'Accept-Encoding' as an important thingy
 				$this->append_header('Vary', 'Accept-Encoding');
 			} else {
-				// update the transport header
+				// update the transport headers
 				$this->header('Transfer-Encoding', $method);
+				$this->header('Content-Length', $this->length());
 			}
 			return TRUE;
 		}

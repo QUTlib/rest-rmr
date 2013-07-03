@@ -18,6 +18,8 @@
 
 namespace RFC2616;
 
+/*------------------- General patterns and helpers ------------------*/
+
 define('RFC2616\OCTET',   '[\x00-\xFF]'); //= <any 8-bit sequence of data>
 define('RFC2616\CHAR',    '[\x00-\x7F]'); //= <any US-ASCII character (octets 0 - 127)>
 define('RFC2616\UPALPHA', '[A-Z]'); //=<any US-ASCII uppercase letter "A".."Z">
@@ -78,6 +80,8 @@ function token_or_quoted_string($str) {
 	}
 	return '"'.$q_str.'"';
 }
+
+/*------------------- Accept-Type Headers ---------------------------*/
 
 /*
  * 14.1 Accept
@@ -462,7 +466,7 @@ function parse_TE($header) {
 			} elseif ($t_coding == 'trailers') {
 				$trailers = TRUE;
 			} elseif (preg_match('/^'.token.'$/', $t_coding)) {
-				if (! \array_key_exists($qvalue, $result))
+				if (!array_key_exists($qvalue, $result))
 					$result[$qvalue] = array();
 				$result[$qvalue][] = $t_coding;
 			} else {
@@ -532,5 +536,164 @@ function parse_qvalued_list($header, $header_type, $default_qvalue=1000) {
 	}
 	krsort($result);
 	return $result;
+}
+
+/*------------------- Range Header ----------------------------------*/
+
+/*
+ * 14.35.2 Range Retrieval Requests
+ *   Range                  = "Range" ":" ranges-specifier
+ *
+ * 14.35.1 Byte Ranges
+ *   ranges-specifier       = byte-ranges-specifier
+ *   byte-ranges-specifier  = bytes-unit "=" byte-range-set
+ *   byte-range-set         = 1#( byte-range-spec | suffix-byte-range-spec )
+ *   byte-range-spec        = first-byte-pos "-" [last-byte-pos]
+ *   first-byte-pos         = 1*DIGIT
+ *   last-byte-pos          = 1*DIGIT
+ *
+ *   suffix-byte-range-spec = "-" suffix-length
+ *   suffix-length          = 1*DIGIT
+ *
+ * 3.12 Range Units
+ *   range-unit             = bytes-unit | other-range-unit
+ *   bytes-unit             = "bytes"
+ *   other-range-unit       = token
+ *
+ *     "The only range unit defined by HTTP/1.1 is "bytes". HTTP/1.1
+ *      implementations MAY ignore ranges specified using other units."
+ */
+
+define('RFC2616\bytes_unit',       'bytes');
+define('RFC2616\other_range_unit', token);
+define('RFC2616\range_unit',       '(?:'.bytes_unit.'|'.other_range_unit.')');
+
+define('RFC2616\first_byte_pos',   DIGIT.'+');
+define('RFC2616\last_byte_pos',    DIGIT.'+');
+define('RFC2616\suffix_length',    DIGIT.'+');
+define('RFC2616\byte_range_spec',  '('.first_byte_pos.')-((?:'.last_byte_pos.')?)'); // groups 1=first, 2=last
+define('RFC2616\suffix_byte_range_spec', '-((?:'.suffix_length.')?)'); // groups 1=length
+
+// not in the spec per se, but effectively:
+//   byte-range-set = 1#byte-range
+//   byte-range     = ( byte-range-spec | suffix-byte-range-spec )
+define('RFC2616\byte_range',       '(?:'.byte_range_spec.'|'.suffix_byte_range_spec.')'); // groups 1=first, 2=last, 3=length (12|3)
+
+/**
+ * Returns FALSE if the Range header is acceptably bad.
+ *
+ * Example:
+ * <pre>
+ * "Range: bytes=10-20,0-15,21-24,50-50,100-125,110-,-7"
+ * #=>
+ * ---
+ * ranges:
+ * - - 0
+ *   - 24
+ * - - 50
+ *   - 50
+ * open-range: 100
+ * suffix: 7
+ *
+ * "Range: bytes=0-0,-1"
+ * #=>
+ * ---
+ * ranges:
+ * - - 0
+ *   - 0
+ * open-range: -1
+ * suffix: 1
+ *
+ * "Range: records=foo,bar-baz"
+ * #=> FALSE
+ * </pre>
+ */
+function parse_Range($header) {
+	// slightly deviating from the ranges-specifier definition to handle the
+	// MAY case from 3.12
+	$parts = preg_split('/\s*=\s*/', $header, 2);
+	if (count($parts) != 2) {
+		throw new \BadRequestException('bad Range header "'.$header.'"; expected "<range-unit>=<range-set>"');
+	}
+	list($range_unit, $range_set) = $parts;
+	if ($range_unit != bytes_unit) {
+		return FALSE;
+	}
+
+	$ranges = array();
+	$open   = -1;
+	$suffix =  0;
+	$parts = preg_split('/\s*,\s*/', $range_set);
+	foreach ($parts as $i=>$part) {
+		if ($part !== '') { // allow for ", ," in #list
+			if (preg_match('/^'.byte_range.'$/', $part, $m)) {
+				if (isset($m[3])) {
+					// -suffix
+					$sfx_len = (int)$m[3];
+					if ($suffix < $sfx_len) {
+						$suffix = $sfx_len;
+					}
+				} elseif ($m[2] !== '') {
+					// start-end
+					$start = (int)$m[1];
+					$end   = (int)$m[2];
+					if ($start > $end) {
+						throw new \BadRequestException('bad byte range "'.$part.'" in Range header');
+					} else {
+						$ranges[] = array($start, $end);
+					}
+				} else {
+					// start-
+					$start_byte = (int)$m[1];
+					if ($open < 0 || $open > $start_byte) {
+						$open = $start_byte;
+					}
+				}
+			} else {
+				throw new \BadRequestException('bad byte range "'.$part.'" in Range header');
+			}
+		}
+	}
+
+	// sort and combine ranges
+	usort($ranges, function($a,$b){
+		if ($a[0] < $b[0]) return -1;
+		if ($a[0] > $b[0]) return  1;
+		if ($a[1] < $b[1]) return -1;
+		if ($a[1] > $b[1]) return  1;
+		return 0;
+	});
+	$merged = array();
+	$prev = NULL;
+	foreach ($ranges as $r) {
+		if ($open >= 0 && $r[0] >= $open) {
+			// - already overridden by "start-" range
+			break;
+		} elseif ($r[0] < $open && $r[1] >= ($open-1)) {
+			// - overlaps beginning of "start-" range
+			$open = $r[0];
+			break;
+		} elseif ($prev === NULL || $prev[1] < ($r[0]-1)) {
+			// - no prev, or prev ends before I start
+			if ($prev !== NULL)
+				$merged[] = $prev;
+			$prev = $r;
+		} else {
+			// - prev starts before me
+			// - I overlap the end of prev
+			if ($r[1] > $prev[1])
+				$prev[1] = $r[1];
+		}
+	}
+	if ($prev !== NULL) $merged[] = $prev;
+
+	if ((count($merged) < 1) && ($suffix < 1) && ($open < 0)) {
+		throw new \BadRequestException('bad Range header (contains to ranges, expected 1+)'."\n\n\"".print_r($header,1)."\"\n\n");
+	}
+	return array(
+		'ranges'     => $merged,
+		'open-range' => $open,
+		'suffix'     => $suffix,
+	);
 }
 

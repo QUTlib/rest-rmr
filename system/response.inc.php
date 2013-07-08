@@ -904,6 +904,7 @@ class Response {
 			unset($this->header['ETag']);
 		} elseif ($n == 1) {
 			list($start, $end, $body, $total) = $slices[0];
+			$this->status(206);
 			$this->body($body);
 			$this->header('Content-Range', "bytes $start-$end/$total");
 			$this->header('Content-Length', $this->length());
@@ -931,6 +932,7 @@ class Response {
 			}
 			// </overkill>
 
+			$this->status(206);
 			$this->header('Content-Type', "multipart/byteranges; boundary=$boundary");
 			$this->body('');
 			foreach ($slices as $slice) {

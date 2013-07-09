@@ -66,7 +66,7 @@ class ProblemRepresenter extends BasicRepresenter {
 		$this->response_type($response, $t, NULL, TRUE, TRUE); // NULL charset because blarflrf
 		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
 
-		switch (strtolower($t)) {
+		switch (strtolower($t['media-range'])) {
 		case 'application/api-problem+json':
 		case 'application/json':
 		case 'text/json':

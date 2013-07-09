@@ -33,7 +33,6 @@
  *   application/json q=1.0 [advertised,default]
  *   text/json        q=0.9
  *   text/x-json      q=0.9
- *   * / *            q=0.001
  */
 class JSONRepresenter extends BasicRepresenter {
 
@@ -43,7 +42,6 @@ class JSONRepresenter extends BasicRepresenter {
 				new InternetMediaType('application', 'json',   1.0, TRUE),
 				new InternetMediaType('text',        'json',   0.9),
 				new InternetMediaType('text',        'x-json', 0.9),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'application/json'),
 			),
 			array(),
 			array(),
@@ -71,7 +69,6 @@ class JSONRepresenter extends BasicRepresenter {
  *   application/x-yaml q=1.0 [advertised]
  *   text/x-yaml        q=0.9
  *   application/yaml   q=0.9
- *   * / *              q=0.001
  */
 class YAMLRepresenter extends BasicRepresenter {
 
@@ -82,8 +79,6 @@ class YAMLRepresenter extends BasicRepresenter {
 				new InternetMediaType('application', 'x-yaml', 1.0, TRUE),
 				new InternetMediaType('text',        'x-yaml', 0.9),
 				new InternetMediaType('application', 'yaml',   0.9),
-				new InternetMediaType('*', '*', 0.002, FALSE), // handled explicitly in rep
-				new InternetMediaType('text','plain',0,FALSE), // placeholder, to allow */* to be served as text/plain to UAs
 			),
 			array(),
 			array(),
@@ -92,13 +87,6 @@ class YAMLRepresenter extends BasicRepresenter {
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
-		if ($t['media-range'] == '*/*') {
-			if (($ua=Request::header('User-Agent')) /*&& preg_match('/MSIE/',$ua)*/ && strpos($ua, 'curl') === FALSE) {
-				$t['media-range']  = 'text/plain';
-			} else {
-				$t['media-range']  = 'text/yaml';
-			}
-		}
 		$this->response_type($response, $t, 'Windows-1252', TRUE, TRUE); // override charset because I control it in the encoding process
 		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
 		$response
@@ -200,7 +188,6 @@ class YAMLRepresenter extends BasicRepresenter {
  * Supported internet media types (MIMEs):
  *   application/xml    q=1.0 [advertised,default]
  *   text/xml           q=0.9
- *   * / *              q=0.001
  */
 class XMLRepresenter extends BasicRepresenter {
 
@@ -209,140 +196,44 @@ class XMLRepresenter extends BasicRepresenter {
 			array(
 				new InternetMediaType('application', 'xml', 1.0, TRUE),
 				new InternetMediaType('text',        'xml', 0.9),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'application/xml'),
 			),
 			array(),
 			array(),
-			array('integer','double','boolean','NULL','string','array','object')
+			array('object:HTMLDocument', 'object:SimpleXMLElement', 'object:DOMDocument')
 		);
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
-		$this->response_type($response, $t, 'ISO-8859-1', TRUE, TRUE); // override charset because I control it in the encoding process
-		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
+		if (($ua=Request::header('User-Agent')) && preg_match('/MSIE/',$ua)) { 
+			$response->add_header('X-UA-Compatible', 'IE=edge');
+			$response->add_header('X-Content-Type-Options', 'nosniff');
+		}
+		if ($m instanceof HTMLDocument) {
+			if ($x = $m->encoding()) $this->response_type($response, $t, $x, TRUE, TRUE); // strict type, force charset
+			else $this->response_type($response, $t, $c); // strict type, only set charset if recognised (i.e. never?)
 
-		if (is_object($m) && ($m instanceof SimpleXMLElement)) {
+			if ($x = $m->lang()) $this->response_language($response, $x, FALSE, TRUE); // force language
+			#else $this->response_language($response, $l); // only set language if recognised (i.e. never?)
+
+			$response->body( $m->xml() );
+		} elseif ($m instanceof SimpleXMLElement) {
+			$this->response_type($response, $t, $c); // strict type, only set charset if recognised (i.e. never?)
+			#$this->response_language($response, $l, FALSE); // only set language if recognised (i.e. never?)
 			$response->body( $m->asXML() );
-		} elseif (is_object($m) && ($m instanceof DOMDocument)) {
-			$response->body( $m->saveXML() );
 		} else {
-			$response
-				->body( '' )
-				->append_line( '<?xml version="1.0" encoding="ISO-8859-1"?'.'>' )
-				#->append_line( '<?xml-stylesheet href="/assets/generic-xml.xsl" type="text/xsl"?'.'>' )
-				->append_line( '<document xmlns="http://api.library.qut.edu.au/xml-data/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://api.library.qut.edu.au/xml-data/1.1 /xml-data/1.1">' )
-				->append( $d->dublincore()->xml_fragment(Request::full_uri()) )
-				->append( $this->_xml_encode($m) )
-				->append_line( '</document>' )
-			;
-		}
-
-		if (defined('DEBUG') && DEBUG)
-			$response->append_line('<!-- Represented by '.get_class($this).' -->');
-	}
-
-	protected function _quote($s) {
-		#return htmlentities($s, ENT_QUOTES|ENT_XML1, 'ISO-8859-1');
-		$r = '';
-		//                                   1   2   3    4   5    6                   7
-		while (strlen($s) && preg_match('/^(?:(<)|(>)|(")|(\')|(&)|([\\x{20}-\\x{7E}])|([\\x{00}-\\x{FF}]))/', $s, $m)) {
-			    if ($m[1] != '') $r .= '&lt;';
-			elseif ($m[2] != '') $r .= '&gt;';
-			elseif ($m[3] != '') $r .= '&quot;';
-			elseif ($m[4] != '') $r .= '&apos;';
-			elseif ($m[5] != '') $r .= '&amp;';
-			elseif ($m[6] != '') $r .= $m[6];
-			else {
-				// Urgh, any other cruft in here is a yucky byte. Since
-				// I don't know the encoding of the original string, I'll
-				// export them to XML on a byte-by-byte basis.
-				$h = unpack('H*', $m[7]);
-				$r .= '&#x' . strtoupper($h[1]) . ';';
-			}
-			$s = substr($s,1);
-		}
-		return $r;
-	}
-
-	protected function _xml_encode($o, $p='  ') {
-		switch ($type = gettype($o)) {
-		case 'integer':
-		case 'double':
-			break;
-		case 'boolean':
-			$o = ($o ? 'true' : 'false');
-			break;
-		case 'string':
-			$o = $this->_quote($o);
-			break;
-		case 'NULL':
-			return "$p<null/>\n";
-		case 'array':
-			$allints = TRUE;
-			$i = 0;
-			foreach ($o as $k=>$v) {
-				if ($k !== $i) {
-					$allints = FALSE;
-					break;
-				}
-				$i ++;
-			}
-			if ($allints) {
-				$key = "index";
+			if ($x = $m->xmlEncoding) {
+				// override the requested/matched charset with that
+				// specified in the document itself.
+				$this->response_type($response, $t, $x, TRUE, TRUE); // strict type, force charset
 			} else {
-				$type = "map";
-				$key  = "key";
+				// must be what was requested/matched
+				$this->response_type($response, $t, $c); // strict type, only set charset if recognised (i.e. never?)
 			}
-			$string = "$p<$type>\n";
-			foreach ($o as $k=>$v) {
-				$k = $this->_quote($k);
-				$string .= "$p  <item $key=\"$k\">\n";
-				$string .= $this->_xml_encode($v, "$p    ");
-				$string .= "$p  </item>\n";
-			}
-			$string .= "$p</$type>\n";
-			return $string;
-		case 'object':
-/*
-			if ($o instanceof SimpleXMLElement) {
-				$xml = $o->asXML();
-				// strip the first xml declaration thingy
-				if (preg_match('~<\?xml([^?]|\?[^>])+\?>[\r\n]*~i', $xml, $m)) {
-					$header = $m[0];
-					$xml = substr($xml, strlen($header));
-				}
-				// fix padding
-				$xml = str_replace("\n", "\n$p");
-				return $xml;
-			}
-*/
-			if ($o instanceof HTMLDocument) {
-				$xml = $o->xml();
-				if (preg_match('~^<\?xml([^?]|\?[^>])+\?>[\r\n]*~i', $xml, $m)) {
-					$xml = substr($xml, strlen($m[0]));
-				}
-				if (preg_match('~^<\!DOCTYPE([^>])+>[\r\n]*~i', $xml, $m)) {
-					$xml = substr($xml, strlen($m[0]));
-				}
-				return "$p$xml\n";
-			}
-			// otherwise, not a SimpleXMLElement; use regular iteration
-			$c = $this->_quote(get_class($o));
-			$h = $this->_quote(spl_object_hash($o));
-			$string = "$p<$type classname=\"$c\" hash=\"$h\">\n";
-			foreach ($o as $k=>$v) {
-				$k = $this->_quote($k);
-				$string .= "$p  <property name=\"$k\">\n";
-				$string .= $this->_xml_encode($v, "$p    ");
-				$string .= "$p  </property>\n";
-			}
-			$string .= "$p</$type>\n";
-			return $string;
-		default:
-			throw new Exception("Can't convert variable of type '$type'");
+			#$this->response_language($response, $l, FALSE);
+			$response->body( $m->saveXML() );
 		}
-		return "$p<$type>$o</$type>\n";
 	}
+
 
 }
 
@@ -356,7 +247,6 @@ class XMLRepresenter extends BasicRepresenter {
  *   application/xhtml+xml q=1.0 [advertised,default]
  *   application/xml       q=1.0 [advertised]
  *   text/html             q=0.5
- *   * / *                 q=0.001
  */
 class XHTMLRepresenter extends BasicRepresenter {
 
@@ -366,7 +256,6 @@ class XHTMLRepresenter extends BasicRepresenter {
 				new InternetMediaType('application', 'xhtml+xml', 1.0, TRUE),
 				new InternetMediaType('text',        'xml',       1.0, TRUE),
 				new InternetMediaType('text',        'html',      0.5),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'application/xhtml+xml'),
 			),
 			array(),
 			array(),
@@ -422,7 +311,6 @@ class XHTMLRepresenter extends BasicRepresenter {
  * Supported internet media types (MIMEs):
  *   text/html             q=1.0 [advertised,default]
  *   application/html      q=0.5
- *   * / *                 q=0.001
  */
 class HTMLRepresenter extends BasicRepresenter {
 
@@ -431,7 +319,6 @@ class HTMLRepresenter extends BasicRepresenter {
 			array(
 				new InternetMediaType('text',        'html', 1.0, TRUE),
 				new InternetMediaType('application', 'html', 0.5),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'text/html'),
 			),
 			array(),
 			array(),

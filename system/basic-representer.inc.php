@@ -198,22 +198,13 @@ abstract class BasicRepresenter extends Representer {
 
 	public function preference_for_type($t, $all) {
 		if (count($this->types) == 0) return 1.0;
-		$tt = array(
-			strtolower($t['media-range']),          // a/b;p=q
-		);
-		if ($t['media-type']['parameters']) {       // a/b
-			$tt[] =	strtolower($t['media-type']['full-type']);
-		}
-		if ($t['media-type']['subtype'] != '*') {   // a/*
-			$tt[] = strtolower($t['media-type']['type']) . '/*';
-		}
-		if ($t['media-type']['type'] != '*') {      // */*
-			$tt[] = '*/*';
-		};
-		foreach ($tt as $t) {
-			if (isset($this->types[$t])) {
-				return $this->types[$t]->qvalue();
-			}
+#		if ($t['media-type']['parameters']) {
+#			// FIXME: canonicalise parameters, so string matching will work (?)
+#		} else {
+			$type = strtolower($t['media-range']);
+#		}
+		if (isset($this->types[$type])) {
+			return $this->types[$type]->qvalue();
 		}
 		if ($t['media-type']['subtype'] == '*') {
 			if (($type = $t['media-type']['type']) == '*') {
@@ -237,15 +228,12 @@ abstract class BasicRepresenter extends Representer {
 		if (count($this->charsets) == 0) return 1.0;
 		$c = strtolower($c);
 		if (isset($this->charsets[$c])) {
-			return $this->charsets[$c]->qvalue();
+			return $this->charsets[$c];
 		}
 		// The special value "*" ... matches every character set
 		// which is not mentioned elsewhere in the field.
 		if ($c == '*' && ($chst = $this->first_charset_excluding($all))) {
 			return $chst->qvalue();
-		}
-		if (isset($this->charsets['*'])) {
-			return $this->charsets['*']->qvalue();
 		}
 		return 0.0;
 	}
@@ -271,10 +259,6 @@ abstract class BasicRepresenter extends Representer {
 		// other range present in the Accept-Language field.
 		if ($l == '*' && ($lang = $this->first_language_excluding($all))) {
 			return $lang->qvalue();
-		}
-		// <Also, we can specify "*" as a catch-all from the server end.>
-		if (isset($this->languages['*'])) {
-			return $this->languages['*']->qvalue();
 		}
 		return 0.0;
 	}
@@ -331,9 +315,9 @@ abstract class BasicRepresenter extends Representer {
 			return;
 		}
 		if ($strict) {
-			throw new Exception("unrecognised type '$_t'");
+			throw new Exception("unrecognised type '{$_t['media-range']}'");
 		} elseif ($force) {
-			$response->content_type( $_t.';charset='.$_c );
+			$response->content_type( $_t['media-range'].';charset='.$_c );
 		}
 	}
 

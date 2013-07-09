@@ -111,6 +111,11 @@ class YAMLRepresenter extends BasicRepresenter {
 			}
 			break;
 		case 'array':
+			if (count($o) == 0) {
+				$o = '{}';
+				break;
+			}
+
 			$allints = TRUE;
 			$i = 0;
 			foreach ($o as $k=>$v) {

@@ -24,7 +24,6 @@ Application::register_class('HTMLFile',   SYSDIR.'/std-models/html-file-model.ph
  *
  * Supported internet media types (MIMEs):
  *   text/html        q=1.0 [advertised,default]
- *   * / *            q=0.001
  */
 class RawHTMLDocRepresenter extends BasicRepresenter {
 
@@ -32,7 +31,6 @@ class RawHTMLDocRepresenter extends BasicRepresenter {
 		parent::__construct(
 			array(
 				new InternetMediaType('text', 'html', 1.0, TRUE),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'text/html'),
 			),
 			array(),
 			array(),

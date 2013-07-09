@@ -25,7 +25,6 @@ Application::register_class('CSSFile',   SYSDIR.'/std-models/css-file-model.php'
  * Supported internet media types (MIMEs):
  *   text/css                q=1.0 [advertised,default]
  *   application/x-pointplus q=1.0 [converted to text/css]
- *   * / *                   q=0.001
  */
 class RawCSSDocRepresenter extends BasicRepresenter {
 
@@ -34,7 +33,6 @@ class RawCSSDocRepresenter extends BasicRepresenter {
 			array(
 				new InternetMediaType('text', 'css', 1.0, TRUE),
 				new InternetMediaType('application', 'x-pointplus', 1.0, FALSE, 'text/css'), # yeah, yeah, shut up
-				new InternetMediaType('*', '*', 0.001, FALSE, 'text/css'),
 			),
 			array(),
 			array(),

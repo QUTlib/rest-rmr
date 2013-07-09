@@ -28,7 +28,6 @@ class TemplateRepresenter extends BasicRepresenter {
 		parent::__construct(
 			array(
 				new InternetMediaType('text', 'html', 1.0, TRUE),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'text/html'),
 			),
 			array(),
 			array(),

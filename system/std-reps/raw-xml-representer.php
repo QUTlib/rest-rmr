@@ -25,7 +25,6 @@ Application::register_class('XMLFile',   SYSDIR.'/std-models/xml-file-model.php'
  * Supported internet media types (MIMEs):
  *   application/xml  q=1.0 [advertised,default]
  *   text/xml         q=0.9
- *   * / *            q=0.001
  */
 class RawXMLDocRepresenter extends BasicRepresenter {
 
@@ -34,7 +33,6 @@ class RawXMLDocRepresenter extends BasicRepresenter {
 			array(
 				new InternetMediaType('application', 'xml', 1.0, TRUE),
 				new InternetMediaType('text',        'xml', 0.9),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'application/xml'),
 			),
 			array(),
 			array(),

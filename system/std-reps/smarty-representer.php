@@ -25,7 +25,6 @@
  * Supported internet media types (MIMEs):
  *   text/html        q=1.0 [advertised,default]
  *   application/html q=0.5
- *   * / *            q=0.001
  */
 class SmartyRepresenter extends BasicRepresenter {
 
@@ -34,7 +33,6 @@ class SmartyRepresenter extends BasicRepresenter {
 			array(
 				new InternetMediaType('text',        'html',   1.0, TRUE),
 				new InternetMediaType('application', 'html',   0.5),
-				new InternetMediaType('*', '*', 0.001, FALSE, 'text/html'),
 			),
 			array(),
 			array(),

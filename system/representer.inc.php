@@ -104,6 +104,20 @@ abstract class Representer {
 		foreach ($list as $qt => $array) {
 			foreach ($array as $item) {
 				$w = call_user_func(array($this,"preference_for_$name"), $item, $all); // float from 0.000 to 1.000
+				if (is_array($w)) {
+					switch($name){
+					case 'type':
+						$item['media-range'] = $w[1];
+						break;
+					case 'charset':
+						$item = $w[1];
+						break;
+					case 'language':
+						$item['language-range'] = $w[1];
+						break;
+					}
+					$w = $w[0];
+				}
 				$w = $qt * $w; // qt is int from 0 to 1000
 				$w = intval($w * 100); // final w is int from 0 to 100000 (5 precision, as per RFC2295/6)
 				if ($w > $best_weight) {

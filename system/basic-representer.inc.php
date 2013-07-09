@@ -206,21 +206,23 @@ abstract class BasicRepresenter extends Representer {
 		if (isset($this->types[$type])) {
 			return $this->types[$type]->qvalue();
 		}
+
 		if ($t['media-type']['subtype'] == '*') {
 			if (($type = $t['media-type']['type']) == '*') {
 				// Client accepts anything. Give them
 				// a good one.
 				if ($first_type = $this->first_type_excluding($all)) {
-					return $first_type->qvalue();
+					return array($first_type->qvalue(), $first_type->full_mime());
 				}
 			} else {
 				// Client accepts any subtype. Give them
 				// a good one.
 				if ($first_type = $this->first_subtype_excluding($all, $type)) {
-					return $first_type->qvalue();
+					return array($first_type->qvalue(), $first_type->full_mime());
 				}
 			}
 		}
+
 		return 0.0;
 	}
 
@@ -233,7 +235,7 @@ abstract class BasicRepresenter extends Representer {
 		// The special value "*" ... matches every character set
 		// which is not mentioned elsewhere in the field.
 		if ($c == '*' && ($chst = $this->first_charset_excluding($all))) {
-			return $chst->qvalue();
+			return array($chst->qvalue(), $chst->charset());
 		}
 		return 0.0;
 	}
@@ -252,13 +254,13 @@ abstract class BasicRepresenter extends Representer {
 		$n = strlen($p);
 		foreach ($this->languages as $tag=>$obj) {
 			if (substr($tag, 0, $n) == $p) {
-				return $obj->qvalue();
+				return array($obj->qvalue(), $obj->language());
 			}
 		}
 		// The special range "*" ... matches every tag not matched by any
 		// other range present in the Accept-Language field.
 		if ($l == '*' && ($lang = $this->first_language_excluding($all))) {
-			return $lang->qvalue();
+			return array($lang->qvalue(), $lang->language());
 		}
 		return 0.0;
 	}

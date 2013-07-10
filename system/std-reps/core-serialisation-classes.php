@@ -209,7 +209,7 @@ class XMLRepresenter extends BasicRepresenter {
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
-		if (($ua=Request::header('User-Agent')) && preg_match('/MSIE/',$ua)) { 
+		if (($ua=Request::header('User-Agent')) && strpos($ua,'MSIE') !== FALSE) { 
 			$response->add_header('X-UA-Compatible', 'IE=edge');
 			$response->add_header('X-Content-Type-Options', 'nosniff');
 		}
@@ -276,7 +276,7 @@ class XHTMLRepresenter extends BasicRepresenter {
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
-		if (($ua=Request::header('User-Agent')) && preg_match('/MSIE/',$ua)) { 
+		if (($ua=Request::header('User-Agent')) && strpos($ua,'MSIE') !== FALSE) { 
 			$response->add_header('X-UA-Compatible', 'IE=edge');
 			$response->add_header('X-Content-Type-Options', 'nosniff');
 		}
@@ -332,7 +332,7 @@ class HTMLRepresenter extends BasicRepresenter {
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
-		if (($ua=Request::header('User-Agent')) && preg_match('/MSIE/',$ua)) { 
+		if (($ua=Request::header('User-Agent')) && strpos($ua,'MSIE') !== FALSE) { 
 			$response->add_header('X-UA-Compatible', 'IE=edge');
 			$response->add_header('X-Content-Type-Options', 'nosniff');
 		}

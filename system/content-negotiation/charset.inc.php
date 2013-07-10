@@ -56,7 +56,7 @@ class CharacterSet {
 	 */
 	public function effective_charset() {
 		if ($this->mapto) return $this->mapto;
-		else              return $this->full_mime();
+		else              return $this->charset();
 	}
 
 	/**

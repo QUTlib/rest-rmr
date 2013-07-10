@@ -888,6 +888,31 @@ class Response {
 			$slices[] = array($y, $x, substr($data, $y), $size);
 		}
 
+#if MERGE_SLICES
+		// concatenate
+		$cat = array();
+		$prev = NULL;
+		foreach ($slices as $s) {
+			if ($prev === NULL) {
+				$prev = $s;
+			} elseif ($s[0] <= ($prev[1]+1)) {
+				if ($s[1] > $prev[1])
+					$prev[1] = $s[1];
+			} else {
+				$cat[] = $prev;
+				$prev = $s;
+			}
+		}
+		if ($prev != NULL)
+			$cat[] = $prev;
+		// handle stupidity
+		if (count($cat) == 1 && $cat[0][0] == 0 && $cat[0][1] == ($size-1)) {
+			return;
+		} else {
+			$slices = $cat;
+		}
+#endif
+
 		$n = count($slices);
 		if ($n == 0) {
 			// This is very late in the game to be barfing; we're backing out of all

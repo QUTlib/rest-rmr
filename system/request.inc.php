@@ -342,8 +342,8 @@ class Request {
 	 * @return accepted charsets, or FALSE
 	 */
 	public static function charsets() {
-		if (($charset = self::header('Accept-Charset')) !== NULL) {}
-		elseif (isset($_SERVER['HTTP_ACCEPT_CHARSET'])) { $charset = $_SERVER['HTTP_ACCEPT_CHARSET']; }
+		if (($accept = self::header('Accept-Charset')) !== NULL) {}
+		elseif (isset($_SERVER['HTTP_ACCEPT_CHARSET'])) { $accept = $_SERVER['HTTP_ACCEPT_CHARSET']; }
 		else return FALSE;
 
 		return RFC2616\parse_Accept_Charset($accept);

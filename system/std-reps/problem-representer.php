@@ -85,7 +85,8 @@ class ProblemRepresenter extends BasicRepresenter {
 	}
 
 	protected function xml($array) {
-		$xml = '<?xml version="1.0" encoding="Windows-1252"?>
+		$xml = '<?xml version="1.0" encoding="Windows-1252" ?>
+<?xml-stylesheet href="/assets/problem.xsl" type="text/xsl" ?>
 <problem xmlns="urn:ietf:rfc:XXXX">';
 		foreach ($array as $k=>$v) {
 			#$k = htmlspecialchars($k);

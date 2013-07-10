@@ -337,7 +337,7 @@ abstract class BasicRepresenter extends Representer {
 		$l = strtolower($_l['language-range']);
 		if (isset($this->languages[$l])) {
 			$lang = $this->languages[$l];
-			$response->content_language( $lang->language() );
+			$response->content_language( $lang->effective_language() );
 			return;
 		}
 		if ($strict) {

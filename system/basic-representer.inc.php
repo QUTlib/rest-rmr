@@ -230,7 +230,7 @@ abstract class BasicRepresenter extends Representer {
 		if (count($this->charsets) == 0) return 1.0;
 		$c = strtolower($c);
 		if (isset($this->charsets[$c])) {
-			return $this->charsets[$c];
+			return $this->charsets[$c]->qvalue();
 		}
 		// The special value "*" ... matches every character set
 		// which is not mentioned elsewhere in the field.

@@ -44,15 +44,21 @@ class JSONRepresenter extends BasicRepresenter {
 				new InternetMediaType('text',        'x-json', 0.9),
 			),
 			array(),
-			array(),
+			array(
+				# Advertised, compatible charsets
+				# Note: we actually use ASCII-7, and all these are supersets
+				new CharacterSet('Windows-1252',     1.0, TRUE), # WhatWG says that ISO-8859-1 = Windows-1252
+				new CharacterSet('UTF-8',            0.9, TRUE), # not entirely untrue..
+				new CharacterSet('US-ASCII',         1.0, TRUE),
+				new CharacterSet('ISO-8859-1',       1.0, TRUE), # kinda sorta half mandated by RFC 2616
+				new CharacterSet('*', 1.0, FALSE, 'Windows-1252'),
+			),
 			array('object', 'array')
 		);
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
-		$this->response_type($response, $t, 'Windows-1252', TRUE, TRUE); // override charset because I control it in the encoding process
-		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
-
+		$this->response_type($response, $t, $c, TRUE, TRUE);
 		$response->body( json_encode($m) );
 	}
 }
@@ -81,14 +87,21 @@ class YAMLRepresenter extends BasicRepresenter {
 				new InternetMediaType('application', 'yaml',   0.9),
 			),
 			array(),
-			array(),
+			array(
+				# Advertised, compatible charsets
+				# Note: we actually use ASCII-7, and all these are supersets
+				new CharacterSet('Windows-1252',     1.0, TRUE), # WhatWG says that ISO-8859-1 = Windows-1252
+				new CharacterSet('US-ASCII',         1.0, TRUE),
+				new CharacterSet('UTF-8',            0.9, TRUE), # not entirely untrue..
+				new CharacterSet('ISO-8859-1',       1.0, TRUE), # kinda sorta half mandated by RFC 2616
+				new CharacterSet('*', 1.0, FALSE, 'Windows-1252'),
+			),
 			array('integer','double','boolean','NULL','string','array','object')
 		);
 	}
 
 	public function rep($m, $d, $t, $c, $l, $response) {
-		$this->response_type($response, $t, 'Windows-1252', TRUE, TRUE); // override charset because I control it in the encoding process
-		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
+		$this->response_type($response, $t, $c, TRUE, TRUE);
 		$response
 			->body("%YAML 1.2\n---\n")
 			->append( $this->_yaml_encode($m, '', '', '', false, false) );

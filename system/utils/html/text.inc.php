@@ -29,7 +29,7 @@ class HTMLTextNode extends HTMLHierarchyNode {
 				$this->escaped_value = $value;
 				$this->unescaped_value = html_entity_decode($value);
 			} else {
-				$this->escaped_value = htmlentities($value);
+				$this->escaped_value = htmlspecialchars($value);
 				$this->unescaped_value = $value;
 			}
 		}
@@ -37,7 +37,7 @@ class HTMLTextNode extends HTMLHierarchyNode {
 
 	public function value($v=NULL) {
 		if (func_num_args() > 0) {
-			$this->escaped_value = htmlentities($v);
+			$this->escaped_value = htmlspecialchars($v);
 			$this->unescaped_value = $v;
 			return $this;
 		} else {

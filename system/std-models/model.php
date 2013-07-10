@@ -252,7 +252,7 @@ class DCMetadata {
 		$xml = '';
 		foreach (DCMetadata::$fieldnames as $fn) {
 			if ($x = $this->_wrap("dc.$fn")) {
-				$x = htmlentities($x);
+				$x = htmlspecialchars($x);
 				$xml .= "    <dc:$fn>$x</dc:$fn>\n";
 			}
 		}

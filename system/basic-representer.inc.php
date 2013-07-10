@@ -306,7 +306,7 @@ abstract class BasicRepresenter extends Representer {
 			// if we have a matching character set, poke it onto the MIME type
 			if (isset($this->charsets[$c])) {
 				$mime = clone $mime;
-				$mime->set_param('charset', $this->charsets[$c]->charset());
+				$mime->set_param('charset', $this->charsets[$c]->effective_charset());
 			} elseif ($force) {
 				$mime = clone $mime;
 				$mime->set_param('charset', $_c);

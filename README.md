@@ -1,10 +1,10 @@
 rest-rmr
 ========
 
-A modular RESTful [RMR][] framework, designed at the Queensland University of
+A modular RESTful [Resource-Method-Representation][RMR] \[RMR\] framework, designed at the Queensland University of
 Technology Library.
 
-[rmr]: http://www.peej.co.uk/articles/rmr-architecture.html
+[RMR]: http://www.peej.co.uk/articles/rmr-architecture.html
 
 Project goal:
 ------------
@@ -57,7 +57,7 @@ By convention, URIs will be of the form:
 
 However this is not mandatory.  A specific API will be provided to facilitate this pattern.
 
-This allows simple administration of concerns such as defining global Apache rules for authentication (by using a simple Location directive).
+This convention allows simple administration of concerns such as defining global Apache rules for authentication (by using a simple Location directive).
 
 Modules
 -------
@@ -108,19 +108,25 @@ The handler is invoked without parameters; however the framework provides global
 
 ### Representations ###
 
-Representation objects must extend the `Representer` abstract class, implementing the methods:
+Representation objects must extend the abstract `Representer` class, implementing the methods:
 
 `can_do_model($m)`
 * returns a Boolean, true if it can represent the given model, false if not
 
-`preference_for_type($t)`
+`preference_for_type($type, $all)`
 * returns a three-decimal-digit-precision floating-point number from 0.000 to 1.000 expressing this representation's preference for representing a given type
+* the response may be in the form: `array(<preference>, <actual-type>)` if the preference value corresponds with a different type than `$type`
+  * for example, the client may specify `Accept: */*` and the representer may respond with preference `array(1.0, "text/html")`
 
-`preference_for_charset($c)`
+`preference_for_charset($charset, $all)`
 * returns a three-decimal-digit-precision floating-point number from 0.000 to 1.000 expressing this representation's preference for representing a given character set
+* the response may be in the form: `array(<preference>, <actual-charset>)` if the preference value corresponds with a different character set than `$charset`
+  * for example, the client may specify `Accept-Charset: *` and the representer may respond with preference `array(1.0, "UTF-8")`
 
-`preference_for_language($l)`
+`preference_for_language($language, $all)`
 * returns a three-decimal-digit-precision floating-point number from 0.000 to 1.000 expressing this representation's preference for representing a given language
+* the response may be in the form: `array(<preference>, <actual-language>)` if the preference value corresponds with a language than `$language`
+  * for example, the client may specify `Accept: *` and the representer may respond with preference `array(1.0, "en-AU")`
 
 `list_types()`
 * returns an associative array of `type=>preference` for all types this representer wishes to advertise supporting.  Note that this list does not have to include every type that would return a non-zero value in `#preference_for_type`
@@ -134,18 +140,29 @@ Representation objects must extend the `Representer` abstract class, implementin
 `represent($model, $type, $charset, $language, $response)`
 * represents the given model as the given type, charset, and language, and pokes it into the given response object
 
+#### BasicRepresenter ####
+
+A useful partial implementation of `Representer` is the abstract `BasicRepresenter` class.  To use `BasicRepresenter`:
+1. Create an extending class.
+2. Override the constructor, calling `super::__construct` with appropriate lists of `InternetMediaType`, `ContentLanguage`, and `CharacterSet` objects, and acceptable-model specifications.
+3. Implement `rep($model, $metadata, $type, $charset, $language, $response)`, which is the same as `Representer#represent` with an added metadata parameter.
+
+All built-in representation objects extend `BasicRepresenter`.
+
 Magic
 -----
 Off the bat, the framework will provide the following features:
 * An implementation of a variation of _Transparent Content Negotiation in HTTP_ \[RFC 2295\], a content negotiation protocol.
-* Compression, if the client specifies Accept-Encoding: gzip, deflate, or bzip2.
-* Support for If-Modified-Since request headers.
+* Compression, if the client specifies Accept-Encoding and/or TE: gzip, deflate, or bzip2.
+* Support for If-Modified-Since and If-None-Match headers in GET requests.
 * Proper HTTP HEAD request support.
 * Mostly correct HTTP OPTIONS request support.
+* An implementation of [http://datatracker.ietf.org/doc/draft-nottingham-http-problem/](I-D.nottingham-http-problem)
+* An implementation of [http://datatracker.ietf.org/doc/draft-nottingham-http-browser-hints/](I-D.nottingham-http-browser-hints)
 
 I would like to provide support for:
 * ~~Some data access layer (DAO, ActiveRecord, ORM, ...)~~ (done, 2012-08-29)
-* Response caching and ETag support
+* Response caching ~~and ETag support~~ (response ETags are supported)
 
 License & Copyright
 -------------------
@@ -168,6 +185,8 @@ under the License.
 References
 ----------
 
-* RMR: 
+* \[RMR\]:
   - http://www.peej.co.uk/articles/rmr-architecture.html
   - http://blog.iandavis.com/2008/12/06/the-web-is-rmr-not-mvc/
+* \[RFC 2295\]: Holtman, K., Mutz, A., "[http://tools.ietf.org/html/rfc2295](Transparent Content Negotiation in HTTP)", RFC 2295, March 1998.
+

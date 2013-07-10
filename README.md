@@ -143,6 +143,7 @@ Representation objects must extend the abstract `Representer` class, implementin
 #### BasicRepresenter ####
 
 A useful partial implementation of `Representer` is the abstract `BasicRepresenter` class.  To use `BasicRepresenter`:
+
 1. Create an extending class.
 2. Override the constructor, calling `super::__construct` with appropriate lists of `InternetMediaType`, `ContentLanguage`, and `CharacterSet` objects, and acceptable-model specifications.
 3. Implement `rep($model, $metadata, $type, $charset, $language, $response)`, which is the same as `Representer#represent` with an added metadata parameter.

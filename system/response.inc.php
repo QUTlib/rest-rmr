@@ -43,6 +43,7 @@ class Response {
 		#	$this->add_header('X-Content-Type-Options', 'nosniff');
 		#}
 		$this->add_header('OH', 's,r');
+		$this->add_header('Vary', 'Accept-Encoding');
 		foreach (headers_list() as $header) {
 			$parts = explode(': ', $header, 2);
 			if (count($parts) == 2)
@@ -848,8 +849,8 @@ class Response {
 						unset($this->header['ETag']);
 					}
 				}
-				// if there's a Vary: header, add 'Accept-Encoding' as an important thingy
-				$this->append_header('Vary', 'Accept-Encoding');
+				#// if there's a Vary: header, add 'Accept-Encoding' as an important thingy
+				#$this->append_header('Vary', 'Accept-Encoding');
 			} else {
 				// update the transport headers
 				$this->header('Transfer-Encoding', $method);

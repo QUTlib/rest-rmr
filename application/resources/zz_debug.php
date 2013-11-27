@@ -50,6 +50,8 @@ function debug_index() {
 <ul>
 <li><a href="/debug/phpinfo/">PHP Info</a></li>
 <li><a href="/debug/error-test/">Error Test</a></li>
+<li><a href="/debug/test/">Model Test</a></li>
+<li><a href="/debug/headers/">Headers</a></li>
 </ul>
 </body>
 </html>

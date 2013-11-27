@@ -19,7 +19,9 @@
 
 class URIMap {
 
-	private static $map = array();
+	# Note: RFC 2616 states that the "methods GET and HEAD MUST be supported
+	#  * <http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.1>
+	private static $map = array('GET'=>array(), 'HEAD'=>array());
 
 	/**
 	 * Returns TRUE if there are any registered handlers for given $method,

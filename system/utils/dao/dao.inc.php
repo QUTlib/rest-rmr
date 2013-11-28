@@ -192,7 +192,7 @@ SQL;
 
 		$tname = $table->name();
 		$field_str = $table->parseFields($keys, TRUE);
-		$value_str = join($value_array, "\n");
+		$value_str = join($value_array, ",\n");
 
 		return <<<SQL
 INSERT INTO `$tname`

@@ -98,7 +98,7 @@ abstract class DAO {
 	 * @param array $values a list of key=>value map of fields and values for the new objects
 	 */
 	protected function insert_many($table, $values) {
-		$query = $this->multi_insert_query($table, $values);
+		$query = $this->insert_many_query($table, $values);
 		return $this->db()->query($query);
 	}
 

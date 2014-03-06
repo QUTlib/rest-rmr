@@ -266,11 +266,14 @@ abstract class BasicRepresenter extends Representer {
 	}
 
 	public function represent($m, $t, $c, $l, $response) {
-		return $this->rep(
-			$this->extract_model_datum($m),
-			$this->extract_model_metadata($m),
-			$t, $c, $l, $response
-		);
+		$model = $this->extract_model_datum($m);
+		$meta  = $this->extract_model_metadata($m);
+		if ($cache = $meta->cache()) {
+			$response->cache(date('r',$cache));
+		} elseif ($cache === FALSE) {
+			$response->nocache();
+		}
+		return $this->rep($model, $meta, $t, $c, $l, $response);
 	}
 
 	abstract public function rep($model, $metadata, $type, $charset, $language, $response);

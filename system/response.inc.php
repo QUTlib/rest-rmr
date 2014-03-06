@@ -43,6 +43,7 @@ class Response {
 		#	$this->add_header('X-Content-Type-Options', 'nosniff');
 		#}
 		$this->add_header('OH', 'r');
+		$this->add_header('HH', 'sc');
 		$this->add_header('Vary', 'Accept-Encoding');
 		foreach (headers_list() as $header) {
 			$parts = explode(': ', $header, 2);

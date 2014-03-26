@@ -826,7 +826,8 @@ class Response {
 			// assumes: no previous Vary: header, and update to existing ETag header
 			$overhead = strlen("Content-Encoding: $method\r\nVary: Accept-Encoding\r\n$method:");
 		} else {
-			$overhead = strlen("Transfer-Encoding: $method\r\n");
+			// assumes: no previous Connection: header, content-length <1k
+			$overhead = strlen("Transfer-Encoding: $method\r\nConnection: Transfer-Encoding\r\n")-strlen("Content-Length: XXX");
 		}
 		// we can still bail out here if there's not enough of an
 		// improvement (currently 'enough' means 'any')
@@ -854,8 +855,12 @@ class Response {
 				#$this->append_header('Vary', 'Accept-Encoding');
 			} else {
 				// update the transport headers
+				$this->add_header('Connection', 'Transfer-Encoding');
 				$this->header('Transfer-Encoding', $method);
-				$this->header('Content-Length', $this->length());
+				# HTTPbis-p1, S3.3.2:
+				# "A sender MUST NOT send a Content-Length header field in any message
+				#  that contains a Transfer-Encoding header field."
+				$this->remove_header('Content-Length');
 			}
 			return TRUE;
 		}

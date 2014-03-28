@@ -28,7 +28,7 @@ class Splunk {
 #			$browser->platform = 'unspecified';
 #		}
 		$this->log_data = array(
-			'DATE' => date('Y-m-d\TH:i:sO'),
+			'DATE' => date('Y-m-d@H:i:s'),
 			// user and network information
 			'IP'   => Request::client_ip(),
 			'USER' => Request::server_var('REMOTE_USER', '-'),
@@ -36,12 +36,25 @@ class Splunk {
 #			'BROWSER'       => $browser->browser,
 #			'BROWSERVER'    => $browser->version,
 #			'OS'            => $browser->platform,
-			'ROLE'          => ESOE::roles('-'),
-			'SERVICES'      => ESOE::services('-'),
+			'ROLE'          => $this->multi_value(ESOE::roles('-')),
+			#'SERVICES'      => $this->multi_value(SOE::services('-')),
 			'CLIENTID'      => ESOE::clientid('-'),
 			'STAFFNUMBER'   => ESOE::staffNumber('-'),
 			'STUDENTNUMBER' => ESOE::studentNumber('-'),
 		);
+	}
+
+	/**
+	 * Split a potentially multi-valued field.
+	 * Only splits if the value contains the given separator.
+	 * @param string $val
+	 * @param string $separator default is '|'
+	 */
+	private function multi_value($val, $separator='|') {
+		if ($val && strpos($val, $separator) !== FALSE ) {
+			$val = explode($separator, $val);
+		}
+		return $val;
 	}
 
 	/**
@@ -101,24 +114,35 @@ class Splunk {
 		$this->__deferred_init();
 		$elements = array();
 		foreach ($this->log_data as $key=>$val) {
-			// flatten arrays
-			if (is_array($val))
-				$val = implode(',', $val);
-			// normalise whitespace
-			$val = trim($val);
-			$val = preg_replace('/\s+/', ' ', $val);
-			// maybe quote stuff
-			$pattern = '/('.preg_quote(Splunk::LOG_DELIMITER,'/').'|'.preg_quote(Splunk::LOG_SPACER,'/').'|")/';
-			if (preg_match($pattern, $val)) {
-				$val = preg_replace('/\\\\[\\"]/', '\\\$1', $val);
-				$val = '"' . $val . '"';
+			// duplicate arrays
+			if (is_array($val)) {
+				foreach ($val as $val0) {
+					$elements[] = $this->_message_item($key, $val0);
+				}
+			} else {
+				$elements[] = $this->_message_item($key, $val);
 			}
-			// add to list
-			$elements[] = sprintf('%s%s%s', $key, Splunk::LOG_DELIMITER, $val);
 		}
 		// virtual element
-		$elements[] = sprintf('ELAPSED%s%0.6f', Splunk::LOG_DELIMITER, elapsed());
+		$elements[] = sprintf('ELAPSED%s%0.1f', Splunk::LOG_DELIMITER, elapsed()*1000);
 		return implode(Splunk::LOG_SPACER, $elements);
+	}
+
+	private function _message_item($key, $val) {
+		// flatten arrays
+		if (is_array($val))
+			$val = implode(',', $val);
+		// normalise whitespace
+		$val = trim($val);
+		$val = preg_replace('/\s+/', ' ', $val);
+		// maybe quote stuff
+		$pattern = '/('.preg_quote(Splunk::LOG_DELIMITER,'/').'|'.preg_quote(Splunk::LOG_SPACER,'/').'|[",])/';
+		if (preg_match($pattern, $val)) {
+			$val = preg_replace('/\\\\[\\"]/', '\\\$1', $val);
+			$val = '"' . $val . '"';
+		}
+		// add to list
+		return sprintf('%s%s%s', $key, Splunk::LOG_DELIMITER, $val);
 	}
 
 	/**

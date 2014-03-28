@@ -4,8 +4,8 @@ require_once('esoe.inc.php');
 
 class Splunk {
 
-	const LOG_DELIMITER = ":";
-	const LOG_SPACER = " ";
+	const LOG_DELIMITER = '=';
+	const LOG_SPACER = ', ';
 
 	private $log_location = NULL;
 	private $log_data = NULL;

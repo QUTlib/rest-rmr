@@ -42,6 +42,18 @@ class Splunk {
 			'STAFFNUMBER'   => ESOE::staffNumber('-'),
 			'STUDENTNUMBER' => ESOE::studentNumber('-'),
 		);
+
+		// some special QUT-specific magic, for tracking users
+		if ($user = ESOE::username()) {
+			$this->log_data['UID'] = $user;
+			$this->log_data['UIDSRC'] = 'esoe';
+			if (!Request::header('DNT')) {
+				setcookie('UID', $user, time()+1800, '/');
+			}
+		} elseif (isset($_COOKIE['UID']) && ($user = $_COOKIE['UID'])) {
+			$this->log_data['UID'] = $user;
+			$this->log_data['UIDSRC'] = 'cookie';
+		}
 	}
 
 	/**

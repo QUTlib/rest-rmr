@@ -51,6 +51,11 @@ class Request {
 		self::$post  = $_POST;
 		self::$https = (($https = self::server_var('HTTPS')) && ($https != 'off'));
 
+		// Special edge-case, happens rarely but does happen
+		if (strtoupper(self::$method) == 'OPTIONS' && self::$uri == '/*') {
+			self::$uri = '*';
+		}
+
 		// build a header index
 		$headers_index = array();
 		foreach (self::$headers as $k=>$v) {

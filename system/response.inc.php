@@ -34,7 +34,8 @@ class Response {
 	private $committed = false;
 	private $recording = false;
 
-	public function __construct($http_version='1.1', $status=200) {
+	public function __construct($http_version=NULL, $status=200) {
+		if (!$http_version) $this->version = Request::http_version();
 		if (func_num_args() > 0 && $http_version) $this->version = $http_version;
 		if (func_num_args() > 1) $this->status($status); // including validation
 		// Set the default headers

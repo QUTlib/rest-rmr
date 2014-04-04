@@ -189,6 +189,8 @@ class Application {
 				// create a 200 OK response, and poke in an Allow header for the
 				// HTTP methods we think are cool
 				$response = new Response(Request::http_version());
+				$response->allow_compression = FALSE;
+				$response->allow_auto_etag = FALSE;
 				$response->header('Allow', implode(', ', $methods));
 			} else {
 				// no such resource; no methods would work. Send a 404 Not Found.

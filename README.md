@@ -158,8 +158,8 @@ Off the bat, the framework will provide the following features:
 * Support for If-Modified-Since and If-None-Match headers in GET requests.
 * Proper HTTP HEAD request support.
 * Mostly correct HTTP OPTIONS request support.
-* An implementation of [https://tools.ietf.org/html/draft-ietf-appsawg-http-problem-00](I-D.ietf-appsawg-http-problem)
-* An implementation of [https://datatracker.ietf.org/doc/draft-nottingham-http-browser-hints/](I-D.nottingham-http-browser-hints)
+* An implementation of [I-D.ietf-appsawg-http-problem](https://tools.ietf.org/html/draft-ietf-appsawg-http-problem-00)
+* An implementation of [I-D.nottingham-http-browser-hints](https://datatracker.ietf.org/doc/draft-nottingham-http-browser-hints/)
 
 I would like to provide support for:
 * ~~Some data access layer (DAO, ActiveRecord, ORM, ...)~~ (done, 2012-08-29)

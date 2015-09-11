@@ -1182,8 +1182,12 @@ class Response {
 	 * Immediately handles an unrecoverable error, and terminates the request.
 	 */
 	public static function error($title, $message, $errfile, $errline, $stack=NULL) {
-		$code = self::_source($errfile, $errline);
-		if ($stack) $code .= self::_stack($stack);
+		if (defined('DEBUG') && DEBUG) {
+			$code = self::_source($errfile, $errline);
+			if ($stack) $code .= self::_stack($stack);
+		} else {
+			$code = '';
+		}
 		$message = '<p class="mesg">'.nl2br(htmlspecialchars($message)).'</p>';
 		#header('Content-Type: text/html; charset=iso-8859-1', TRUE, 500);
 		#echo self::generate_html($title, $message.$code);

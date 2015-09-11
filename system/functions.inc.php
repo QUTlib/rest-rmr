@@ -105,3 +105,58 @@ function inspect($v) {
 	return $str;
 }
 
+/**
+ * Like json_encode() but non-crap.
+ */
+function json_encode_v2($v, $as_object=false) {
+	// convert objects to arrays, with different open and close tokens
+	if (is_object($v)) {
+		if (method_exists($v,'jsonSerialize')) {
+			$w = $v->jsonSerialize();
+			if ($w != $v) {
+				// FIXME: this can still result in an infinite loop
+				return json_encode_v2($w, true);
+			} else {
+				$v = $w;
+			}
+		} else {
+			$a = array(); foreach ($v as $k=>$e) $a[$k] = $e;
+			$v = $a;
+		}
+		$as_object = true;
+	}
+	// detect object-style arrays
+	elseif (is_array($v)) {
+		// extract and sort the keys
+		$keys = array_keys($v);
+		sort($keys);
+		// check that they're all in-order integers
+		$exp = 0;
+		foreach ($keys as $k) {
+			if ($k != $exp) {
+				$as_object = true;
+				break;
+			}
+			$exp ++;
+		}
+	}
+	// special-handle arrays (and objects), fallback for everything else
+	if (is_array($v)) {
+		$s = ($as_object ? '{' : '[');
+		$j = '';
+		foreach ($v as $k=>$e) {
+			$s .= $j;
+			if ($as_object) {
+				#$s .= var_export($k,1).":";
+				$s .= "\"$k\":";
+			}
+			$s .= json_encode_v2($e);
+			$j = ',';
+		}
+		$s .= ($as_object ? '}' : ']');
+		return $s;
+	} else {
+		return json_encode($v);
+	}
+}
+

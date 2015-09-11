@@ -59,7 +59,7 @@ class JSONRepresenter extends BasicRepresenter {
 
 	public function rep($m, $d, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c, TRUE, TRUE);
-		$response->body( json_encode($m) );
+		$response->body( json_encode_v2($m) );
 	}
 }
 

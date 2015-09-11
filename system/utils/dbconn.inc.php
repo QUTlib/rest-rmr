@@ -120,6 +120,12 @@ class DBConn {
 		return $array;
 	}
 
+	/**
+	 * Invokes a stored procedure, and retrieve a value.
+	 * @param $call an SQL 'CALL MyStoredProc(...)' statement
+	 * @param $item the item to return, usually an SQL '@variable'
+	 * @throws Exception if a parameter is unsavoury
+	 */
 	public function call_and_select($call, $item) {
 		$this->__assert();
 
@@ -149,6 +155,14 @@ class DBConn {
 			} while ($this->link->next_result());
 			return NULL;
 		} else {
+			if (!empty($this->link->error_list)) {
+				error_log("SQL Error in call_and_select($call, $item):");
+				foreach ($this->link->error_list as $e) {
+					error_log("[{$e['sqlstate']}] {$e['errno']}: {$e['error']}");
+				}
+			} else {
+				error_log("Unknown SQL Error in call_and_select($call, $item)");
+			}
 			return FALSE;
 		}
 	}

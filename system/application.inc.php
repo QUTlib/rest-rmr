@@ -383,3 +383,9 @@ class Application {
 	/**#@-*/
 }
 
+if (!class_exists('JsonSerializable')) {
+	interface JsonSerializable {
+		#public function jsonSerialize();
+	}
+}
+

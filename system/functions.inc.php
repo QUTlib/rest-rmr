@@ -133,7 +133,7 @@ function json_encode_v2($v, $as_object=false) {
 		// check that they're all in-order integers
 		$exp = 0;
 		foreach ($keys as $k) {
-			if ($k != $exp) {
+			if ($k != "$exp") {
 				$as_object = true;
 				break;
 			}

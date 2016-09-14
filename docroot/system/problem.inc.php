@@ -109,7 +109,7 @@ class Problem {
 			case 304: $title = 'Not Modified'; break;
 			case 305: $title = 'Use Proxy'; break;
 			case 307: $title = 'Temporary Redirect'; break;
-			case 308: $title = 'Permanent Redirect'; break;/* I.D */
+			case 308: $title = 'Permanent Redirect'; break;
 			case 400: $title = 'Bad Request'; break;
 			case 401: $title = 'Unauthorised'; break;
 			case 402: $title = 'Payment Required'; break;

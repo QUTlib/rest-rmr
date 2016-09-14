@@ -659,6 +659,45 @@ class Request {
 		}
 	}
 
+	/**
+	 * Moves an uploded file.
+	 *
+	 * If no file is known by that identifier, returns NULL.
+	 * If something goes wrong, returns FALSE as per `move_uploaded_file()`.
+	 */
+	public static function move_file($ident, $dest) {
+		if (!isset(self::$files[$ident])) {
+			return NULL;
+		}
+		return move_uploaded_file(self::$files[$ident]['tmp_name'], $dest);
+	}
+
+	/**
+	 * Opens an uploaded file for reading.
+	 *
+	 * Returns a file handle, as per `fopen()`.
+	 * If no file is known by that identifier, returns NULL.
+	 */
+	public static function open_file($ident) {
+		if (!isset(self::$files[$ident])) {
+			return NULL;
+		}
+		return fopen(self::$files[$ident]['tmp_name'], 'r');
+	}
+
+	/**
+	 * Read the contents of an uploaded file into a string.
+	 *
+	 * Returns a string, as per `file_get_contents()`.
+	 * If no file is known by that identifier, returns NULL.
+	 */
+	public static function get_file_contents($ident) {
+		if (!isset(self::$files[$ident])) {
+			return NULL;
+		}
+		return file_get_contents(self::$files[$ident]['tmp_name']);
+	}
+
 	protected static function parse_multipart_entity($type) {
 		$bcharsnospace = "-0-9A-Z'()+_,./:=?";
 		$bchars = $bcharsnospace . ' ';

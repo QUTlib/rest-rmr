@@ -54,8 +54,8 @@ Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
  * Not instantiable.
  */
 class Application {
-	/** The application framework version.  Updated by hand. (see: ./touch ) */
-	const VERSION = '1.1-r51';
+	/** The application framework version.  Updated by hand. */
+	const VERSION = '1.1.2-dev';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 

@@ -37,14 +37,16 @@ class ProblemRepresenter extends BasicRepresenter {
 	public function __construct() {
 		parent::__construct(
 			array(
-				new InternetMediaType('application', 'api-problem+json',   1.0, TRUE),
-				new InternetMediaType('application', 'api-problem+xml',    1.0, TRUE),
+				new InternetMediaType('application', 'problem+json',     1.0, TRUE),
+				new InternetMediaType('application', 'problem+xml',      1.0, TRUE),
+				new InternetMediaType('application', 'api-problem+json'), // from early draft specs
+				new InternetMediaType('application', 'api-problem+xml'),  // from early draft specs
 				new InternetMediaType('application', 'json',   0.5), # note: these are relatively low because they also represent
 				new InternetMediaType('application', 'xml',    0.5), # hopefully-200OK responses, and I really want to lean towards
 				new InternetMediaType('text',        'json',   0.4), # different content-types for Ok vs Problem responses
 				new InternetMediaType('text',        'x-json', 0.4),
 				new InternetMediaType('text',        'xml',    0.4),
-				new InternetMediaType('*', '*', 1.0, FALSE, 'application/api-problem+json'),
+				new InternetMediaType('*', '*', 1.0, FALSE, 'application/problem+json'),
 			),
 			array(),
 			array(),
@@ -67,6 +69,7 @@ class ProblemRepresenter extends BasicRepresenter {
 		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
 
 		switch (strtolower($t['media-range'])) {
+		case 'application/problem+json':
 		case 'application/api-problem+json':
 		case 'application/json':
 		case 'text/json':
@@ -74,6 +77,7 @@ class ProblemRepresenter extends BasicRepresenter {
 		case '*/*':
 			$response->body( json_encode($m->to_array()) );
 			break;
+		case 'application/problem+xml':
 		case 'application/api-problem+xml':
 		case 'application/xml':
 		case 'text/xml':
@@ -85,9 +89,9 @@ class ProblemRepresenter extends BasicRepresenter {
 	}
 
 	protected function xml($array) {
-		$xml = '<?xml version="1.0" encoding="Windows-1252" ?>
+		$xml = '<?xml version="1.0" encoding="UTF-8" ?>
 <?xml-stylesheet href="/assets/problem.xsl" type="text/xsl" ?>
-<problem xmlns="urn:ietf:rfc:XXXX">';
+<problem xmlns="urn:ietf:rfc:7807">';
 		foreach ($array as $k=>$v) {
 			#$k = htmlspecialchars($k);
 			$v = htmlspecialchars($v);

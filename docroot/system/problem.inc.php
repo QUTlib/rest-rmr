@@ -21,39 +21,34 @@
  * granularity, or more terseness, than is afforded by basic
  * HTTP response status codes.
  *
- * See: https://tools.ietf.org/html/draft-ietf-appsawg-http-problem-00
+ * See: https://tools.ietf.org/html/rfc7807
  */
 class Problem {
-	private $problemType;
+	private $type;
 	private $title;
-	private $httpStatus;
+	private $status;
 	private $detail;
-	private $problemInstance;
+	private $instance;
 
 	/**
 	 * Creates a new Problem, with the minimum set of required attributes.
 	 */
-	public function __construct($problemType, $title, $httpStatus=null, $detail=null) {
-		$this->problemType = "$problemType";
+	public function __construct($type, $title, $status=null, $detail=null) {
+		$this->type = "$type";
 		$this->title = "$title";
-		$nargs = func_num_args();
-		if ($nargs > 2) {
-			$this->httpStatus = (int)$httpStatus;
-			if ($nargs > 3) {
-				$this->detail = "$detail";
-			}
-		}
+		if ($status !== NULL) $this->status = (int)$status;
+		if ($detail !== NULL) $this->detail = "$detail";
 	}
 
-	/** Get the immutable problemType URI of this problem. */
-	public function problemType() { return $this->problemType; }
+	/** Get the immutable type URI of this problem. */
+	public function type() { return $this->type; }
 	/** Get the immutable short, human-readable summary of this problem. */
 	public function title() { return $this->title; }
 
 	/** Get or set the optional HTTP status code set by the server for this occurrence of the problem. */
-	public function httpStatus($val=null) {
-		if (func_num_args() == 0) return $this->httpStatus;
-		$this->httpStatus = (int)$val;
+	public function status($val=null) {
+		if (func_num_args() == 0) return $this->status;
+		$this->status = (int)$val;
 	}
 
 	/** Get or set the optional human readable explanation specific to this occurrence of the problem. */
@@ -63,33 +58,33 @@ class Problem {
 	}
 
 	/** Get or set the optional URI that identifies the specific occurrence of the problem. */
-	public function problemInstance($val=null) {
-		if (func_num_args() == 0) return $this->problemInstance;
-		$this->problemInstance = "$val";
+	public function instance($val=null) {
+		if (func_num_args() == 0) return $this->instance;
+		$this->instance = "$val";
 	}
 
 	/** Get an associative-array representation of this problem object. */
 	public function to_array() {
 		$array = array(
-			'problemType' => $this->problemType,
+			'type' => $this->type,
 			'title' => $this->title,
-			'httpStatus' => $this->httpStatus,
+			'status' => $this->status,
 		);
 		if (isset($this->detail)) $array['detail'] = $this->detail;
-		if (isset($this->problemInstance)) $array['problemInstance'] = $this->problemInstance;
+		if (isset($this->instance)) $array['instance'] = $this->instance;
 		return $array;
 	}
 
 	/**
-	 * Constructs a new Problem object with a default problemType='about:blank', and
-	 * httpStatus/title as given.
+	 * Constructs a new Problem object with a default type='about:blank', and
+	 * status/title as given.
 	 *
 	 * If not specified, $title defaults to the normal english HTTP status phrase for
-	 * the given $httpStatus code.
+	 * the given $status code.
 	 */
-	public static function from_status_code($httpStatus, $title=null) {
+	public static function from_status_code($status, $title=null) {
 		if (func_num_args() < 2) {
-			switch ((int)$httpStatus) {
+			switch ((int)$status) {
 			/*
 			 * This is the same list of codes as used in /assets/problem.xsl,
 			 * drawn from the IANA registry at:
@@ -155,6 +150,6 @@ class Problem {
 			default:  $title = "${title}"; break;
 			}
 		}
-		return new self('about:blank', $title, $httpStatus);
+		return new self('about:blank', $title, $status);
 	}
 }

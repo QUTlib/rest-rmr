@@ -619,7 +619,7 @@ class Request {
 	protected static function parse_multipart_entity($type) {
 		$bcharsnospace = "-0-9A-Z'()+_,./:=?";
 		$bchars = $bcharsnospace . ' ';
-		if (!preg_match('@^multipart/.*;\s*boundary=("?)('.$bchars.'{0,69}'.$bcharsnospace.')\\1@iU', $type, $matches)) {
+		if (!preg_match('@^multipart/.*;\s*boundary=("?)(['.$bchars.']{0,69}['.$bcharsnospace.'])\\1@iU', $type, $matches)) {
 			throw new BadRequestException("can't determine multipart entity boundary");
 		}
 		$delimiter = "\r\n--".$matches[2];

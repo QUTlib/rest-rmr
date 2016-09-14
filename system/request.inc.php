@@ -601,7 +601,7 @@ class Request {
 			} elseif (preg_match('@^application/x-www-form-urlencoded(\s*;|$)@i', $type)) {
 				return self::$post;
 			} elseif (preg_match('@^multipart/form-data(\s*;|$)@i', $type)) {
-				return array(self::$post, '_FILES'=>$_FILES);
+				return array('strings'=>self::$post, 'files'=>$_FILES);
 			} elseif (preg_match('@^multipart/@i', $type)) {
 				return self::parse_multipart_entity($type);
 			} else {

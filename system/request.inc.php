@@ -31,6 +31,7 @@ class Request {
 	private static $headers_index = NULL;
 	private static $get  = NULL;
 	private static $post = NULL;
+	private static $files  = NULL;
 	private static $params = NULL;
 	private static $entity_body = NULL;
 	private static $preconditions = NULL;
@@ -51,6 +52,22 @@ class Request {
 		self::$post  = $_POST;
 		self::$https = (($https = self::server_var('HTTPS')) && ($https != 'off'));
 
+		self::$files = array();
+		foreach ($_FILES as $key=>$nest) {
+			$flat = self::flatten_files($key, $nest['error'], $nest['name'], $nest['type'], $nest['size'], $nest['tmp_name']);
+			foreach ($flat as $ident=>$data) {
+				if (!$data['error']) { // UPLOAD_ERR_OK=0 so this is ok
+					throw new Exception("file upload error ".$data['error']." for '$ident'"); # FIXME
+				}
+				self::$files[$ident] = array(
+					'name' => $data['name'],
+					'type' => $data['type'],
+					'size' => $data['size'],
+					'tmp_name' => $data['tmp_name'],
+				);
+			}
+		}
+
 		// Special edge-case, happens rarely but does happen
 		if (strtoupper(self::$method) == 'OPTIONS' && self::$uri == '/*') {
 			self::$uri = '*';
@@ -62,6 +79,32 @@ class Request {
 			$headers_index[strtolower($k)] = $k;
 		}
 		self::$headers_index = $headers_index;
+	}
+
+	/**
+	 * Flattens arbitrarily-nested sub-arrays in $_FILES.
+	 */
+	private static function flatten_files($ident, &$error, &$name, &$type, &$size, &$tmp_name) {
+		if (is_array($error)) {
+			$results = array();
+			foreach ($error as $key=>$foo) {
+				$keyid = $ident.'['.$key.']';
+				$array = flatten_files($keyid,
+					$error[$key],
+					$name[$key],
+					$type[$key],
+					$size[$key],
+					$tmp_name[$key]
+				);
+				// $results = array_merge($results, $array);
+				foreach ($array as $a=>$b) {
+					$results[$a] = $b;
+				}
+			}
+			return $results;
+		} else {
+			return array($ident => array($error, $name, $type, $size, $tmp_name));
+		}
 	}
 
 	public static function client_ip() { return self::$client_ip; }
@@ -601,7 +644,7 @@ class Request {
 			} elseif (preg_match('@^application/x-www-form-urlencoded(\s*;|$)@i', $type)) {
 				return self::$post;
 			} elseif (preg_match('@^multipart/form-data(\s*;|$)@i', $type)) {
-				return array('strings'=>self::$post, 'files'=>$_FILES);
+				return array('strings'=>self::$post, 'files'=>self::$files);
 			} elseif (preg_match('@^multipart/@i', $type)) {
 				return self::parse_multipart_entity($type);
 			} else {

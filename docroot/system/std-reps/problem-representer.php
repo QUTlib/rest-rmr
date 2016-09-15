@@ -64,7 +64,7 @@ class ProblemRepresenter extends BasicRepresenter {
 		$response->allow_auto_etag = false;
 		$response->nocache();
 
-		$response->status( $m->httpStatus() );
+		$response->status( $m->status() );
 		$this->response_type($response, $t, NULL, TRUE, TRUE); // NULL charset because blarflrf
 		$this->response_language($response, 'en', FALSE, TRUE); // ???force language???
 

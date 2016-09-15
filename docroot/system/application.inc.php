@@ -55,7 +55,7 @@ Autoloader::register('TemplateEngine', SYSDIR.'/utils/template-engine.inc.php');
  */
 class Application {
 	/** The application framework version.  Updated by hand. */
-	const VERSION = '1.1.2-dev';
+	const VERSION = '1.1.2';
 	/** The application framework name. */
 	const TITLE = 'REST-RMR';
 

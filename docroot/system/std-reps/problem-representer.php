@@ -20,7 +20,7 @@
  * A representer which will represent a HTTP API Problem
  * as a JSON or XML document.
  *
- * See: http://tools.ietf.org/html/draft-nottingham-http-problem-03
+ * See: https://tools.ietf.org/html/rfc7807
  *
  * Supported internet media types (MIMEs):
  *   application/api-problem+json q=1.0 [advertised,default]

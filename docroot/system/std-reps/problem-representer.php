@@ -23,14 +23,14 @@
  * See: https://tools.ietf.org/html/rfc7807
  *
  * Supported internet media types (MIMEs):
- *   application/api-problem+json q=1.0 [advertised,default]
- *   application/json             q=1.0
- *   application/api-problem+xml  q=1.0 [advertised]
- *   application/xml              q=1.0
- *   text/json                    q=0.9
- *   text/x-json                  q=0.9
- *   text/xml                     q=0.9
- *   * / *                        q=0.001
+ *   application/problem+json q=1.0 [advertised,default]
+ *   application/json         q=1.0
+ *   application/problem+xml  q=1.0 [advertised]
+ *   application/xml          q=1.0
+ *   text/json                q=0.9
+ *   text/x-json              q=0.9
+ *   text/xml                 q=0.9
+ *   * / *                    q=0.001
  */
 class ProblemRepresenter extends BasicRepresenter {
 

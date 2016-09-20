@@ -50,7 +50,7 @@ class JSONRepresenter extends BasicRepresenter {
 				new CharacterSet('Windows-1252',     1.0, TRUE), # WhatWG says that ISO-8859-1 = Windows-1252
 				new CharacterSet('UTF-8',            0.9, TRUE), # not entirely untrue..
 				new CharacterSet('US-ASCII',         1.0, TRUE),
-				new CharacterSet('ISO-8859-1',       1.0, TRUE), # kinda sorta half mandated by RFC 2616
+				new CharacterSet('ISO-8859-1',       1.0, TRUE), # mandated by RFC 2616, removed by RFC 7231
 				new CharacterSet('*', 1.0, FALSE, 'Windows-1252'),
 			),
 			array('object', 'array')
@@ -60,6 +60,37 @@ class JSONRepresenter extends BasicRepresenter {
 	public function rep($m, $d, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c, TRUE, TRUE);
 		$response->body( json_encode_v2($m) );
+	}
+}
+
+/**
+ * A generic representer which will represent any Object or Array
+ * as a JSON sequence.  RFC 7464
+ *
+ * Supported internet media types (MIMEs):
+ *   application/json-seq q=1.0 [advertised,default]
+ *   text/json-seq        q=0.9
+ */
+class JSONSeqRepresenter extends BasicRepresenter {
+
+	public function __construct() {
+		parent::__construct(
+			array(
+				new InternetMediaType('application', 'json-seq', 1.0, TRUE),
+				new InternetMediaType('text',        'json-seq', 0.9),
+			),
+			array(),
+			array(
+				new CharacterSet('UTF-8', 1.0, TRUE), # mandated by RFC 7464
+				new CharacterSet('*', 1.0, FALSE, 'UTF-8'),
+			),
+			array('object', 'array')
+		);
+	}
+
+	public function rep($m, $d, $t, $c, $l, $response) {
+		$this->response_type($response, $t, $c, TRUE, TRUE);
+		$response->body( "\x1E" . json_encode_v2($m) . "\x0A" );
 	}
 }
 
@@ -93,7 +124,7 @@ class YAMLRepresenter extends BasicRepresenter {
 				new CharacterSet('Windows-1252',     1.0, TRUE), # WhatWG says that ISO-8859-1 = Windows-1252
 				new CharacterSet('US-ASCII',         1.0, TRUE),
 				new CharacterSet('UTF-8',            0.9, TRUE), # not entirely untrue..
-				new CharacterSet('ISO-8859-1',       1.0, TRUE), # kinda sorta half mandated by RFC 2616
+				new CharacterSet('ISO-8859-1',       1.0, TRUE), # mandated by RFC 2616, removed by RFC 7231
 				new CharacterSet('*', 1.0, FALSE, 'Windows-1252'),
 			),
 			array('integer','double','boolean','NULL','string','array','object')

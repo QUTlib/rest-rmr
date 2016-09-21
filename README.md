@@ -14,7 +14,7 @@ See attached [documentation](documentation/00-index.md).
 Magic
 -----
 Off the bat, the framework will provide the following features:
-* An implementation of a variation of _Transparent Content Negotiation in HTTP_ \[RFC 2295\], a content negotiation protocol.
+* An implementation of a variation of _Transparent Content Negotiation in HTTP_ \[[RFC 2295]\], a content negotiation protocol.
 * Compression, if the client specifies Accept-Encoding and/or TE: gzip, deflate, or bzip2.
 * Support for If-Modified-Since and If-None-Match headers in GET requests.
 * Proper HTTP HEAD request support.
@@ -44,3 +44,5 @@ KIND, either express or implied.  See the License for the
 specific language governing permissions and limitations
 under the License.
 
+
+[RFC 2295]: http://tools.ietf.org/html/rfc2295

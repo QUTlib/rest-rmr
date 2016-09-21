@@ -1,3 +1,5 @@
+\: [Index](00-index.md) : [Goal](01-goal.md) : [Structure](02-structure.md) : Modules : [APIs and Interfaces](04-apis-and-interfaces.md) : [License & Copyright](05-license-and-copyright.md) : [References](06-references.md) :
+
 Modules
 -------
 Authored components (modules) fall into one of two categories: **Resources** and **Representations**.  Note that a given service or project may require the creation of both resources and representations.

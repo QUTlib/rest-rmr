@@ -6,7 +6,10 @@ Technology Library.
 
 [RMR]: http://www.peej.co.uk/articles/rmr-architecture.html
 
-> See attached [documentation](documentation/00-index.md)
+Documentation
+=============
+
+See attached [documentation](documentation/00-index.md) folder.
 
 Magic
 -----

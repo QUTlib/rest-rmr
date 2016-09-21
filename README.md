@@ -7,7 +7,7 @@ Technology Library.
 [RMR]: http://www.peej.co.uk/articles/rmr-architecture.html
 
 Documentation
-=============
+-------------
 
 See attached [documentation](documentation/00-index.md) folder.
 

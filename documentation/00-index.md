@@ -1,3 +1,5 @@
+Documentation Table of Contents
+===============================
 
 * [Goal](01-goal.md)
 * [Structure](02-structure.md)

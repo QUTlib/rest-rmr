@@ -9,7 +9,7 @@ Technology Library.
 Documentation
 -------------
 
-See attached [documentation](documentation/00-index.md) folder.
+See attached [documentation](documentation/00-index.md).
 
 Magic
 -----

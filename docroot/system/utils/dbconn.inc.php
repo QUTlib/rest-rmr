@@ -22,7 +22,7 @@ class DBConn {
 	private $key = NULL;
 	private static $links = array();
 
-	static function create_link($key, $port, $server, $user, $pass, $dbname) {
+	static function create_link($key, $server, $port, $user, $pass, $dbname) {
 		if (isset(self::$links[$key])) {
 			self::$links[$key]['count'] ++;
 		} else {

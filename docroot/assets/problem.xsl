@@ -42,9 +42,21 @@ th{background:#ccc}
     </html>
   </xsl:template>
   <xsl:template match="p:problem" priority="1">
+    <xsl:variable name="type">
+      <xsl:choose>
+        <xsl:when test="p:type"><xsl:value-of select="p:type"/></xsl:when>
+        <xsl:otherwise>about:blank</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:variable name="title">
+      <xsl:choose>
+        <xsl:when test="p:title"><xsl:value-of select="p:title"/></xsl:when>
+        <xsl:otherwise><xsl:value-of select="$type"/></xsl:when>
+      </xsl:choose>
+    </xsl:variable>
     <div>
-      <div class="title"><xsl:value-of select="p:title"/></div>
-      <div class="type">(<xsl:value-of select="p:type"/>)</div>
+      <div class="title"><xsl:value-of select="$title"/></div>
+      <div class="type">(<xsl:value-of select="$type"/>)</div>
     </div>
     <table>
       <tr>
@@ -62,7 +74,7 @@ th{background:#ccc}
   </xsl:template>
   <xsl:template match="p:instance" priority="1">
     <tr>
-      <td>Problem Instance</td>
+      <td>Instance</td>
       <td><a href="{.}"><xsl:value-of select="."/></a></td>
     </tr>
   </xsl:template>
@@ -72,7 +84,7 @@ th{background:#ccc}
       <td>
         <xsl:value-of select="."/>
         <xsl:choose>
-          <!-- http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml -->
+          <!-- https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml -->
           <xsl:when test=". = '100'"> Continue</xsl:when>
           <xsl:when test=". = '101'"> Switching Protocols</xsl:when>
           <xsl:when test=". = '102'"> Processing</xsl:when>
@@ -85,6 +97,7 @@ th{background:#ccc}
           <xsl:when test=". = '206'"> Partial Content</xsl:when>
           <xsl:when test=". = '207'"> Multi-Status</xsl:when>
           <xsl:when test=". = '208'"> Already Reported</xsl:when>
+          <xsl:when test=". = '226'"> IM Used</xsl:when>
           <xsl:when test=". = '300'"> Multiple Choices</xsl:when>
           <xsl:when test=". = '301'"> Moved Permanently</xsl:when>
           <xsl:when test=". = '302'"> Moved Temporarily</xsl:when>
@@ -112,6 +125,7 @@ th{background:#ccc}
           <xsl:when test=". = '416'"> Requested range not satisfiable</xsl:when>
           <xsl:when test=". = '417'"> Expectation Failed</xsl:when>
           <xsl:when test=". = '418'"> I'm a teapot</xsl:when><!-- not IANA -->
+          <xsl:when test=". = '421'"> Misdirected Request</xsl:when>
           <xsl:when test=". = '422'"> Unprocessable Entity</xsl:when>
           <xsl:when test=". = '423'"> Locked</xsl:when>
           <xsl:when test=". = '424'"> Failed Dependency</xsl:when>
@@ -119,6 +133,7 @@ th{background:#ccc}
           <xsl:when test=". = '428'"> Precondition Required</xsl:when>
           <xsl:when test=". = '429'"> Too Many Requests</xsl:when>
           <xsl:when test=". = '431'"> Request Header Fields Too Large</xsl:when>
+          <xsl:when test=". = '451'"> Unavailable For Legal Reasons</xsl:when>
           <xsl:when test=". = '500'"> Internal Server Error</xsl:when>
           <xsl:when test=". = '501'"> Not Implemented</xsl:when>
           <xsl:when test=". = '502'"> Bad Gateway</xsl:when>

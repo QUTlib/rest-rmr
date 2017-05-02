@@ -42,9 +42,21 @@ th{background:#ccc}
     </html>
   </xsl:template>
   <xsl:template match="p:problem" priority="1">
+    <xsl:variable name="type">
+      <xsl:choose>
+        <xsl:when test="p:type"><xsl:value-of select="p:type"/></xsl:when>
+        <xsl:otherwise>about:blank</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <xsl:variable name="title">
+      <xsl:choose>
+        <xsl:when test="p:title"><xsl:value-of select="p:title"/></xsl:when>
+        <xsl:otherwise><xsl:value-of select="$type"/></xsl:when>
+      </xsl:choose>
+    </xsl:variable>
     <div>
-      <div class="title"><xsl:value-of select="p:title"/></div>
-      <div class="type">(<xsl:value-of select="p:type"/>)</div>
+      <div class="title"><xsl:value-of select="$title"/></div>
+      <div class="type">(<xsl:value-of select="$type"/>)</div>
     </div>
     <table>
       <tr>
@@ -62,7 +74,7 @@ th{background:#ccc}
   </xsl:template>
   <xsl:template match="p:instance" priority="1">
     <tr>
-      <td>Problem Instance</td>
+      <td>Instance</td>
       <td><a href="{.}"><xsl:value-of select="."/></a></td>
     </tr>
   </xsl:template>
@@ -92,7 +104,7 @@ th{background:#ccc}
           <xsl:when test=". = '304'"> Not Modified</xsl:when>
           <xsl:when test=". = '305'"> Use Proxy</xsl:when>
           <xsl:when test=". = '307'"> Temporary Redirect</xsl:when>
-          <xsl:when test=". = '308'"> Permanent Redirect</xsl:when>
+          <xsl:when test=". = '308'"> Permanent Redirect</xsl:when><!-- I.D -->
           <xsl:when test=". = '400'"> Bad Request</xsl:when>
           <xsl:when test=". = '401'"> Unauthorised</xsl:when>
           <xsl:when test=". = '402'"> Payment Required</xsl:when>

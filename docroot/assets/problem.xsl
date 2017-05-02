@@ -84,7 +84,7 @@ th{background:#ccc}
       <td>
         <xsl:value-of select="."/>
         <xsl:choose>
-          <!-- http://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml -->
+          <!-- https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml -->
           <xsl:when test=". = '100'"> Continue</xsl:when>
           <xsl:when test=". = '101'"> Switching Protocols</xsl:when>
           <xsl:when test=". = '102'"> Processing</xsl:when>
@@ -97,6 +97,7 @@ th{background:#ccc}
           <xsl:when test=". = '206'"> Partial Content</xsl:when>
           <xsl:when test=". = '207'"> Multi-Status</xsl:when>
           <xsl:when test=". = '208'"> Already Reported</xsl:when>
+          <xsl:when test=". = '226'"> IM Used</xsl:when>
           <xsl:when test=". = '300'"> Multiple Choices</xsl:when>
           <xsl:when test=". = '301'"> Moved Permanently</xsl:when>
           <xsl:when test=". = '302'"> Moved Temporarily</xsl:when>
@@ -104,7 +105,7 @@ th{background:#ccc}
           <xsl:when test=". = '304'"> Not Modified</xsl:when>
           <xsl:when test=". = '305'"> Use Proxy</xsl:when>
           <xsl:when test=". = '307'"> Temporary Redirect</xsl:when>
-          <xsl:when test=". = '308'"> Permanent Redirect</xsl:when><!-- I.D -->
+          <xsl:when test=". = '308'"> Permanent Redirect</xsl:when>
           <xsl:when test=". = '400'"> Bad Request</xsl:when>
           <xsl:when test=". = '401'"> Unauthorised</xsl:when>
           <xsl:when test=". = '402'"> Payment Required</xsl:when>
@@ -124,6 +125,7 @@ th{background:#ccc}
           <xsl:when test=". = '416'"> Requested range not satisfiable</xsl:when>
           <xsl:when test=". = '417'"> Expectation Failed</xsl:when>
           <xsl:when test=". = '418'"> I'm a teapot</xsl:when><!-- not IANA -->
+          <xsl:when test=". = '421'"> Misdirected Request</xsl:when>
           <xsl:when test=". = '422'"> Unprocessable Entity</xsl:when>
           <xsl:when test=". = '423'"> Locked</xsl:when>
           <xsl:when test=". = '424'"> Failed Dependency</xsl:when>
@@ -131,6 +133,7 @@ th{background:#ccc}
           <xsl:when test=". = '428'"> Precondition Required</xsl:when>
           <xsl:when test=". = '429'"> Too Many Requests</xsl:when>
           <xsl:when test=". = '431'"> Request Header Fields Too Large</xsl:when>
+          <xsl:when test=". = '451'"> Unavailable For Legal Reasons</xsl:when>
           <xsl:when test=". = '500'"> Internal Server Error</xsl:when>
           <xsl:when test=". = '501'"> Not Implemented</xsl:when>
           <xsl:when test=". = '502'"> Bad Gateway</xsl:when>

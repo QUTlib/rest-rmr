@@ -15,7 +15,7 @@
 # under the License.
 #
 
-DirectoryIndex index.jsp index.php index.html
+DirectoryIndex index.php index.html
 
 SetEnvIf Range ^(.+)$ range_header=$1
 RequestHeader set X-Range "%{range_header}e" env=range_header

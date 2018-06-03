@@ -4,11 +4,12 @@ API and Interfaces
 ------------------
 
 ### URI Patterns and Handlers ###
+
 To deal with registering URI patterns and handlers, the framework provides three mechanisms:
 
 * A low-level function: `URIMap::register( $http_method, $uri_pattern, $handler )`
-    * Any incoming HTTP request using  the given `$http_method`, whose request URI matches the `$uri_pattern`, is handled using the callable `$handler`.
-    * If you register a handler for the HTTP GET method, an identical handler is automatically registered for the HEAD method.
+    * Any incoming HTTP request using  the given `$http_method`, whose request URI matches the `$uri_pattern`, is handled using the [callable](http://php.net/manual/en/language.types.callable.php) `$handler`.
+    * If you register a handler for the HTTP [GET](https://tools.ietf.org/html/rfc7231#section-4.3.1) method, an identical handler is automatically registered for the [HEAD](https://tools.ietf.org/html/rfc7231#section-4.3.2) method.
 * A high-level class: `URIRegistrar`
     * Provides a simple mechanism to register a set of resource-paths under a single module.
     * Wraps the call to `URIMap::register`, with extra data sanitisation.
@@ -18,6 +19,7 @@ To deal with registering URI patterns and handlers, the framework provides three
 Irrespective of _how_ they are registered, URI patterns are tested in the order they are registered.
 
 #### URI Patterns ####
+
 URI patterns may include named parameters:
 
 * `'/hello/:name'` matches `'/hello/foo'` and `'/hello/bar'`, but not `'/hello/foo/bar'`
@@ -27,7 +29,8 @@ A trailing slash can be made optional by appending a question-mark:
 * `'/hello/?'` matches `'/hello'` and `'/hello/'`
 
 #### Handler ####
-The handler is invoked without parameters; however the framework provides global access to the Request object, which may be queried for example to inspect any HTTP request parameters.
+
+The handler is invoked without parameters; however the framework provides global access to the Request object, which may be queried, for example, to inspect any HTTP request parameters.
 
 ### Representations ###
 

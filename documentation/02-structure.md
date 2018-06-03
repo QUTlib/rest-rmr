@@ -2,6 +2,7 @@
 
 Structure
 ---------
+
 The general structure supported by the framework is:
 
                                                                      Resources
@@ -23,8 +24,9 @@ The general structure supported by the framework is:
                Representation          Representations
                Factory                 (can_handle)
 
- 
+
 ### Modules and Interfaces ###
+
 The framework is designed to be modular, and to provide a uniform interface to external systems.  As such two concepts are introduced: **modules** and **interfaces**.
 
 A **module** is a collection of expertise related to a single data model, project, or service.  This definition is intentionally vague in order to allow the greatest flexibility in defining the scope of future projects and services.

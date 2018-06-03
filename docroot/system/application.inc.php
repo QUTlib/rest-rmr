@@ -61,10 +61,14 @@ class Application {
 
 	/* standard interfaces */
 
-	/** Public interface */
+	/** Unauthenticated web interface. */
+	const IF_WWW     = 'www';
+	/** Authenticated web interface. */
+	const IF_SECURE  = 'secure';
+	/** Public machine-readable interface. */
 	const IF_PUBLIC  = 'pub';
-	/** Authenticated interface. */
-	const IF_AUTHED  = 'auth';
+	/** Authenticated machine-readable interface. */
+	const IF_MACHINE = 'auth';
 
 	private static $splunk = NULL;
 

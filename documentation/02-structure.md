@@ -31,10 +31,10 @@ A **module** is a collection of expertise related to a single data model, projec
 
 An **interface** is a standardised mechanism for accessing a resource.  The framework will provide definitions and support for four interfaces:
 
-* Publicly accessible, human-readable (`www`?)
+* Publicly accessible, human-readable (`www`)
 * Publicly accessible, machine-readable (`pub`)
-* Authenticated, human-readable (`auth`)
-* Authenticated, machine-readable (`mma`?)
+* Authenticated, human-readable (`secure`)
+* Authenticated, machine-readable (`auth`)
 
 By convention, URIs will be of the form:
 

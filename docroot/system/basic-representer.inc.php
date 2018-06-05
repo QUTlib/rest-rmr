@@ -114,6 +114,10 @@ abstract class BasicRepresenter extends Representer {
 		}
 	}
 
+	/**
+	 * Get the list of advertised types, with their quality value.
+	 * @return array
+	 */
 	public function list_types() {
 		$result = array();
 		foreach ($this->types as $t) {
@@ -123,6 +127,10 @@ abstract class BasicRepresenter extends Representer {
 		return $result;
 	}
 
+	/**
+	 * Get the list of advertised charsets, with their quality value.
+	 * @return array
+	 */
 	public function list_charsets() {
 		$result = array();
 		foreach ($this->charsets as $c) {
@@ -132,6 +140,10 @@ abstract class BasicRepresenter extends Representer {
 		return $result;
 	}
 
+	/**
+	 * Get the list of advertised languages, with their quality value.
+	 * @return array
+	 */
 	public function list_languages() {
 		$result = array();
 		foreach ($this->languages as $l) {
@@ -141,6 +153,11 @@ abstract class BasicRepresenter extends Representer {
 		return $result;
 	}
 
+	/**
+	 * Returns TRUE if this representer is able to represent the given model.
+	 * @param mixed $model
+	 * @return bool
+	 */
 	public function can_do_model($model) {
 		if ($this->all_models) return TRUE;
 
@@ -196,28 +213,29 @@ abstract class BasicRepresenter extends Representer {
 		return FALSE;
 	}
 
-	public function preference_for_type($t, $all) {
+	/** @inheritDoc */
+	public function preference_for_type($type, $exclude) {
 		if (count($this->types) == 0) return 1.0;
-#		if ($t['media-type']['parameters']) {
+#		if ($type['media-type']['parameters']) {
 #			// FIXME: canonicalise parameters, so string matching will work (?)
 #		} else {
-			$type = strtolower($t['media-range']);
+			$type = strtolower($type['media-range']);
 #		}
 		if (isset($this->types[$type])) {
 			return $this->types[$type]->qvalue();
 		}
 
-		if ($t['media-type']['subtype'] == '*') {
-			if (($type = $t['media-type']['type']) == '*') {
+		if ($type['media-type']['subtype'] == '*') {
+			if (($type = $type['media-type']['type']) == '*') {
 				// Client accepts anything. Give them
 				// a good one.
-				if ($first_type = $this->first_type_excluding($all)) {
+				if ($first_type = $this->first_type_excluding($exclude)) {
 					return array($first_type->qvalue(), $first_type->full_mime());
 				}
 			} else {
 				// Client accepts any subtype. Give them
 				// a good one.
-				if ($first_type = $this->first_subtype_excluding($all, $type)) {
+				if ($first_type = $this->first_subtype_excluding($exclude, $type)) {
 					return array($first_type->qvalue(), $first_type->full_mime());
 				}
 			}
@@ -226,31 +244,33 @@ abstract class BasicRepresenter extends Representer {
 		return 0.0;
 	}
 
-	public function preference_for_charset($c, $all) {
+	/** @inheritDoc */
+	public function preference_for_charset($charset, $exclude) {
 		if (count($this->charsets) == 0) return 1.0;
-		$c = strtolower($c);
-		if (isset($this->charsets[$c])) {
-			return $this->charsets[$c]->qvalue();
+		$charset = strtolower($charset);
+		if (isset($this->charsets[$charset])) {
+			return $this->charsets[$charset]->qvalue();
 		}
 		// The special value "*" ... matches every character set
 		// which is not mentioned elsewhere in the field.
-		if ($c == '*' && ($chst = $this->first_charset_excluding($all))) {
+		if ($charset == '*' && ($chst = $this->first_charset_excluding($exclude))) {
 			return array($chst->qvalue(), $chst->charset());
 		}
 		return 0.0;
 	}
 
-	public function preference_for_language($l, $all) {
+	/** @inheritDoc */
+	public function preference_for_language($lang, $exclude) {
 		if (count($this->languages) == 0) return 1.0;
-		$l = strtolower($l['language-range']);
-		// A language-range ($l) matches a language-tag ($this->languages)
+		$lang = strtolower($lang['language-range']);
+		// A language-range ($lang) matches a language-tag ($this->languages)
 		// if it exactly equals the tag...
-		if (isset($this->languages[$l])) {
-			return $this->languages[$l]->qvalue();
+		if (isset($this->languages[$lang])) {
+			return $this->languages[$lang]->qvalue();
 		}
 		// ... or if it exactly equals a prefix of the tag such that the
 		// first tag character following the prefix is "-".
-		$p = $l.'-';
+		$p = $lang.'-';
 		$n = strlen($p);
 		foreach ($this->languages as $tag=>$obj) {
 			if (substr($tag, 0, $n) == $p) {
@@ -259,23 +279,35 @@ abstract class BasicRepresenter extends Representer {
 		}
 		// The special range "*" ... matches every tag not matched by any
 		// other range present in the Accept-Language field.
-		if ($l == '*' && ($lang = $this->first_language_excluding($all))) {
+		if ($lang == '*' && ($lang = $this->first_language_excluding($exclude))) {
 			return array($lang->qvalue(), $lang->language());
 		}
 		return 0.0;
 	}
 
-	public function represent($m, $t, $c, $l, $response) {
-		$model = $this->extract_model_datum($m);
+	/** @ignore */
+	public function represent($model, $type, $charset, $lang, $response) {
+		$model = $this->extract_model_datum($model);
 		$meta  = $this->extract_model_metadata($m);
 		if ($cache = $meta->cache()) {
 			$response->cache(date('r',$cache));
 		} elseif ($cache === FALSE) {
 			$response->nocache();
 		}
-		return $this->rep($model, $meta, $t, $c, $l, $response);
+		return $this->rep($model, $meta, $type, $charset, $lang, $response);
 	}
 
+	/**
+	 * The actual implementation of {@see Representer::represent()}, with
+	 * extra parameters.
+	 *
+	 * @param mixed $model
+	 * @param Metadata $metadata
+	 * @param array $type keys: media-range, media-type, accept-params (?) {@see RFC2616\parse_Accept}
+	 * @param string $charset {@see RFC2616\parse_Accept_Charset}
+	 * @param array $language keys: language-range, primary-tag, subtags {@see RFC2616\parse_Accept_Language}
+	 * @param Response $response where to put the serialised representation
+	 */
 	abstract public function rep($model, $metadata, $type, $charset, $language, $response);
 
 	/**
@@ -353,6 +385,9 @@ abstract class BasicRepresenter extends Representer {
 	/**
 	 * Unwraps the datum from a Model.
 	 * If $model is not a Model, returns it unmodified.
+	 *
+	 * @param Model|mixed $model
+	 * @return mixed
 	 */
 	public function extract_model_datum($model) {
 		$class = 'Model';
@@ -364,6 +399,9 @@ abstract class BasicRepresenter extends Representer {
 
 	/**
 	 * Extracts a Metadata object from a Model.
+	 *
+	 * @param Model|mixed $model
+	 * @return Metadata
 	 */
 	public function extract_model_metadata($model) {
 		$class = 'Model';

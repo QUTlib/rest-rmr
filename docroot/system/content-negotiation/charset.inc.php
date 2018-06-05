@@ -26,6 +26,13 @@ class CharacterSet {
 	private $advertised;
 	private $mapto;
 
+	/**
+	 * Creates a new CharacterSet
+	 * @param string $charset
+	 * @param float $qvalue
+	 * @param bool $advertised
+	 * @param CharacterSet $mapto
+	 */
 	public function __construct($charset, $qvalue=1.0, $advertised=FALSE, $mapto=NULL) {
 		if ($qvalue > 1.0) $qvalue = 1.0;
 		if ($qvalue < 0.0) $qvalue = 0.0;
@@ -43,24 +50,46 @@ class CharacterSet {
 		$this->mapto = $mapto;
 	}
 
+	/**
+	 * Gets the qvalue
+	 * @return float Float, with four digits of precision, in the range 0.000 to 1.000 (inclusive)
+	 */
 	public function qvalue() { return $this->qvalue / 1000.0; }
+
+	/**
+	 * Is this CharacterSet advertised?
+	 * @return bool
+	 */
 	public function advertised() { return $this->advertised; }
+
+	/**
+	 * Gets the mapped character set, or NULL.
+	 * @return CharacterSet
+	 */
 	public function mapto() { return $this->mapto; }
 
-	public function catchall()      { return $this->charset == '*'; }
+	/**
+	 * Is this CharacterSet a wildcard?
+	 * @return bool
+	 */
+	public function catchall() { return $this->charset == '*'; }
 
 	/**
 	 * Gets the effective media type string for this CharacterSet.
 	 *
 	 * This takes into account #mapto
+	 *
+	 * @return string
 	 */
 	public function effective_charset() {
-		if ($this->mapto) return $this->mapto;
+		if ($this->mapto) return $this->mapto->effective_charset(); // FIXME: loops?
 		else              return $this->charset();
 	}
 
 	/**
-	 * @param $include_qvalue TRUE=always, FALSE*=never, NULL=if not 1.000
+	 * Get the stringified charset.
+	 * @param bool $include_qvalue TRUE=always, FALSE*=never, NULL=if not 1.000
+	 * @return string
 	 */
 	public function charset($include_qvalue=FALSE) {
 		$qvalue = '';
@@ -75,6 +104,11 @@ class CharacterSet {
 	 * Otherwise, dies.
 	 *
 	 * This conforms to RFC 2616 [section 14.2]
+	 *
+	 * @todo update to RFC 723x
+	 *
+	 * @param string $string String to parse.
+	 * @return CharacterSet
 	 */
 	public static function parse($string) {
 		// regular expressions

@@ -19,13 +19,16 @@
 
 class URIMap {
 
-	# Note: RFC 2616 states that the "methods GET and HEAD MUST be supported
-	#  * <http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.1>
+	// "All general-purpose servers MUST support the methods GET and HEAD."
+	//  * <https://tools.ietf.org/html/rfc7231#section-4.1>
 	private static $map = array('GET'=>array(), 'HEAD'=>array());
 
 	/**
 	 * Returns TRUE if there are any registered handlers for given $method,
 	 * or FALSE otherwise.
+	 *
+	 * @param string $method
+	 * @return bool
 	 */
 	public static function knows_method($method) {
 		return isset( self::$map[$method] );
@@ -33,6 +36,9 @@ class URIMap {
 
 	/**
 	 * Returns a URIMapIterator object which can be used in a foreach() loop.
+	 *
+	 * @param string $method
+	 * @return URIMapIterator
 	 */
 	public static function method($method) {
 		if (isset(self::$map[$method])) {
@@ -44,6 +50,8 @@ class URIMap {
 
 	/**
 	 * Returns an array of all the HTTP methods we know.
+	 *
+	 * @return string[]
 	 */
 	public static function methods() {
 		return array_keys( self::$map );
@@ -52,6 +60,9 @@ class URIMap {
 	/**
 	 * Returns an array of the HTTP methods what can access the given URI.
 	 * (May be empty)
+	 *
+	 * @param string $uri the path component of the URI to check
+	 * @return string[]
 	 */
 	public static function allowed_methods($uri) {
 		$methods = array();
@@ -72,6 +83,9 @@ class URIMap {
 	 * Given a handler (like you'd find when iterating over #method() ),
 	 * turn it into something that call_user_func() and friends would accept
 	 * as a receiver.
+	 *
+	 * @param mixed $handler
+	 * @return callable
 	 */
 	public static function realise_handler($handler) {
 		// if the handler object is a string, treat it as a classname
@@ -91,19 +105,20 @@ class URIMap {
 	 * Note that GET handlers automatically set up an identical HEAD handler.
 	 *
 	 * URI pattern examples:
-	 *   '/students/:sid/'
-	 *     :: '/students/123/' => {"sid":"123"}
-	 *   '/some/path/?'
-	 *     :: '/some/path/' => {}
-	 *     :: '/some/path'  => {}
-	 *   '/branch/:name/?'
-	 *     :: '/branch/gp/' => {"name":"gp"}
-	 *     :: '/branch/kg'  => {"name":"kg"}
-	 *     :: '/branch/'    => FALSE
 	 *
-	 * @param String $http_method the HTTP method to handle (e.g. GET, POST, etc.).
-	 * @param String $uri_pattern
-	 * @param Mixed $handler 'function', 'class->method', 'class::static_method', array(object,'method'), array('class','method')
+	 *     '/students/:sid/'
+	 *       :: '/students/123/' => {"sid":"123"}
+	 *     '/some/path/?'
+	 *       :: '/some/path/' => {}
+	 *       :: '/some/path'  => {}
+	 *     '/branch/:name/?'
+	 *       :: '/branch/gp/' => {"name":"gp"}
+	 *       :: '/branch/kg'  => {"name":"kg"}
+	 *       :: '/branch/'    => FALSE
+	 *
+	 * @param string $http_method the HTTP method to handle (e.g. GET, POST, etc.).
+	 * @param string $uri_pattern
+	 * @param mixed $handler {@see URIMap::realise_handler}
 	 */
 	public static function register($http_method, $uri_pattern, $handler) {
 		$match = self::parse_uri_pattern($uri_pattern);
@@ -232,15 +247,20 @@ class URIMap {
 	private function __clone() {}
 }
 
+/**
+ * A simple iterator of callables.
+ * @see URIMap::method()
+ */
 class URIMapIterator implements Iterator {
 	private $array = null;
+	/** @ignore */
 	public function __construct(&$array) {
 		$this->array =& $array;
 	}
-	public function rewind()  {        reset($this->array); }
-	public function current() { return current($this->array); }
-	public function key()     { return key($this->array); }
-	public function next()    {        next($this->array); }
-	public function valid()   { return (key($this->array) !== NULL); }
+	/** @ignore */ public function rewind()  {        reset($this->array); }
+	/** @ignore */ public function current() { return current($this->array); }
+	/** @ignore */ public function key()     { return key($this->array); }
+	/** @ignore */ public function next()    {        next($this->array); }
+	/** @ignore */ public function valid()   { return (key($this->array) !== NULL); }
 }
 

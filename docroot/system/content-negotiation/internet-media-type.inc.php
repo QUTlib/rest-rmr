@@ -28,6 +28,14 @@ class InternetMediaType {
 	private $mapto;
 	private $params = array();
 
+	/**
+	 * Creates a new InternetMediaType
+	 * @param string $type the main type
+	 * @param string $subtype
+	 * @param float $qvalue
+	 * @param bool $advertised
+	 * @param InternetMediaType $mapto
+	 */
 	public function __construct($type, $subtype, $qvalue=1.0, $advertised=FALSE, $mapto=NULL) {
 		if ($qvalue > 1.0) $qvalue = 1.0;
 		if ($qvalue < 0.0) $qvalue = 0.0;
@@ -46,32 +54,90 @@ class InternetMediaType {
 		$this->mapto = $mapto;
 	}
 
+	/**
+	 * Sets the value of a parameter on this InternetMediaType.
+	 * @param string $name
+	 * @param string $value
+	 */
 	public function set_param($name, $value) { if ($value === null) $this->rm_param($name); else $this->params[$name] = $value; }
+
+	/**
+	 * Gets the value of a parameter of this InternetMediaType.
+	 * @param string $name
+	 * @return string|NULL
+	 */
 	public function get_param($name) { if (isset($this->params[$name])) return $this->params[$name]; return NULL; }
+
+	/**
+	 * Removes a parameter from this InternetMediaType.
+	 * @param string $name
+	 */
 	public function rm_param($name) { if (isset($this->params[$name])) unset($this->params[$name]); }
 
+	/**
+	 * Gets the main type.
+	 * @return string
+	 */
 	public function type() { return $this->type; }
+
+	/**
+	 * Gets the subtype.
+	 * @return string
+	 */
 	public function subtype() { return $this->subtype; }
+
+	/**
+	 * Gets the full MIME time (main type and subtype).
+	 * @return string
+	 */
 	public function mime() { return $this->type . '/' . $this->subtype; }
+
+	/**
+	 * Gets the qvalue.
+	 * @return float Float, with four digits of precision, in the range 0.000 to 1.000 (inclusive)
+	 */
 	public function qvalue() { return $this->qvalue / 1000.0; }
+
+	/**
+	 * Is this InternetMediaType advertised?
+	 * @return bool
+	 */
 	public function advertised() { return $this->advertised; }
+
+	/**
+	 * Gets the mapped InternetMediaType, or NULL.
+	 * @return InternetMediaType
+	 */
 	public function mapto() { return $this->mapto; }
 
+	/**
+	 * Is this InternetMediaType a wildcard?
+	 * @return bool
+	 */
 	public function catchall()      { return $this->type == '*' && $this->subtype == '*'; }
+
+	/**
+	 * Is the subtype (but NOT the main type) a wildcard?
+	 * @return bool
+	 */
 	public function type_catchall() { return $this->type != '*' && $this->subtype == '*'; }
 
 	/**
 	 * Gets the effective media type string for this InternetMediaType.
 	 *
 	 * This takes into account #mapto
+	 *
+	 * @return string
 	 */
 	public function effective_mime() {
-		if ($this->mapto) return $this->mapto;
+		if ($this->mapto) return $this->mapto->effective_mime(); // FIXME: loops?
 		else              return $this->full_mime();
 	}
 
 	/**
-	 * @param $include_qvalue TRUE=always, FALSE*=never, NULL=if not 1.000
+	 * Get the stringified internet media type.
+	 * @param bool $include_qvalue TRUE=always, FALSE*=never, NULL=if not 1.000
+	 * @return string
 	 */
 	public function full_mime($include_qvalue=FALSE) {
 		$params = '';
@@ -89,6 +155,9 @@ class InternetMediaType {
 	 * Otherwise, dies.
 	 *
 	 * This conforms to RFC 2045 [section 5.1]
+	 *
+	 * @param string $string String to parse.
+	 * @return InternetMediaType
 	 */
 	public static function parse($string) {
 		// regular expressions

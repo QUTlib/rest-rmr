@@ -23,11 +23,13 @@ Application::register_class('CSSFile',   SYSDIR.'/std-models/css-file-model.php'
  * A basic CSS representer that displays raw CSS document models as text/css
  *
  * Supported internet media types (MIMEs):
- *   text/css                q=1.0 [advertised,default]
- *   application/x-pointplus q=1.0 [converted to text/css]
+ *
+ *     text/css                q=1.0 [advertised,default]
+ *     application/x-pointplus q=1.0 [converted to text/css]
  */
 class RawCSSDocRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -43,6 +45,7 @@ class RawCSSDocRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c);
 		$this->response_language($response, $l, FALSE);

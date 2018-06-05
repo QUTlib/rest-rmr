@@ -23,17 +23,19 @@
  * See: https://tools.ietf.org/html/rfc7807
  *
  * Supported internet media types (MIMEs):
- *   application/problem+json q=1.0 [advertised,default]
- *   application/json         q=1.0
- *   application/problem+xml  q=1.0 [advertised]
- *   application/xml          q=1.0
- *   text/json                q=0.9
- *   text/x-json              q=0.9
- *   text/xml                 q=0.9
- *   * / *                    q=0.001
+ *
+ *     application/problem+json q=1.0 [advertised,default]
+ *     application/json         q=1.0
+ *     application/problem+xml  q=1.0 [advertised]
+ *     application/xml          q=1.0
+ *     text/json                q=0.9
+ *     text/x-json              q=0.9
+ *     text/xml                 q=0.9
+ *     * / *                    q=0.001
  */
 class ProblemRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -54,6 +56,7 @@ class ProblemRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		// web browser hack because argh!
 		if ($t['media-range']  == '*/*' && ($ua=Request::header('User-Agent')) && strpos($ua,'curl')===false) {

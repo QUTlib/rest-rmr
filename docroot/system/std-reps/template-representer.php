@@ -24,6 +24,7 @@
  */
 class TemplateRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -37,6 +38,7 @@ class TemplateRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		$response->content_type("text/html; charset=utf-8");
 		// todo: magical translation magic? (fixme)

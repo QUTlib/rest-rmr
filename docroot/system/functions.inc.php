@@ -20,8 +20,8 @@
 /**
  * Adds the given path(s) to PHP's include_path.
  *
- * @param String... $path Paths/directories to add.
- * @return The old include_path on success, or FALSE on failure.
+ * @param string[] $path Paths/directories to add.
+ * @return string|false The old include_path on success, or FALSE on failure.
  * @emits E_USER_WARNING if a given path is not an actual directory.
  */
 function add_include_path($path) {
@@ -40,8 +40,8 @@ function add_include_path($path) {
 /**
  * Removes the give path(s) from PHP's include_path.
  *
- * @param String... $path Paths/directories to remove.
- * @return The old include_path on success, or FALSE on failure.
+ * @param string[] $path Paths/directories to remove.
+ * @return string|false The old include_path on success, or FALSE on failure.
  * @emits E_USER_NOTICE if removing a directory would leave the include_path empty.
  */
 function remove_include_path($path) {
@@ -72,6 +72,7 @@ function elapsed_grainy() {
 
 /**
  * Gets a HTTP-date for the given time (or 'now'), in RFC822/RFC1123 format.
+ * @param integer $timestamp
  */
 function httpdate($timestamp=NULL) {
 	if (func_num_args() > 0) {
@@ -84,6 +85,8 @@ function httpdate($timestamp=NULL) {
 /**
  * Gets the last modified timestamp of all included source files.
  * If $datamtime is given, it is taken into account as well.
+ *
+ * @param integer $datamtime
  */
 function calculate_last_modified($datamtime=NULL) {
 	$incls = get_included_files();
@@ -98,6 +101,8 @@ function calculate_last_modified($datamtime=NULL) {
 /**
  * Presents a readable version of a value.
  * Equivalent to Ruby's Object#inspect
+ *
+ * @param mixed $v
  */
 function inspect($v) {
 	$str = var_export($v, TRUE);
@@ -107,6 +112,9 @@ function inspect($v) {
 
 /**
  * Like json_encode() but non-crap.
+ *
+ * @param mixed $v
+ * @param bool $as_object if given and true, serialises all arrays as objects
  */
 function json_encode_v2($v, $as_object=false) {
 	// convert objects to arrays, with different open and close tokens

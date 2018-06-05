@@ -16,12 +16,16 @@
  * under the License.
  */
 
-
+/**
+ * Utility class that wraps `URIMap::register`
+ */
 class URIRegistrar {
 	protected $prefix = null;
 
 	/**
-	 * Constructs a new registrar, on which one may call #register_handler
+	 * Constructs a new registrar, on which one may call {@see register_handler()}
+	 *
+	 * @param string $prefix common prefix prepended to all registered URI patterns
 	 */
 	public function __construct($prefix) {
 		$this->prefix = '/' . trim($prefix, '/');
@@ -34,19 +38,20 @@ class URIRegistrar {
 	 * Note that GET handlers automatically set up an identical HEAD handler.
 	 *
 	 * URI pattern examples:
-	 *   '/students/:sid/'
-	 *     :: '/students/123/' => {"sid":"123"}
-	 *   '/some/path/?'
-	 *     :: '/some/path/' => {}
-	 *     :: '/some/path'  => {}
-	 *   '/branch/:name/?'
-	 *     :: '/branch/gp/' => {"name":"gp"}
-	 *     :: '/branch/kg'  => {"name":"kg"}
-	 *     :: '/branch/'    => FALSE
 	 *
-	 * @param String $http_method the HTTP method to handle (e.g. GET, POST, etc.).
-	 * @param String $uri_pattern
-	 * @param Mixed $handler 'function', 'class->method', 'class::static_method', array(object,'method'), array('class','method')
+	 *     '/students/:sid/'
+	 *       :: '/students/123/' => {"sid":"123"}
+	 *     '/some/path/?'
+	 *       :: '/some/path/' => {}
+	 *       :: '/some/path'  => {}
+	 *     '/branch/:name/?'
+	 *       :: '/branch/gp/' => {"name":"gp"}
+	 *       :: '/branch/kg'  => {"name":"kg"}
+	 *       :: '/branch/'    => FALSE
+	 *
+	 * @param string $http_method the HTTP method to handle (e.g. GET, POST, etc.).
+	 * @param string $uri_pattern
+	 * @param mixed $handler {@see URIMap::realise_handler}
 	 */
 	public function register_handler($http_method, $uri_pattern, $handler) {
 		if ($uri_pattern && substr($uri_pattern,0,1) != '/') $uri_pattern = '/' . $uri_pattern;
@@ -64,6 +69,10 @@ class URIRegistrar {
 	 * is automatically reidrected to a slashed equivalent.
 	 *
 	 * c.f. http://httpd.apache.org/docs/2.2/mod/mod_dir.html#directoryslash
+	 *
+	 * @param string $http_method the HTTP method to handle (e.g. GET, POST, etc.).
+	 * @param string $uri_pattern
+	 * @param mixed $handler {@see URIMap::realise_handler}
 	 */
 	public function register_with_redirect($http_method, $uri_pattern, $handler) {
 		if (substr($uri_pattern,-1) == '/') {
@@ -78,8 +87,9 @@ class URIRegistrar {
 
 	/**
 	 * Sets up a GET handler.
-	 * @param string $uri_pattern {@see #register_handler}
-	 * @param Mixed $handler {@see #register_handler}
+	 *
+	 * @param string $uri_pattern {@see URIRegistrar::register_handler}
+	 * @param callable $handler {@see URIRegistrar::register_handler}
 	 * @param boolean $redirect_slash if given and true, uses #register_with_redirect
 	 */
 	public function get($uri_pattern, $handler, $redirect_slash=FALSE) {
@@ -92,8 +102,9 @@ class URIRegistrar {
 
 	/**
 	 * Sets up a HEAD handler.
-	 * @param string $uri_pattern {@see #register_handler}
-	 * @param Mixed $handler {@see #register_handler}
+	 *
+	 * @param string $uri_pattern {@see URIRegistrar::register_handler}
+	 * @param callable $handler {@see URIRegistrar::register_handler}
 	 * @param boolean $redirect_slash if given and true, uses #register_with_redirect
 	 */
 	public function head($uri_pattern, $handler, $redirect_slash=FALSE) {
@@ -106,8 +117,9 @@ class URIRegistrar {
 
 	/**
 	 * Sets up a POST handler.
-	 * @param string $uri_pattern {@see #register_handler}
-	 * @param Mixed $handler {@see #register_handler}
+	 *
+	 * @param string $uri_pattern {@see URIRegistrar::register_handler}
+	 * @param callable $handler {@see URIRegistrar::register_handler}
 	 */
 	public function post($uri_pattern, $handler) {
 		$this->register_handler('POST', $uri_pattern, $handler);

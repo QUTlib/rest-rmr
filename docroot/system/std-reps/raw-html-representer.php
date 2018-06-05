@@ -23,10 +23,12 @@ Application::register_class('HTMLFile',   SYSDIR.'/std-models/html-file-model.ph
  * A basic HTML representer that displays raw HTML document models as text/html
  *
  * Supported internet media types (MIMEs):
- *   text/html        q=1.0 [advertised,default]
+ *
+ *     text/html        q=1.0 [advertised,default]
  */
 class RawHTMLDocRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -41,6 +43,7 @@ class RawHTMLDocRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c);
 		$this->response_language($response, $l, FALSE);

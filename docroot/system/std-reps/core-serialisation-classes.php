@@ -30,12 +30,14 @@
  * as a JSON document.
  *
  * Supported internet media types (MIMEs):
- *   application/json q=1.0 [advertised,default]
- *   text/json        q=0.9
- *   text/x-json      q=0.9
+ *
+ *     application/json q=1.0 [advertised,default]
+ *     text/json        q=0.9
+ *     text/x-json      q=0.9
  */
 class JSONRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -57,6 +59,7 @@ class JSONRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c, TRUE, TRUE);
 		$response->body( json_encode_v2($m) );
@@ -68,11 +71,13 @@ class JSONRepresenter extends BasicRepresenter {
  * as a JSON sequence.  RFC 7464
  *
  * Supported internet media types (MIMEs):
- *   application/json-seq q=1.0 [advertised,default]
- *   text/json-seq        q=0.9
+ *
+ *     application/json-seq q=1.0 [advertised,default]
+ *     text/json-seq        q=0.9
  */
 class JSONSeqRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -88,6 +93,7 @@ class JSONSeqRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c, TRUE, TRUE);
 		$response->body( "\x1E" . json_encode_v2($m) . "\x0A" );
@@ -102,13 +108,15 @@ class JSONSeqRepresenter extends BasicRepresenter {
  *       work properly in all cases.
  *
  * Supported internet media types (MIMEs):
- *   text/yaml          q=1.0 [advertised,default]
- *   application/x-yaml q=1.0 [advertised]
- *   text/x-yaml        q=0.9
- *   application/yaml   q=0.9
+ *
+ *     text/yaml          q=1.0 [advertised,default]
+ *     application/x-yaml q=1.0 [advertised]
+ *     text/x-yaml        q=0.9
+ *     application/yaml   q=0.9
  */
 class YAMLRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -131,6 +139,7 @@ class YAMLRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c, TRUE, TRUE);
 		$response
@@ -235,11 +244,13 @@ class YAMLRepresenter extends BasicRepresenter {
  *       work properly in all cases.
  *
  * Supported internet media types (MIMEs):
- *   application/xml    q=1.0 [advertised,default]
- *   text/xml           q=0.9
+ *
+ *     application/xml    q=1.0 [advertised,default]
+ *     text/xml           q=0.9
  */
 class XMLRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -252,6 +263,7 @@ class XMLRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		if (($ua=Request::header('User-Agent')) && strpos($ua,'MSIE') !== FALSE) { 
 			$response->add_header('X-UA-Compatible', 'IE=edge');
@@ -283,7 +295,6 @@ class XMLRepresenter extends BasicRepresenter {
 		}
 	}
 
-
 }
 
 /**
@@ -293,12 +304,14 @@ class XMLRepresenter extends BasicRepresenter {
  *       work properly in all cases.
  *
  * Supported internet media types (MIMEs):
- *   application/xhtml+xml q=1.0 [advertised,default]
- *   application/xml       q=1.0 [advertised]
- *   text/html             q=0.5
+ *
+ *     application/xhtml+xml q=1.0 [advertised,default]
+ *     application/xml       q=1.0 [advertised]
+ *     text/html             q=0.5
  */
 class XHTMLRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -312,6 +325,7 @@ class XHTMLRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function can_do_model($model) {
 		$m = $this->extract_model_datum($model);
 		return (is_object($m) && ($m instanceof HTMLDocument))
@@ -319,6 +333,7 @@ class XHTMLRepresenter extends BasicRepresenter {
 		    or (is_object($m) && ($m instanceof DOMDocument) && $m->getElementsByTagName('html')->length > 0);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		if (($ua=Request::header('User-Agent')) && strpos($ua,'MSIE') !== FALSE) { 
 			$response->add_header('X-UA-Compatible', 'IE=edge');
@@ -358,11 +373,13 @@ class XHTMLRepresenter extends BasicRepresenter {
  *       work properly in all cases.
  *
  * Supported internet media types (MIMEs):
- *   text/html             q=1.0 [advertised,default]
- *   application/html      q=0.5
+ *
+ *     text/html             q=1.0 [advertised,default]
+ *     application/html      q=0.5
  */
 class HTMLRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -375,6 +392,7 @@ class HTMLRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		if (($ua=Request::header('User-Agent')) && strpos($ua,'MSIE') !== FALSE) { 
 			$response->add_header('X-UA-Compatible', 'IE=edge');

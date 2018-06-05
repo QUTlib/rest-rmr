@@ -30,12 +30,16 @@ abstract class Representer {
 	 *
 	 * Should return a number from 0.000 to 1.000, inclusive.
 	 * (1 = I'd love to; 0 = dunno how)
+	 *
+	 * @param string $type
+	 * @param string[] $exclude types in this list should not be used to resolve wildcards
 	 */
-	abstract public function preference_for_type($type, $all);
+	abstract public function preference_for_type($type, $exclude);
 
 	/**
 	 * Advertise types we want to represent, in the form:
-	 *    array( 'foo/bar'=>1.0, 'foo/quux'=>0.5, ...)
+	 *
+	 *     array( 'foo/bar'=>1.0, 'foo/quux'=>0.5, ...)
 	 */
 	abstract public function list_types();
 
@@ -44,12 +48,16 @@ abstract class Representer {
 	 *
 	 * Should return a number from 0.000 to 1.000, inclusive.
 	 * (1 = I'd love to; 0 = dunno how)
+	 *
+	 * @param string $charset
+	 * @param string[] $exclude charsets in this list should not be used to resolve wildcards
 	 */
-	abstract public function preference_for_charset($charset, $all);
+	abstract public function preference_for_charset($charset, $exclude);
 
 	/**
 	 * Advertise types we want to represent, in the form:
-	 *    array( 'iso-8859-1'=>1.0, 'utf-8'=>0.5, ...)
+	 *
+	 *     array( 'iso-8859-1'=>1.0, 'utf-8'=>0.5, ...)
 	 */
 	abstract public function list_charsets();
 
@@ -58,18 +66,24 @@ abstract class Representer {
 	 *
 	 * Should return a number from 0.000 to 1.000, inclusive.
 	 * (1 = I'd love to; 0 = dunno how)
+	 *
+	 * @param string $lang
+	 * @param string[] $exclude languages in this list should not be used to resolve wildcards
 	 */
-	abstract public function preference_for_language($lang, $all);
+	abstract public function preference_for_language($lang, $exclude);
 
 	/**
 	 * Advertise types we want to represent, in the form:
-	 *    array( 'en'=>1.0, 'fr'=>0.5, ...)
+	 *
+	 *     array( 'en'=>1.0, 'fr'=>0.5, ...)
 	 */
 	abstract public function list_languages();
 
 	/**
-	 * Picks the best type from $types, according to what the client
+	 * Picks the best $$name from $list, according to what the client
 	 * wants (qvalue) and what this representer can represent.
+	 *
+	 * Preferences are dervied from the preference_for_xxx functions.
 	 */
 	protected function pick_best_of($name, $list) {
 		$all = array();
@@ -133,6 +147,14 @@ abstract class Representer {
 	/**
 	 * Picks the best type, charset, and language, according to what the client
 	 * wants (qvalue) and what this representer can represent.
+	 *
+	 * @see preference_for_type()
+	 * @see preference_for_charset()
+	 * @see preference_for_language()
+	 * @param array[] $types {@see RFC2616\parse_Accept}
+	 * @param string[] $charsets {@see RFC2616\parse_Accept_Charset}
+	 * @param array[] $language {@see RFC2616\parse_Accept_Language}
+	 * @return array[] `{'type'=>..., 'charset'=>..., 'language'=>...}`
 	 */
 	public function pick_best($types, $charsets, $languages) {
 		return array(
@@ -146,8 +168,14 @@ abstract class Representer {
 	 * Represent model $m as type $t, charset $c, language $l.
 	 *
 	 * The framework guarantees to never invoke this with an attribute that scored 0.000
-	 * in preference_for_FOO()
+	 * in preference_for_xxx()
+	 *
+	 * @param mixed $model
+	 * @param array $type keys: media-range, media-type, accept-params (?) {@see RFC2616\parse_Accept}
+	 * @param string $charset {@see RFC2616\parse_Accept_Charset}
+	 * @param array $language keys: language-range, primary-tag, subtags {@see RFC2616\parse_Accept_Language}
+	 * @param Response $response where to put the serialised representation
 	 */
-	abstract public function represent($m, $t, $c, $l, $response);
+	abstract public function represent($model, $type, $charset, $language, $response);
 }
 

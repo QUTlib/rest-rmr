@@ -23,11 +23,13 @@
  * A representer which represents SmartyTemplate objects as HTML.
  *
  * Supported internet media types (MIMEs):
- *   text/html        q=1.0 [advertised,default]
- *   application/html q=0.5
+ *
+ *     text/html        q=1.0 [advertised,default]
+ *     application/html q=0.5
  */
 class SmartyRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -40,6 +42,7 @@ class SmartyRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		// At this point Smarty completely takes over, and sends it own headers
 		// and completely does its own thing.

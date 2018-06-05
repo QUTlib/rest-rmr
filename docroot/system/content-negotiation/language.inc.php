@@ -27,6 +27,14 @@ class ContentLanguage {
 	private $advertised;
 	private $mapto;
 
+	/**
+	 * Creates a new ContentLanguage
+	 * @param string $primarytag
+	 * @param string[] $subtags
+	 * @param float $qvalue
+	 * @param bool $advertised
+	 * @param ContentLanguage $mapto
+	 */
 	public function __construct($primarytag, $subtags=array(), $qvalue=1.0, $advertised=FALSE, $mapto=NULL) {
 		$n = func_num_args();
 		if ($n >= 2 && $n < 5 && is_numeric($subtags)) {
@@ -57,26 +65,58 @@ class ContentLanguage {
 		$this->mapto = $mapto;
 	}
 
+	/**
+	 * Gets the primary language tag.
+	 * @return string
+	 */
 	public function primarytag() { return $this->primarytag; }
+
+	/**
+	 * Gets the subtags.
+	 * @return string[]
+	 */
 	public function subtags() { return $this->subtags; }
+
+	/**
+	 * Gets the qvalue.
+	 * @return float Float, with four digits of precision, in the range 0.000 to 1.000 (inclusive)
+	 */
 	public function qvalue() { return $this->qvalue / 1000.0; }
+
+	/**
+	 * Is this Language advertised?
+	 * @return bool
+	 */
 	public function advertised() { return $this->advertised; }
+
+	/**
+	 * Gets the mapped Language, or NULL.
+	 * @param Language
+	 */
 	public function mapto() { return $this->mapto; }
 
+	/**
+	 * Is this Language a wildcard?
+	 * @return bool
+	 */
 	public function catchall()      { return $this->primarytag == '*'; }
 
 	/**
 	 * Gets the effective language string for this ContentLanguage.
 	 *
 	 * This takes into account #mapto
+	 *
+	 * @return string
 	 */
 	public function effective_language() {
-		if ($this->mapto) return $this->mapto;
+		if ($this->mapto) return $this->mapto->effective_language(); // FIXME: loops?
 		else              return $this->language();
 	}
 
 	/**
+	 * Get the stringified language.
 	 * @param $include_qvalue TRUE=always, FALSE*=never, NULL=if not 1.000
+	 * @return string
 	 */
 	public function language($include_qvalue=FALSE) {
 		$qvalue = '';
@@ -95,6 +135,9 @@ class ContentLanguage {
 	 * Otherwise, dies.
 	 *
 	 * This conforms to RFC 1766
+	 *
+	 * @param string $string String to parse.
+	 * @return Language
 	 */
 	public static function parse($string) {
 		// regular expressions

@@ -115,7 +115,10 @@ class Application {
 	/**
 	 * If SPLUNK_LOG is defined (in config), adds a key:value facet to the current
 	 * log message.
+	 *
 	 * @see Splunk#set($key,$value)
+	 * @param string $key
+	 * @param string $value
 	 */
 	public static function log($key, $value) {
 		if (!is_null(self::$splunk)) {
@@ -126,8 +129,8 @@ class Application {
 	/**
 	 * Register a Class so that it can be loaded later, if required.
 	 *
-	 * @param String $classname the name of the class
-	 * @param String $filename the name of the file that defines the class
+	 * @param string $classname the name of the class
+	 * @param string $filename the name of the file that defines the class
 	 */
 	public static function register_class($classname, $filename) {
 		Autoloader::register($classname, $filename);
@@ -143,8 +146,8 @@ class Application {
 
 	/**
 	 * Returns a registrar object which lets you register URI handlers.
-	 * @param String $module the name of the module
-	 * @param String $interface (optional) the initial interface to use
+	 * @param string $module the name of the module
+	 * @param string $interface (optional) the initial interface to use
 	 * @return InterfacedURIRegistrar the registrar
 	 */
 	public static function interfaced_uri_registrar($module, $interface=NULL) {
@@ -157,7 +160,7 @@ class Application {
 
 	/**
 	 * Returns a registrar object which lets you register URI handlers.
-	 * @param String $prefix the prefix of all URIs registered
+	 * @param string $prefix the prefix of all URIs registered
 	 * @return SimpleURIRegistrar the registrar
 	 */
 	public static function uri_registrar($prefix) {
@@ -304,7 +307,7 @@ class Application {
 	 * If the URI Map recognises the URI for any methods at all, tack
 	 * an 'Allow' header onto the response.
 	 * @param Response $response the current Response object, whose headers to tweak
-	 * @param String $uri the current Request uri
+	 * @param string $uri the current Request uri
 	 * @return mixed $response
 	 */
 	protected static function _tweak_allow_headers($response, $uri) {
@@ -332,10 +335,10 @@ class Application {
 	/**
 	 * Called by PHP when an error occurs.
 	 * Does a little bit of niceification, then passes it off to Response.
-	 * @param int $errno the level of the error raised
+	 * @param integer $errno the level of the error raised
 	 * @param string $errstr the error message
 	 * @param string $errfile the filename in which the error was raised
-	 * @param int $errline the line number on which the error was raised
+	 * @param integer $errline the line number on which the error was raised
 	 */
 	public static function error_response($errno, $errstr, $errfile, $errline) {
 		if (error_reporting()==0) return;
@@ -388,6 +391,7 @@ class Application {
 }
 
 if (!class_exists('JsonSerializable')) {
+	/** Objects implementing JsonSerializable can customize their JSON representation when encoded with json_encode(). */
 	interface JsonSerializable {
 		#public function jsonSerialize();
 	}

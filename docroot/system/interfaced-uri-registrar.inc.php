@@ -18,12 +18,19 @@
 
 require_once(SYSDIR.'/uri-registrar.inc.php');
 
+/**
+ * Like {@see URIRegistrar} but with explicit abstractions for
+ * interface and module prefixes.
+ */
 class InterfacedURIRegistrar extends URIRegistrar {
 	private $module = null;
 	private $interface = null;
 
 	/**
-	 * Constructs a new registrar, on which one may call #register_handler
+	 * Constructs a new registrar, on which one may call {@see register_handler()}
+	 *
+	 * @param string $module common module prefix prepended to all registered URI patterns
+	 * @param string $interface (optional) interface prefix prepended to all registered URI patterns
 	 */
 	public function __construct($module, $interface=NULL) {
 		$this->module = $module;
@@ -34,7 +41,9 @@ class InterfacedURIRegistrar extends URIRegistrar {
 	/**
 	 * Update the current interface of this registrar.
 	 *
-	 * @see the IF_... consts in Application
+	 * See the IF_... consts in {@see Application}
+	 *
+	 * @param string $interface
 	 */
 	public function set_interface($interface) {
 		$this->interface = $interface;
@@ -49,19 +58,20 @@ class InterfacedURIRegistrar extends URIRegistrar {
 	 * Note that GET handlers automatically set up an identical HEAD handler.
 	 *
 	 * URI pattern examples:
-	 *   '/students/:sid/'
-	 *     :: '/students/123/' => {"sid":"123"}
-	 *   '/some/path/?'
-	 *     :: '/some/path/' => {}
-	 *     :: '/some/path'  => {}
-	 *   '/branch/:name/?'
-	 *     :: '/branch/gp/' => {"name":"gp"}
-	 *     :: '/branch/kg'  => {"name":"kg"}
-	 *     :: '/branch/'    => FALSE
 	 *
-	 * @param String $http_method the HTTP method to handle (e.g. GET, POST, etc.).
-	 * @param String $uri_pattern
-	 * @param Mixed $handler 'function', 'class->method', 'class::static_method', array(object,'method'), array('class','method')
+	 *       '/students/:sid/'
+	 *         :: '/students/123/' => {"sid":"123"}
+	 *       '/some/path/?'
+	 *         :: '/some/path/' => {}
+	 *         :: '/some/path'  => {}
+	 *       '/branch/:name/?'
+	 *         :: '/branch/gp/' => {"name":"gp"}
+	 *         :: '/branch/kg'  => {"name":"kg"}
+	 *         :: '/branch/'    => FALSE
+	 *
+	 * @param string $http_method the HTTP method to handle (e.g. GET, POST, etc.).
+	 * @param string $uri_pattern
+	 * @param mixed $handler {@see URIMap::realise_handler}
 	 */
 	public function register_handler($http_method, $uri_pattern, $handler) {
 		if (is_null($this->interface)) throw new Exception("interface not set");

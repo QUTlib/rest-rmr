@@ -16,7 +16,9 @@
  * under the License.
  */
 
-
+/**
+ * Singleton object that provides all details about the current HTTP request.
+ */
 class Request {
 	private function __construct() {}
 	private function __clone() {}
@@ -36,6 +38,9 @@ class Request {
 	private static $entity_body = NULL;
 	private static $preconditions = NULL;
 
+	/**
+	 * Initialise the request.  This is called from `index.php`
+	 */
 	public static function init() {
 		if (isset($_GET['path']) && ($path = $_GET['path'])) {
 			self::$uri = $path;
@@ -107,11 +112,21 @@ class Request {
 		}
 	}
 
+	/** The IP address of the client who made the request */
 	public static function client_ip() { return self::$client_ip; }
+
+	/** The request URI path */
 	public static function uri() { return self::$uri; }
+
+	/** The protocol used to make the request (e.g. "HTTP/1.1") */
 	public static function protocol() { return self::$protocol; }
+
+	/** Whether the request was made over HTTPS */
 	public static function is_https() { return self::$https; }
 
+	/**
+	 * The whole requested URI, including scheme, server hostname, and path.
+	 */
 	public static function full_uri() {
 		$scheme = (self::$https ? 'https' : 'http');
 		$host   = SITEHOST; #self::server_var('SERVER_NAME');
@@ -142,6 +157,9 @@ class Request {
 
 	/**
 	 * Gets the value of a server variable as provided by PHP/Apache.
+	 *
+	 * @param string $name the server variable to fetch
+	 * @param mixed $default value to return if no such variable is defined
 	 */
 	public static function server_var($name, $default=NULL) {
 		if (isset($_SERVER[$name])) {
@@ -177,9 +195,9 @@ class Request {
 	 * by all general-purpose servers."
 	 *  <http://www.w3.org/Protocols/rfc2616/rfc2616-sec5.html#sec5.1.1>
 	 *
-	 * @param String[] $allowed (optional) list of allowed methods
-	 * @param Integer  $errcode (optional) what statuc code to use if not allowed (405=Not Allowed, 501=Not Implemented,...)
-	 * @return the HTTP request method from the current request, or FALSE
+	 * @param string[] $allowed (optional) list of allowed methods
+	 * @param integer  $errcode (optional) what statuc code to use if not allowed (405=Not Allowed, 501=Not Implemented,...)
+	 * @return mixed the HTTP request method from the current request, or FALSE
 	 */
 	public static function method($allowed=NULL, $errcode=405) {
 		if (func_num_args() > 0) {
@@ -221,21 +239,22 @@ class Request {
 	 * Result is an array of the form:
 	 *
 	 *     array(
-	 *         header => timestamp, # for date-type precondition
-	 *         header => '*',       # for ETag-type precondition
-	 *         header => array(etag,..),
+	 *         header1 => timestamp, # for date-type precondition
+	 *         header2 => '*',       # for ETag-type precondition
+	 *         header3 => array(etag,..),
 	 *                              # for ETag-type precondition
 	 *     )
 	 *
 	 * Currently inspected headers are:
+	 *
 	 *  - If-Modified-Since (date-type)
 	 *  - If-Unmodified-Since (date-type)
 	 *  - If-None-Match (ETag-type)
 	 *  - If-Match (ETag-type)
 	 *  - If-Range (either type)
 	 *
-	 * @param array $header if given, only check that header. Like ::preconditions()[$header]
-	 * @return array
+	 * @param string $header if given, only check that header. Like `Request::preconditions()[$header]`
+	 * @return array|null
 	 */
 	public static function preconditions($header=NULL) {
 		if (is_null(self::$preconditions)) {
@@ -263,6 +282,12 @@ class Request {
 		}
 	}
 
+	/**
+	 * Parses a potential ETag header value.
+	 *
+	 * @param string $raw the raw header value
+	 * @return string
+	 */
 	static function parse_etag_header($raw) {
 		$raw = trim($raw);
 		if ($raw == '*') {
@@ -287,8 +312,8 @@ class Request {
 	 *
 	 * NOTE: this doesn't (yet) support parameters (e.g. "text/html;level=1")
 	 *
-	 * @param String[] $preferred (optional) list of preferred content types
-	 * @return the best content type, or FALSE if there's no nice resolution
+	 * @param string[] $preferred (optional) list of preferred content types
+	 * @return string|false the best content type, or FALSE if there's no nice resolution
 	 */
 	public static function content_type($preferred=NULL) {
 		$client_types = self::content_types();
@@ -369,7 +394,8 @@ class Request {
 	 *
 	 * If the client didn't supply any accepted content types, returns FALSE.
 	 *
-	 * @return accepted content types, or FALSE
+	 * @see RFC2616\parse_Accept()
+	 * @return string[]|false accepted content types, or FALSE
 	 */
 	public static function content_types() {
 		if (($accept = self::header('Accept')) !== NULL) {}
@@ -387,7 +413,8 @@ class Request {
 	 * Note: RFC 2616 has explicit rules about requiring ISO-8859-1 in the
 	 * charsets, but this method does not enforce the RFC.
 	 *
-	 * @return accepted charsets, or FALSE
+	 * @see RFC2616\parse_Accept_Charset()
+	 * @return string[]|false accepted charsets, or FALSE
 	 */
 	public static function charsets() {
 		if (($accept = self::header('Accept-Charset')) !== NULL) {}
@@ -402,7 +429,8 @@ class Request {
 	 *
 	 * If the client didn't supply any accepted encodings, returns FALSE.
 	 *
-	 * @return accepted encodings, or FALSE
+	 * @see RFC2616\parse_Accept_Encodings()
+	 * @return string[]|false accepted encodings, or FALSE
 	 */
 	public static function encodings() {
 		if (($accept = self::header('Accept-Encoding')) !== NULL) {}
@@ -417,7 +445,8 @@ class Request {
 	 *
 	 * If the client didn't supply any accepted encodings, returns FALSE.
 	 *
-	 * @return accepted encodings, or FALSE
+	 * @see RFC2616\parse_TE()
+	 * @return string[]|false accepted encodings, or FALSE
 	 */
 	public static function transfer_encodings() {
 		if (($accept = self::header('TE')) !== NULL) {}
@@ -432,7 +461,8 @@ class Request {
 	 *
 	 * If the client didn't supply any accepted languages, returns FALSE.
 	 *
-	 * @return accepted languages, or FALSE
+	 * @see RFC2616\parse_Accept_Language()
+	 * @return string[]|false accepted languages, or FALSE
 	 */
 	public static function languages() {
 		if (($accept = self::header('Accept-Language')) !== NULL) {}
@@ -450,15 +480,17 @@ class Request {
 	 * If the client didn't supply any preferences, returns FALSE.
 	 *
 	 * Example:
-	 *    Prefer: a,b=1,c;x=2,d=3;y=4
-	 * =>
-	 *    array(
-	 *        'a' => array('a'=>TRUE),
-	 *        'b' => array('b'=>1),
-	 *        'c' => array('c'=>TRUE, 'x'=>2),
-	 *        'd' => array('d'=>3, 'y'=>4),
-	 *    )
 	 *
+	 *        Prefer: a,b=1,c;x=2,d=3;y=4
+	 *     =>
+	 *        array(
+	 *            'a' => array('a'=>TRUE),
+	 *            'b' => array('b'=>1),
+	 *            'c' => array('c'=>TRUE, 'x'=>2),
+	 *            'd' => array('d'=>3, 'y'=>4),
+	 *        )
+	 *
+	 * @see ID_snell_http_prefer\parse_Prefer()
 	 * @return array of {preference=>value+parameters} pairs, or FALSE
 	 */
 	public static function preferences() {
@@ -475,27 +507,32 @@ class Request {
 	 * If the client didn't request any ranges, returns FALSE.
 	 *
 	 * Example:
-	 *    Range: 0-0,5-10,20-
-	 * =>
-	 *    array(
-	 *        'ranges' => array(
-	 *             array(0, 0),
-	 *             array(5, 10),
-	 *        ),
-	 *        'open-range' => 20,
-	 *        'suffix' => -1,
-	 *    )
+	 *
+	 *        Range: 0-0,5-10,20-
+	 *     =>
+	 *        array(
+	 *            'ranges' => array(
+	 *                array(0, 0),
+	 *                array(5, 10),
+	 *            ),
+	 *            'open-range' => 20,
+	 *            'suffix' => -1,
+	 *        )
 	 *
 	 * Example:
-	 *    Range: 0-10,5-15,-20
-	 * =>
-	 *    array(
-	 *        'ranges' => array(
-	 *             array(0, 15),
-	 *        ),
-	 *        'open-range' => -1,
-	 *        'suffix' => 20,
-	 *    )
+	 *
+	 *        Range: 0-10,5-15,-20
+	 *     =>
+	 *        array(
+	 *            'ranges' => array(
+	 *                array(0, 15),
+	 *            ),
+	 *            'open-range' => -1,
+	 *            'suffix' => 20,
+	 *        )
+	 *
+	 * @see RFC2616\parse_Range()
+	 * @return string[]|false
 	 */
 	public static function ranges() {
 		if (($range = self::header('X-Range')) !== NULL) {}
@@ -505,6 +542,7 @@ class Request {
 		return RFC2616\parse_Range($range);
 	}
 
+	/** @internal */
 	public static function _set_params($params) {
 		self::$params = $params;
 	}
@@ -516,6 +554,9 @@ class Request {
 	 * for an appropriate request entity.
 	 *
 	 * If still not found, returns $default (NULL).
+	 *
+	 * @param string $name the parameter to retrieve
+	 * @param mixed $default value to return if no such parameter is defined
 	 */
 	public static function parameter($name, $default=NULL) {
 		if (isset(self::$params[$name])) return self::$params[$name];
@@ -528,6 +569,9 @@ class Request {
 	 * Gets the value of the named uri parameter (after URI Pattern matching
 	 * has taken place).
 	 * Returns $default (NULL) if not found.
+	 *
+	 * @param string $name the parameter to retrieve
+	 * @param mixed $default value to return if no such parameter is defined
 	 */
 	public static function uri_parameter($name, $default=NULL) {
 		if (isset(self::$params[$name])) return self::$params[$name];
@@ -543,6 +587,9 @@ class Request {
 	/**
 	 * Gets the value of the named query parameter.
 	 * Returns $default (NULL) if not found.
+	 *
+	 * @param string $name the parameter to retrieve
+	 * @param mixed $default value to return if no such parameter is defined
 	 */
 	public static function query_parameter($name, $default=NULL) {
 		if (isset(self::$get[$name])) return self::$get[$name];
@@ -558,7 +605,9 @@ class Request {
 	/**
 	 * Gets the names and values of all parameters that match the given
 	 * regular expression pattern.
-	 * @param int $group the matched regex group to return as the name (default = whole string)
+	 *
+	 * @param regexp $pattern filtering pattern
+	 * @param integer $group the matched regex group to return as the name (default = whole string)
 	 */
 	public static function query_params_like($pattern, $group=0) {
 		$results = array();
@@ -574,6 +623,9 @@ class Request {
 	/**
 	 * Gets the value of the named parameter from the request entity, if any.
 	 * Returns $default (NULL) if not found.
+	 *
+	 * @param string $name the parameter to retrieve
+	 * @param mixed $default value to return if no such parameter is defined
 	 */
 	public static function entity_parameter($name, $default=NULL) {
 		if (isset(self::$post[$name])) return self::$post[$name];
@@ -589,7 +641,9 @@ class Request {
 	/**
 	 * Gets the names and values of all parameters that match the given
 	 * regular expression pattern.
-	 * @param int $group the matched regex group to return as the name (default = whole string)
+	 *
+	 * @param regexp $pattern filtering pattern
+	 * @param integer $group the matched regex group to return as the name (default = whole string)
 	 */
 	public static function entity_params_like($pattern, $group=0) {
 		$results = array();
@@ -605,6 +659,10 @@ class Request {
 	/**
 	 * Gets the value of the named request header, if any.
 	 * Returns $default (NULL) if not found.
+	 *
+	 * @param string $name the header field value to retrieve
+	 * @param mixed $default value to return if no such parameter is defined
+	 * @return string|string[]
 	 */
 	public static function header($name, $default=NULL) {
 		$name = strtolower($name);
@@ -621,6 +679,8 @@ class Request {
 	 *
 	 * FIXME: clarify if this is the entity-body or message-body
 	 * (do clients ever use a Transfer-Encoding like gzip?)
+	 *
+	 * @return string
 	 */
 	public static function entity_body() {
 		if (is_null(self::$entity_body)) {
@@ -636,6 +696,12 @@ class Request {
 	}
 
 	// FIXME: use Content-Length as trigger for there being an entity..?
+	/**
+	 * Gets the request entity, if any.
+	 *
+	 * @see entity_body()
+	 * @return string|array
+	 */
 	public static function entity() {
 		$type = self::header('Content-Type');
 		if (strtoupper(self::$method) == 'POST') {
@@ -664,6 +730,10 @@ class Request {
 	 *
 	 * If no file is known by that identifier, returns NULL.
 	 * If something goes wrong, returns FALSE as per `move_uploaded_file()`.
+	 *
+	 * @param string $ident local identifier of uploaded file
+	 * @param string $dest destination filename
+	 * @return bool
 	 */
 	public static function move_file($ident, $dest) {
 		if (!isset(self::$files[$ident])) {
@@ -677,6 +747,9 @@ class Request {
 	 *
 	 * Returns a file handle, as per `fopen()`.
 	 * If no file is known by that identifier, returns NULL.
+	 *
+	 * @param string $ident local identifier of uploaded file
+	 * @return resource
 	 */
 	public static function open_file($ident) {
 		if (!isset(self::$files[$ident])) {
@@ -690,6 +763,9 @@ class Request {
 	 *
 	 * Returns a string, as per `file_get_contents()`.
 	 * If no file is known by that identifier, returns NULL.
+	 *
+	 * @param string $ident local identifier of uploaded file
+	 * @return string|false
 	 */
 	public static function get_file_contents($ident) {
 		if (!isset(self::$files[$ident])) {

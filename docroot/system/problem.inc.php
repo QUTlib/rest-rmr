@@ -32,6 +32,11 @@ class Problem {
 
 	/**
 	 * Creates a new Problem, with the minimum set of required attributes.
+	 *
+	 * @param string $type
+	 * @param string $title
+	 * @param integer $status
+	 * @param string $detail
 	 */
 	public function __construct($type, $title, $status=null, $detail=null) {
 		$this->type = "$type";

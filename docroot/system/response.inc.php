@@ -34,6 +34,11 @@ class Response {
 	private $committed = false;
 	private $recording = false;
 
+	/**
+	 * Creates a new HTTP Response object.
+	 * @param string $http_version {@see http_version()} defaults to the Request version
+	 * @param integer $status
+	 */
 	public function __construct($http_version=NULL, $status=200) {
 		if (!$http_version) $this->version = Request::http_version();
 		if (func_num_args() > 0 && $http_version) $this->version = $http_version;

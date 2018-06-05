@@ -23,11 +23,13 @@ Application::register_class('XMLFile',   SYSDIR.'/std-models/xml-file-model.php'
  * A basic XML representer that displays raw XML document models as application/xml
  *
  * Supported internet media types (MIMEs):
- *   application/xml  q=1.0 [advertised,default]
- *   text/xml         q=0.9
+ *
+ *     application/xml  q=1.0 [advertised,default]
+ *     text/xml         q=0.9
  */
 class RawXMLDocRepresenter extends BasicRepresenter {
 
+	/** @ignore */
 	public function __construct() {
 		parent::__construct(
 			array(
@@ -43,6 +45,7 @@ class RawXMLDocRepresenter extends BasicRepresenter {
 		);
 	}
 
+	/** @ignore */
 	public function rep($m, $d, $t, $c, $l, $response) {
 		$this->response_type($response, $t, $c);
 		$this->response_language($response, $l, FALSE);
